@@ -2,17 +2,17 @@
   "schemaVersion": 2,
   "name": "晷",
   "builtAtDate": "2026-10-11",
-  "sourceCommit": "4b4d65518117981569566bb73b2e21b38f76a78a",
-  "sourceTree": "abda02443e9a34bc71b9b16f8b31ed50996af8dc",
+  "sourceCommit": "54911cf02bdd338be801ea03caff78ff7f835d22",
+  "sourceTree": "25ddfe9095daae146ce739eb0e4205d69f12143c",
   "sourceRepository": "https://github.com/zwwd1/scvtc-kejian",
   "productionInputsUnchangedAfterBuild": true,
   "artifact": {
-    "file": "scvtc-kejian-1.2.5.apk",
-    "sha256": "8b73fa2bbc1d5bbb8355a3adcc96a456bd72bbec2151c3cdee63a32b3a125e67",
-    "size": 14838652,
+    "file": "scvtc-kejian-1.2.6.apk",
+    "sha256": "5c133f8afdd9950b4e9a32a3a6dcc47098a57c2ee2d036cdef7c753e63c3bec6",
+    "size": 14855380,
     "packageName": "cn.scvtc.campus.preview",
-    "versionName": "1.2.5",
-    "versionCode": 18,
+    "versionName": "1.2.6",
+    "versionCode": 19,
     "certificateSha256": "5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3",
     "nativeLibraryCount": 4,
     "abi": "universal",
@@ -39,44 +39,21 @@
   "functionalTests": "not_run_at_user_request",
   "deviceTests": "not_run_at_user_request",
   "sourceArchive": {
-    "sha256": "58a892a38e9fd4e7ada7d1c4ea4b2cd9ca8fad0028cc5cfb073cdc9891795c36",
-    "bytes": 22447482,
-    "fileCount": 1928,
+    "sha256": "ae7c9700fd312928c695a5176674cc894e1c4c55cf1d0e232b43035a86a476d5",
+    "bytes": 22454524,
+    "fileCount": 1931,
     "matchesSourceCommit": true
   },
   "additionalBuildInputs": {
     "originalDonationPngSha256": "8ebf7c9b12fbe2917878bad2be227a24987b700a1859177ae63be9bc1bd86ce5"
   },
   "r8Mapping": {
-    "id": "3c87200b62aad1da9f45269a5fb1c60984bdbb377565bff9b352d21b2557ba3c",
-    "sha256": "19e5ce8d2cc9648570471523af603af1d6af6344fe0a2091074a55c5da2ecfd8"
+    "id": "443f12a13348a3f048ba7d02f144a2d7776e693fafcf8ae4f87989e77711cb36",
+    "sha256": "a214f446885e71b4e47817954527bcfa2fb84fd7bbadf4f6f594612211debc52"
   },
-  "expectedReleaseUrl": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.5",
-  "releasePublicationStatus": "published",
+  "expectedReleaseUrl": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.6",
+  "releasePublicationStatus": "pending",
   "cloudServicesPaused": true,
   "report": "VERIFICATION.md",
-  "additionalArtifacts": [],
-  "publicRelease": {
-    "url": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.5",
-    "tag": "v1.2.5",
-    "publishedAt": "2026-10-11T09:12:10Z",
-    "sourceTagCommit": "4b4d65518117981569566bb73b2e21b38f76a78a",
-    "publisherCommit": "d9bdfdec338affac07bb1909e4da271f069c3106",
-    "workflowRuns": [
-      {
-        "id": 38127497833,
-        "jobId": 114434799728,
-        "conclusion": "success",
-        "url": "https://github.com/zwwd1/scvtc-kejian/actions/runs/38127497833"
-      }
-    ],
-    "assets": [
-      {
-        "name": "scvtc-kejian-1.2.5.apk",
-        "size": 14838652,
-        "sha256": "8b73fa2bbc1d5bbb8355a3adcc96a456bd72bbec2151c3cdee63a32b3a125e67",
-        "url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.5/scvtc-kejian-1.2.5.apk"
-      }
-    ]
-  }
+  "additionalArtifacts": []
 }

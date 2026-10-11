@@ -1,47 +1,47 @@
 {
   "repository": "zwwd1/scvtc-kejian",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "name": "晷",
-  "sourceCommit": "4b4d65518117981569566bb73b2e21b38f76a78a",
+  "sourceCommit": "54911cf02bdd338be801ea03caff78ff7f835d22",
   "artifact": {
-    "file": "scvtc-kejian-1.2.5.apk",
+    "file": "scvtc-kejian-1.2.6.apk",
     "packageName": "cn.scvtc.campus.preview",
-    "versionCode": 18,
+    "versionCode": 19,
     "certificateSha256": "5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3",
-    "size": 14838652,
-    "sha256": "8b73fa2bbc1d5bbb8355a3adcc96a456bd72bbec2151c3cdee63a32b3a125e67",
+    "size": 14855380,
+    "sha256": "5c133f8afdd9950b4e9a32a3a6dcc47098a57c2ee2d036cdef7c753e63c3bec6",
     "abi": "universal"
   },
   "parts": [
     {
-      "blob": "72be12a07141f125758a18be75d64160b35763de",
+      "blob": "7b02a8259963806bd6c867e561eacf7308f81629",
       "size": 2097152,
-      "sha256": "6e6a64e1fc8d6d460b5a7a88a8b14ed9e860c4d6607223df5b07805a4dd36afd"
+      "sha256": "06423607b237aaa19c0143de1e3d3a49277c6cacee3485262d5e39a82d2f19de"
     },
     {
-      "blob": "5ab8ce68e1f86f212234046646b97bdad0d56bc8",
+      "blob": "c594361264d0b70c8f317e629f215afc993b184f",
       "size": 2097152,
-      "sha256": "38000cd30457aee922ba0973eb02ef66499ec069a74f1ab2bb1fc28ed7050618"
+      "sha256": "ec2f14b8331f1896000933cca17c1193282aeca4792f7cf19d638e0c8310d95f"
     },
     {
-      "blob": "076b36e64267fac64b17f11b5b3b171fe8bfce57",
+      "blob": "22200d615b1079004cd2235c6db52a5667baa356",
       "size": 2097152,
-      "sha256": "74687915f1d9fdcada08a36ce516263cc3877cc7a9993c2e49b98049e668a29a"
+      "sha256": "03d86a2974167f7ac02303897b88933e80af2a37062430c8d43d5b0163b2200d"
     },
     {
-      "blob": "d9701f9ab99adc44a46e5dac3138fedf3ab0f664",
+      "blob": "ea88d501be3dfdcd638666d408fea4e92dca5cbd",
       "size": 2097152,
-      "sha256": "9045a14c78fc3279428e7cb9bbf44ffd88633508fc6cceab06ff9f9a2117a848"
+      "sha256": "ec8ff61c614113e1ede44e47c631a787704d69a3a55e17799d5ffbc19b1dfb85"
     },
     {
-      "blob": "be5d876b2e462be096ffa69ac0d7d18e21b7a818",
+      "blob": "8d22f26ca23bfc59ad4cfbe8bc14164d9015e876",
       "size": 2097152,
-      "sha256": "d8b42dfdceaaea56be9ff7812a7dd66551bc19953647a02bea0d3c1445155fcf"
+      "sha256": "4ed105e73359ca1fed14966b27b31b316f00978721bfe5803f99de6eef23cd0b"
     },
     {
-      "blob": "48973eafeab332256323d39bce5299155f0737f3",
-      "size": 4,
-      "sha256": "1b2dadc725bc93d0eb3bdc85c256349a0349f55b0de0c6cac4c8284cf29062ee"
+      "blob": "e958c27bb43faee3ea212b508d3f59698bb10e5b",
+      "size": 16732,
+      "sha256": "98506ae32868a558fad873736e8f0a11282679665be09549a2b6a26997e4321f"
     },
     {
       "blob": "45b3d10c4876da2b56e69570ce952465e1eccc12",
@@ -54,9 +54,9 @@
       "sha256": "a71e9cb04c2b9234c4fdae952c30e515e2be9f3d6d04a9339ea7c6f52ee2415b"
     },
     {
-      "blob": "5022e12476271e96561a9d9176bfe6a15db86666",
+      "blob": "b7e092498de0147804350c62541a90266f47b4d0",
       "size": 158584,
-      "sha256": "57299360a3f360e78d0e51f9cbc8dfd09b988801d83af6a855d47858773718e3"
+      "sha256": "698578260b3a2b511e13d37328499320d327fabe0c9ffb8aaee6613528d55406"
     }
   ],
   "publisherRevision": 3,
