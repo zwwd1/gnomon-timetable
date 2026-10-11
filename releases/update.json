@@ -1,5 +1,34 @@
 [
   {
+    "name": "晷 1.2.5",
+    "tag_name": "v1.2.5",
+    "body": "# 晷 1.2.5\n\n这一版处理 1.2.4 中用户反馈的连接问题。\n\n- 首次连接邀请按本机账号和课表判断，清除数据后也能重新出现，不再依赖安装时间。\n- 登录从川职教务的 SSO 入口开始，转为手机认证页面时保留学校给出的完整回调。\n- 本机密钥永久失效时，新写入使用新的密钥版本；旧课表和密文保留，不清库，也不反复使用失效密钥。\n- 原包名、原签名、课表编辑、提醒、组件和玻璃动效继续保留。\n\nRelease 构建和安装包检查以本版本的验证记录为准。未连接手机调试，真实学校登录与过期恢复仍由使用者验收。\n",
+    "html_url": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.5",
+    "published_at": "2026-10-11T09:12:10Z",
+    "draft": false,
+    "prerelease": false,
+    "assets": [
+      {
+        "name": "BUILD_PROVENANCE.json",
+        "size": 2044,
+        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.5/BUILD_PROVENANCE.json",
+        "digest": "sha256:99e94f811a422405e8b5647be71121a8766b3540de66692bb0657b56a9d42f06"
+      },
+      {
+        "name": "scvtc-kejian-1.2.5.apk",
+        "size": 14838652,
+        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.5/scvtc-kejian-1.2.5.apk",
+        "digest": "sha256:8b73fa2bbc1d5bbb8355a3adcc96a456bd72bbec2151c3cdee63a32b3a125e67"
+      },
+      {
+        "name": "scvtc-kejian-1.2.5.apk.sha256",
+        "size": 89,
+        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.5/scvtc-kejian-1.2.5.apk.sha256",
+        "digest": "sha256:6194e38a7ecab502d9f640558519a81678ef6ea9d6b7f9e6d1d1cec1e945dd77"
+      }
+    ]
+  },
+  {
     "name": "晷 1.2.4",
     "tag_name": "v1.2.4",
     "body": "# 晷 1.2.4\n\n把日子排成课表，把空白留给生活。\n\n- 应用更名为晷，桌面换上原创头像。包名与签名延续，可直接覆盖升级。\n- 登录改为与璟一致的学校移动认证流程，等待实际字段就绪。输入过的密码在本机加密记住；官方补充认证后，等课表保存完成再关闭页面。\n- 第一次安装且没有记录时，先弹出连接邀请；已有课程、手动修改和自选照片保留。\n- 成绩完整返回后立即显示，毕业要求随后更新；学期筛选使用本机记录。\n- 默认壁纸换为简洁的日夜留白。入场动画可关闭，底栏可增加或减少课程、成绩和教务同步入口，原有玻璃效果保留。\n- 优化图片编码，沿用五种助手状态，云服务继续暂停。\n\n构建与安装包检查见 [验证记录](../VERIFICATION.md)。本轮没有连接手机，学校实际登录与交互体验由用户验收。\n",
