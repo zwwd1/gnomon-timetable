@@ -51,8 +51,39 @@
     "sha256": "5cbf361e5953f0457c95cd09bb2d9af0ab4d61bd33f3b1530d64f0d78e06588a"
   },
   "expectedReleaseUrl": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.4",
-  "releasePublicationStatus": "pending",
+  "releasePublicationStatus": "published_verified",
   "cloudServicesPaused": true,
   "report": "VERIFICATION.md",
-  "additionalArtifacts": []
+  "additionalArtifacts": [],
+  "releasePublication": {
+    "releaseId": 409433229,
+    "releaseUrl": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.4",
+    "tag": "v1.2.4",
+    "publishedAt": "2026-10-11T05:12:42Z",
+    "tagSourceCommit": "e3c621c7a3a966ec7eacbddf5033e26fe4f95a68",
+    "workflowRunId": 38114036261,
+    "workflowUrl": "https://github.com/zwwd1/scvtc-kejian/actions/runs/38114036261",
+    "workflowConclusion": "success",
+    "publisherCommit": "9c97cdecef5fe575f69e3bd7944510750b8535d6",
+    "assets": [
+      {
+        "file": "BUILD_PROVENANCE.json",
+        "size": 2014,
+        "digest": "sha256:e19519d8d3ca0afb76ac5f3bf643ea082372d774aacc268377a62a65b1dbc731",
+        "url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.4/BUILD_PROVENANCE.json"
+      },
+      {
+        "file": "scvtc-kejian-1.2.4.apk",
+        "size": 14838648,
+        "digest": "sha256:636445aa7119ee92d2ff84be6e8413dcdbb8bca8f2db21047e2c5de791c3020f",
+        "url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.4/scvtc-kejian-1.2.4.apk"
+      },
+      {
+        "file": "scvtc-kejian-1.2.4.apk.sha256",
+        "size": 89,
+        "digest": "sha256:4ef4b0e7dacc7e16800edcbf596bd9b4969bf5e48bcaa4a8b466c4746fa446f9",
+        "url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.4/scvtc-kejian-1.2.4.apk.sha256"
+      }
+    ]
+  }
 }

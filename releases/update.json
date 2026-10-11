@@ -1,5 +1,34 @@
 [
   {
+    "name": "晷 1.2.4",
+    "tag_name": "v1.2.4",
+    "body": "# 晷 1.2.4\n\n把日子排成课表，把空白留给生活。\n\n- 应用更名为晷，桌面换上原创头像。包名与签名延续，可直接覆盖升级。\n- 登录改为与璟一致的学校移动认证流程，等待实际字段就绪。输入过的密码在本机加密记住；官方补充认证后，等课表保存完成再关闭页面。\n- 第一次安装且没有记录时，先弹出连接邀请；已有课程、手动修改和自选照片保留。\n- 成绩完整返回后立即显示，毕业要求随后更新；学期筛选使用本机记录。\n- 默认壁纸换为简洁的日夜留白。入场动画可关闭，底栏可增加或减少课程、成绩和教务同步入口，原有玻璃效果保留。\n- 优化图片编码，沿用五种助手状态，云服务继续暂停。\n\n构建与安装包检查见 [验证记录](../VERIFICATION.md)。本轮没有连接手机，学校实际登录与交互体验由用户验收。\n",
+    "html_url": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.4",
+    "published_at": "2026-10-11T05:12:42Z",
+    "draft": false,
+    "prerelease": false,
+    "assets": [
+      {
+        "name": "BUILD_PROVENANCE.json",
+        "size": 2014,
+        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.4/BUILD_PROVENANCE.json",
+        "digest": "sha256:e19519d8d3ca0afb76ac5f3bf643ea082372d774aacc268377a62a65b1dbc731"
+      },
+      {
+        "name": "scvtc-kejian-1.2.4.apk",
+        "size": 14838648,
+        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.4/scvtc-kejian-1.2.4.apk",
+        "digest": "sha256:636445aa7119ee92d2ff84be6e8413dcdbb8bca8f2db21047e2c5de791c3020f"
+      },
+      {
+        "name": "scvtc-kejian-1.2.4.apk.sha256",
+        "size": 89,
+        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.4/scvtc-kejian-1.2.4.apk.sha256",
+        "digest": "sha256:4ef4b0e7dacc7e16800edcbf596bd9b4969bf5e48bcaa4a8b466c4746fa446f9"
+      }
+    ]
+  },
+  {
     "name": "川职·课间 1.2.3",
     "tag_name": "v1.2.3",
     "body": "# 川职·课间 1.2.3\n\n这次主要修复登录被误判为需要补充认证的问题，并整理首次连接教务的操作。\n\n- 新安装且没有本机数据时，先填写川职学号和密码；已有数据的覆盖安装直接进入应用。\n- 普通学校弹窗不再直接当作验证码，登录表单未准备好与认证回调超时分别提示。\n- 核验身份后先保存账号与课表连接，再在后台读取课程并安排自动刷新。\n- 「连接川职教务」按钮补齐留白，登录页处理键盘、大屏宽度和输入法提交。\n- 日夜切换增加颜色过渡，Miuix 底栏和原有玻璃效果保留。\n- 项目首页重新说明课间与知学的区别、使用方法和构建方式。\n\n直接覆盖安装即可，原签名、已有课表和编辑记录保留，云服务继续暂停。\n\n本轮不连接手机，不运行功能或性能测试。正式构建和签名检查见验证报告；学校实际登录、会话过期恢复及界面体验由用户验收。\n",

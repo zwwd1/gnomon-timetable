@@ -20,3 +20,7 @@
 设置页、升级后保留数据、两种外观、壁纸一致性、待机状态、底栏参数、成绩页动画、检查更新与下载、自然 Session 过期恢复、不同机型和 Android 17 仍需用户实际验收。AI 需配置自己的 HTTPS 服务及密钥。云服务继续暂停，既有账号、课程、手动编辑和自选壁纸不清除。
 
 [本轮交互修改与使用步骤](docs/ITERATION_1_2_4.md) · [此前逐图修改](docs/OPTIMIZATION_20261010.md) · [使用方法](docs/SCVTC_USAGE.md) · [隐私与加密](docs/SCVTC_PRIVACY.md)。历史验证不能代替本轮验证。
+
+## 实际发布
+
+[晷 1.2.4](https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.4) 已公开；[自动发布任务](https://github.com/zwwd1/scvtc-kejian/actions/runs/38114036261) 在发布提交 `9c97cdecef5fe575f69e3bd7944510750b8535d6` 上通过。标签指向构建提交 `e3c621c7a3a966ec7eacbddf5033e26fe4f95a68`，GitHub APK 资产的字节数和 SHA-256 与本机核验结果相同。仓库更新清单保留历史版本，并指向本项目的这次发布。发布后的记录只改变文档与更新清单。
