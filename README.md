@@ -6,11 +6,11 @@
 
 这是为四川职业技术学院重构的 Android 课表应用，基于 SleepDown-Schedule，保留原生 Miuix 界面、液态玻璃底栏和课表编辑体验。适合想打开就看课、课余少一点折腾的同学。
 
-[下载 APK](https://github.com/zwwd1/scvtc-kejian/releases/latest) · [反馈问题](https://github.com/zwwd1/scvtc-kejian/issues) · [更新记录](release-notes/v1.2.5.md)
+[下载 APK](https://github.com/zwwd1/scvtc-kejian/releases/latest) · [反馈问题](https://github.com/zwwd1/scvtc-kejian/issues) · [更新记录](release-notes/v1.2.6.md)
 
 ## 从一张课表开始
 
-首次安装会邀请你连接川职教务。填写学号和学校密码后，应用核验学生身份、保存课表；密码加密留在手机，登录过期时尝试自动恢复。学校要求验证码或补充认证时，再到官方页面完成。
+首次安装会邀请你连接川职教务。填写学号和学校密码后，身份核验通过便返回应用，课表和成绩随后同步；密码加密留在手机，登录过期时尝试自动恢复。等待中可以取消或打开官方页面，验证码和账号安全提示在学校页面完成。
 
 课表保存在本机，没网也能查看。可以切换日视图和周视图、调整开学日期与节次时间、添加课程、设置提醒和桌面组件。同步学校变更时保留本地编辑。成绩先读缓存，首次取得成绩后立即展示，毕业学分要求随后更新。
 

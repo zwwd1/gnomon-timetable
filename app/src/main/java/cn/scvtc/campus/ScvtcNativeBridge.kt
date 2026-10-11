@@ -33,12 +33,14 @@ internal object ScvtcNativeBridge {
     private var loginJob: Deferred<JwxtStudent>? = null
     private var foregroundJob: Job? = null
     private var sessionReadJob: Job? = null
+    private var initialSyncJob: Job? = null
     val loginState = kotlinx.coroutines.flow.MutableStateFlow(NativeLoginState())
     @Synchronized
     fun signIn(app: CourseScheduleApp, account: String, password: String): Deferred<JwxtStudent> {
         loginJob?.takeIf { !it.isCompleted }?.let { return it }
         require(account.matches(Regex("[0-9]{6,20}")) && password.length in 1..512) { "请输入学号和密码" }
         foregroundJob?.cancel()
+        initialSyncJob?.cancel()
         sessionReadJob?.cancel()
         loginState.value = NativeLoginState(account,busy=true,message="正在连接学校并核验学生身份…")
         val job = app.applicationScope.async(start = CoroutineStart.LAZY) {
@@ -47,10 +49,9 @@ internal object ScvtcNativeBridge {
                     val memory = OfficialLoginMemory(app)
                     memory.rememberInput(account,password)
                     val api = JwxtApi(headers = { memory.apiHeaders(account,it) })
-                    val verified=CasAuthManager(app,api).signIn(account,password) { student ->
-                        rememberVerifiedProfile(app,student.account,api.calendar())
+                    CasAuthManager(app,api).signIn(account,password) { message ->
+                        loginState.value = NativeLoginState(account,busy=true,message=message)
                     }
-                    verified
                 }
                 loginState.value = NativeLoginState(account,verified=true,message="学校身份已核验，正在后台读取课表")
                 student
@@ -58,10 +59,12 @@ internal object ScvtcNativeBridge {
                 loginState.value = NativeLoginState(account,message="已停止本次登录，原数据保留"); throw e
             } catch(e: Exception) {
                 val auth=e as? JwxtAuthenticationRequired
-                val extra = auth?.stage in setOf(AuthenticationStage.CHALLENGE,AuthenticationStage.SESSION)
+                val extra = auth?.stage in setOf(AuthenticationStage.CHALLENGE,AuthenticationStage.NOTICE,AuthenticationStage.FORM,AuthenticationStage.CALLBACK,AuthenticationStage.SESSION)
                 loginState.value = NativeLoginState(account,requiresVerification=extra,
                     message=when(auth?.stage) {
                         AuthenticationStage.CHALLENGE -> "学校显示了验证码或二次认证，请补充认证；已填信息保留"
+                        AuthenticationStage.NOTICE -> "学校有账号安全提示，请在官方页面确认后继续"
+                        AuthenticationStage.REJECTED -> "学校未接受账号或密码，请检查输入后重试"
                         AuthenticationStage.FORM -> "学校登录表单未准备好，请重试；也可打开学校认证页继续"
                         AuthenticationStage.CALLBACK -> "学校认证回调等待超时，请重试；原数据保留"
                         AuthenticationStage.SESSION -> "学校会话尚未建立，可补充认证；原数据保留"
@@ -73,13 +76,31 @@ internal object ScvtcNativeBridge {
         loginJob = job
         job.invokeOnCompletion { cause ->
             synchronized(this) { if(loginJob===job) loginJob=null }
-            if(cause==null) app.applicationScope.launch {
-                val result=sync(app,account,recover=false)
-                if(result.success) AcademicRepository.requestRefresh(app,account)
-            }
+            if(cause==null) startInitialSync(app,account)
         }
         job.start()
         return job
+    }
+    /** Finish cancelling the hidden browser before opening an interactive one. */
+    suspend fun cancelSignIn() {
+        val tasks = synchronized(this) { listOfNotNull(loginJob,foregroundJob,initialSyncJob,sessionReadJob).distinct() }
+        tasks.forEach { it.cancel() }; tasks.forEach { it.join() }
+    }
+    fun completeOfficialSignIn(app:CourseScheduleApp,student:JwxtStudent) {
+        loginState.value = NativeLoginState(student.account,verified=true,message="学校身份已核验，课表正在后台同步")
+        startInitialSync(app,student.account)
+    }
+    @Synchronized
+    private fun startInitialSync(app:CourseScheduleApp,account:String) {
+        if(loginJob?.isActive==true)return
+        initialSyncJob?.cancel()
+        val job=app.applicationScope.launch(start=CoroutineStart.LAZY) {
+            val result=sync(app,account,recover=false)
+            if(result.success)AcademicRepository.requestRefresh(app,account)
+        }
+        initialSyncJob=job
+        job.invokeOnCompletion{synchronized(this){if(initialSyncJob===job)initialSyncJob=null}}
+        job.start()
     }
     const val SCHOOL = "scvtc"
     fun profileKey(account: String, term: String) = "profile:" + scvtcKey("$account|$term")
