@@ -1,19 +1,11 @@
 package com.xiaomanjun.sleepdownschedule.feature.schedule.autorefresh
 
 import android.content.Context
-import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.KeyProperties
-import android.util.Base64
 import androidx.core.content.edit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.json.JSONArray
 import org.json.JSONObject
-import java.security.KeyStore
-import javax.crypto.Cipher
-import javax.crypto.KeyGenerator
-import javax.crypto.SecretKey
-import javax.crypto.spec.GCMParameterSpec
 
 internal data class AutoRefreshCookie(
     val url: String,
@@ -69,7 +61,7 @@ internal object AutoRefreshScheduleStore {
 
     fun save(context: Context, profile: AutoRefreshScheduleProfile) {
         synchronized(lock) {
-            val encrypted = encrypt(profile.toJson().toString())
+            val encrypted = encrypt(context, profile.toJson().toString())
                 ?: throw IllegalStateException("无法加密保存教务登录信息")
             val committed = context.applicationContext.getSharedPreferences(PrefsName, Context.MODE_PRIVATE)
                 .edit().putString(PayloadKey, encrypted).commit()
@@ -105,7 +97,7 @@ internal object AutoRefreshScheduleStore {
                 .getSharedPreferences(PrefsName, Context.MODE_PRIVATE)
                 .getString(PayloadKey, null)
             state.value = encrypted
-                ?.let(::decrypt)
+                ?.let { decrypt(context, it) }
                 ?.let { json -> runCatching { JSONObject(json).toProfile() }.getOrNull() }
             initialized = true
         }
@@ -177,41 +169,11 @@ internal object AutoRefreshScheduleStore {
         )
     }
 
-    private fun encrypt(value: String): String? = runCatching {
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(Cipher.ENCRYPT_MODE, getOrCreateKey())
-        Base64.encodeToString(
-            cipher.iv + cipher.doFinal(value.toByteArray(Charsets.UTF_8)),
-            Base64.NO_WRAP
-        )
+    private fun encrypt(context: Context, value: String): String? = runCatching {
+        cn.scvtc.campus.LocalCipher(context, KeyAlias).seal(value)
     }.getOrNull()
 
-    private fun decrypt(value: String): String? = runCatching {
-        val payload = Base64.decode(value, Base64.NO_WRAP)
-        require(payload.size > 12)
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(
-            Cipher.DECRYPT_MODE,
-            getOrCreateKey(),
-            GCMParameterSpec(128, payload.copyOfRange(0, 12))
-        )
-        String(cipher.doFinal(payload.copyOfRange(12, payload.size)), Charsets.UTF_8)
+    private fun decrypt(context: Context, value: String): String? = runCatching {
+        cn.scvtc.campus.LocalCipher(context, KeyAlias).open(value)
     }.getOrNull()
-
-    private fun getOrCreateKey(): SecretKey {
-        val keyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
-        (keyStore.getKey(KeyAlias, null) as? SecretKey)?.let { return it }
-        return KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore").run {
-            init(
-                KeyGenParameterSpec.Builder(
-                    KeyAlias,
-                    KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
-                )
-                    .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-                    .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                    .build()
-            )
-            generateKey()
-        }
-    }
 }

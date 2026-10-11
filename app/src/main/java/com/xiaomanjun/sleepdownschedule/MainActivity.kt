@@ -90,9 +90,7 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
-        val installation = packageManager.getPackageInfo(packageName, 0)
-        val firstInstall = installation.firstInstallTime == installation.lastUpdateTime
-        if (firstInstall && pendingExternalIcsUri.value == null) {
+        if (pendingExternalIcsUri.value == null) {
             lifecycleScope.launch {
                 val app = application as CourseScheduleApp
                 val prefs = getSharedPreferences("scvtc-first-use", Context.MODE_PRIVATE)

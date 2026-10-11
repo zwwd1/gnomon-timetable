@@ -151,6 +151,7 @@ class ScvtcLoginActivity : ComponentActivity() {
                 webViewClient=object:WebViewClient() {
                     override fun shouldOverrideUrlLoading(view:WebView,request:WebResourceRequest):Boolean {
                         val u=request.url
+                        if(request.isForMainFrame && memory.recoveryNavigation(view,account,u.toString()))return true
                         return !(u.scheme=="https" && u.userInfo==null &&
                             ((u.host in setOf("cas.scvtc.edu.cn","jwxt.scvtc.edu.cn") && u.port in setOf(-1,443)) ||
                             (u.host=="www.shulin-soft.com" && u.port==8267 && u.path=="/casLogin.html")))
@@ -173,7 +174,7 @@ class ScvtcLoginActivity : ComponentActivity() {
         DisposableEffect(web) { onDispose {web.stopLoading();web.destroy()} }
         LaunchedEffect(web,retry) {
             canRetry=false
-            if(retry==0)web.loadUrl(CasAuthManager.PROVIDED_H5_ENTRY)
+            if(retry==0)web.loadUrl(CasAuthManager.JWXT_SSO_ENTRY)
             val completed=withTimeoutOrNull(10*60_000) {
                 while(isActive) {
                     delay(2000)
@@ -189,7 +190,7 @@ class ScvtcLoginActivity : ComponentActivity() {
                         }
                         val result=try { task.await() }
                         catch(e:CancellationException){throw e}
-                        catch(_:Exception){message="学校身份已核验，但读取学期未完成。请刷新学校页面后重试；原课表保留。";return@withTimeoutOrNull false}
+                        catch(_:Exception){message="学校登录已完成，但数据同步暂未完成。可保留当前认证重试；原课表保留。";return@withTimeoutOrNull false}
                         if(result.success) {
                             AcademicRepository.requestRefresh(app,student.account)
                             onVerified()
@@ -205,6 +206,9 @@ class ScvtcLoginActivity : ComponentActivity() {
             Text(message,Modifier.fillMaxWidth().padding(16.dp))
             if(canRetry) androidx.compose.material3.TextButton(onClick={retry++},modifier=Modifier.fillMaxWidth()) {
                 Text("保留当前认证，重试同步")
+            }
+            if(canRetry) androidx.compose.material3.TextButton(onClick={web.reload();retry++},modifier=Modifier.fillMaxWidth()) {
+                Text("刷新学校页面")
             }
             AndroidView(factory={web},modifier=Modifier.fillMaxWidth().weight(1f))
         }
