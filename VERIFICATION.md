@@ -1,26 +1,21 @@
-# 晷 1.2.4 验证记录
+# 晷 1.2.5 验证记录
 
-日期：2026-10-11。本轮重新构建 APK，沿用原签名；构建提交已在自己的仓库分支公开，与 APK 内嵌提交一致。之后追加的发布记录与更新清单不改变生产代码。
+本次处理首次连接提示、学校 SSO 回调和失效密钥恢复；璟同时调整教务同步页布局、赞赏入口和安装包分发。
 
-| 项目 | 结果 |
+| 项目 | 本次结果 |
 | --- | --- |
-| APK | `scvtc-kejian-1.2.4.apk`，14,838,648 字节 |
-| 包名 / 版本码 | `cn.scvtc.campus.preview` / `17` |
-| APK SHA-256 | `636445aa7119ee92d2ff84be6e8413dcdbb8bca8f2db21047e2c5de791c3020f` |
-| 原签名证书 SHA-256 | `5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3` |
-| 构建提交 | [e3c621c7a3a966ec7eacbddf5033e26fe4f95a68](https://github.com/zwwd1/scvtc-kejian/commit/e3c621c7a3a966ec7eacbddf5033e26fe4f95a68) |
-| 编译、R8、资源处理、lintVital、原签名打包 | 通过 |
-| APK 完整性、ZIP 16 KiB 对齐、源资产、赞赏码原图、R8 mapping | 通过 |
-| 原生库 | 4 个；64 位库逐个验证 16 KiB LOAD 对齐，32 位库验证 4 KiB；无原生库时不适用 |
-| 用户账号及密码明文扫描 | 解压条目 UTF-8 / UTF-16LE 扫描未检出；不是完整安全审计 |
-| 源码 ZIP 与发布构建树 | 1925 个文件逐个 Git blob 校验一致；不含历史 APK 或私钥 |
+| APK | `scvtc-kejian-1.2.5.apk`，14,838,652 字节 |
+| 包名 / 版本码 | `cn.scvtc.campus.preview` / 18 |
+| APK SHA-256 | `8b73fa2bbc1d5bbb8355a3adcc96a456bd72bbec2151c3cdee63a32b3a125e67` |
+| 原签名证书 | `5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3` |
+| 构建源码 | [4b4d65518117981569566bb73b2e21b38f76a78a](https://github.com/zwwd1/scvtc-kejian/commit/4b4d65518117981569566bb73b2e21b38f76a78a) |
+| Release 编译、R8、资源压缩、lintVital | 通过 |
+| APK CRC、签名、ZIP / ELF 对齐、源资产 | 通过 |
+| 源码 ZIP | 1928 个文件与构建提交逐个 Git blob 校验一致 |
+| 用户账号和密码明文 | 源码及解压 APK 条目扫描未检出 |
 
-没有连接或控制手机，没有安装、运行自动化功能测试、测量帧率或调用实际 AI 服务。本轮未运行全量 Lint，不能写为通过；正式打包所需的 lintVital 与上述产物检查已完成，没有用历史检查替代本次结果。
+未连接手机，未运行应用、自动化功能测试或帧率测量。真实学校登录、验证码、会话到期恢复、清除数据后的首次提示与交互仍需使用者验收；编译通过不代表这些操作已经在设备上验证。未运行全量 Lint，正式打包要求的 lintVital 已完成。
 
-设置页、升级后保留数据、两种外观、壁纸一致性、待机状态、底栏参数、成绩页动画、检查更新与下载、自然 Session 过期恢复、不同机型和 Android 17 仍需用户实际验收。AI 需配置自己的 HTTPS 服务及密钥。云服务继续暂停，既有账号、课程、手动编辑和自选壁纸不清除。
+原包名、原签名与本机数据格式沿用。失效密钥对应的旧密文保留，不能宣称重新登录会解密已失效的记录。已保存的普通课表继续保留，登录材料不进入导出、公开源码或 AI 请求。
 
-[本轮交互修改与使用步骤](docs/ITERATION_1_2_4.md) · [此前逐图修改](docs/OPTIMIZATION_20261010.md) · [使用方法](docs/SCVTC_USAGE.md) · [隐私与加密](docs/SCVTC_PRIVACY.md)。历史验证不能代替本轮验证。
-
-## 实际发布
-
-[晷 1.2.4](https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.4) 已公开；[自动发布任务](https://github.com/zwwd1/scvtc-kejian/actions/runs/38114036261) 在发布提交 `9c97cdecef5fe575f69e3bd7944510750b8535d6` 上通过。标签指向构建提交 `e3c621c7a3a966ec7eacbddf5033e26fe4f95a68`，GitHub APK 资产的字节数和 SHA-256 与本机核验结果相同。仓库更新清单保留历史版本，并指向本项目的这次发布。发布后的记录只改变文档与更新清单。
+[本次更新](release-notes/v1.2.5.md) · [使用方法](docs/SCVTC_USAGE.md) · [隐私与加密](docs/SCVTC_PRIVACY.md)
