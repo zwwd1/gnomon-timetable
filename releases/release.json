@@ -1,67 +1,59 @@
 {
   "repository": "zwwd1/scvtc-kejian",
-  "version": "1.2.3",
-  "name": "川职·课间",
-  "sourceCommit": "d5e06edf7bd83ce95acd901422b368a9509541bc",
+  "version": "1.2.4",
+  "name": "晷",
+  "sourceCommit": "e3c621c7a3a966ec7eacbddf5033e26fe4f95a68",
   "artifact": {
-    "file": "scvtc-kejian-1.2.3.apk",
+    "file": "scvtc-kejian-1.2.4.apk",
     "packageName": "cn.scvtc.campus.preview",
-    "versionCode": 16,
+    "versionCode": 17,
     "certificateSha256": "5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3",
-    "size": 19969132,
-    "sha256": "c6c4b10b968b633c536f3b5fd6853dd5d431c758254d9fc869fd6e80ff2077d0"
+    "size": 14838648,
+    "sha256": "636445aa7119ee92d2ff84be6e8413dcdbb8bca8f2db21047e2c5de791c3020f",
+    "abi": "universal"
   },
   "parts": [
     {
+      "blob": "d91d565e968b0128eff970bca679055538bcebe7",
       "size": 2097152,
-      "sha256": "ef812d464f4b11bb9eae7cf8e0ac0e084111b87e19bdf70e1013770e3dd17eb2",
-      "blob": "9e51b9b430f2990d7ac02e6abd594be568eb672f"
+      "sha256": "ea9c9f3091240f83d6d2463b107d7fc645a6e9375693c43b66ddf5e02995f636"
     },
     {
+      "blob": "935cb442b0c5868b540b6e83b3d218f6667a1863",
       "size": 2097152,
-      "sha256": "45a682a6844f5357db197b6815f22d45dc39d6a11ded82805d0e633a8b5d7db4",
-      "blob": "0576856596e778d5d6cda72390c26628ddff09bd"
+      "sha256": "fba211fd7536f1df2d3a18df517b9419b455bfc94cc8082f20cdc4be59c650d7"
     },
     {
+      "blob": "3684b7ebeca139b70855dd980ede208b3974c165",
       "size": 2097152,
-      "sha256": "f47137a4c5a94fa57f98d63d1d8ad5cc0bbcd5c2c30318c3aa02b5d5bd02219e",
-      "blob": "3ad33baaf7927f22d85255e2b842a80b9bf7824e"
+      "sha256": "5bcf3012f4cf545923b180b817adbcc2b61406c2bf290627764708c28c4bf2bb"
     },
     {
+      "blob": "97fe6e978cbc9d71dde371c6eb2d38ca1fb0c6c3",
       "size": 2097152,
-      "sha256": "bd074fa9d6095ae122b631a0c5bf94c7e27f01e00b28bce431808074fec7f7df",
-      "blob": "02536aecfffdeaa4df650f22f3290adeeab63452"
+      "sha256": "6b0b3a2b07743355f2edae08e43cf48145564f2dd9ae5c8c09e8abe20c81eddb"
     },
     {
+      "blob": "10329cc102ed48ff35e39595323fddc3c80f34c5",
       "size": 2097152,
-      "sha256": "57815364e9dfd0896018b368b8bec92ee9c3dfd1b874c2f5f26d5aad6222e3b1",
-      "blob": "aa1325d955dd2539aa3072775f48f410b3953e40"
+      "sha256": "421ee90c3618e1e127a009bffe7bc8812203c9236537634614d464526452eba0"
     },
     {
+      "blob": "45b3d10c4876da2b56e69570ce952465e1eccc12",
       "size": 2097152,
-      "sha256": "dbf9247a8031f46318f4c112d8bbafaa0235d456b7e2ade6099b7dfaf7c17266",
-      "blob": "b432e63e6b95149449d167d5d840f5d3bd9745ea"
+      "sha256": "ff1d8c03a3f68458eb2ad4dc94eece3ed74b10affedaf528c406c48863147dec"
     },
     {
+      "blob": "4588f5ff699a196a924b5b14605de273826e0921",
       "size": 2097152,
-      "sha256": "28a86315092ab265d98386dec5412bd851773b9bd738b5de6b6ab2f70dc6a03a",
-      "blob": "b8139cfa56a7999808bc777e9dbd78cf83497c8f"
+      "sha256": "a71e9cb04c2b9234c4fdae952c30e515e2be9f3d6d04a9339ea7c6f52ee2415b"
     },
     {
-      "size": 2097152,
-      "sha256": "f593ce9ed3e58045dee30498ae38b603c9b7c4ae3ba4e792c707816c3f52eb7b",
-      "blob": "21a255e1cbc785c6bb9551b9d790663938cd5457"
-    },
-    {
-      "size": 2097152,
-      "sha256": "1474c893c452d58ccab57d7271b415d9f7e4c26c0db9186641d451c847e66866",
-      "blob": "a5647b451815c7f148d2048883b641e3ec7764dd"
-    },
-    {
-      "size": 1094764,
-      "sha256": "47d081b9f04bf78c7922f63eee9971ba9bb489a5618ecbc4a1fe7f064d0a3ebb",
-      "blob": "a8c1a9b8f950c66e5b1b9531a33e3cef81ef2db8"
+      "blob": "c3735050ef2724a8195de6350657ef255b54d21a",
+      "size": 158584,
+      "sha256": "dc545901d0f290ac24b32e9a9c10d1e525bdfe5c9cdf9858a746e9cfa726e33a"
     }
   ],
-  "publisherRevision": 2
+  "publisherRevision": 3,
+  "additionalArtifacts": []
 }

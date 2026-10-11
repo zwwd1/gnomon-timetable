@@ -1,20 +1,21 @@
 {
   "schemaVersion": 2,
-  "name": "川职·课间",
+  "name": "晷",
   "builtAtDate": "2026-10-11",
-  "sourceCommit": "d5e06edf7bd83ce95acd901422b368a9509541bc",
-  "sourceTree": "2b52aa26a4800fef337f3bc673e35533a230c7cb",
+  "sourceCommit": "e3c621c7a3a966ec7eacbddf5033e26fe4f95a68",
+  "sourceTree": "6d23148c4e75a247f34183843e86b402ca7c1c95",
   "sourceRepository": "https://github.com/zwwd1/scvtc-kejian",
   "productionInputsUnchangedAfterBuild": true,
   "artifact": {
-    "file": "scvtc-kejian-1.2.3.apk",
-    "sha256": "c6c4b10b968b633c536f3b5fd6853dd5d431c758254d9fc869fd6e80ff2077d0",
-    "size": 19969132,
+    "file": "scvtc-kejian-1.2.4.apk",
+    "sha256": "636445aa7119ee92d2ff84be6e8413dcdbb8bca8f2db21047e2c5de791c3020f",
+    "size": 14838648,
     "packageName": "cn.scvtc.campus.preview",
-    "versionName": "1.2.3",
-    "versionCode": 16,
+    "versionName": "1.2.4",
+    "versionCode": 17,
     "certificateSha256": "5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3",
-    "nativeLibraryCount": 4
+    "nativeLibraryCount": 4,
+    "abi": "universal"
   },
   "checks": {
     "manifest": true,
@@ -22,12 +23,14 @@
     "zip16KiBAlignment": true,
     "elf64Bit16KiBAlignment": true,
     "elf32Bit4KiBAlignment": true,
+    "nativeAbiCoverage": true,
     "crc": true,
     "sourceAssets": true,
     "sourceCommit": true,
     "originalDonationPng": true,
     "noPlaintextCredentials": true,
-    "r8Mapping": true
+    "r8Mapping": true,
+    "nativeLibrariesPreserved": true
   },
   "releaseBuild": "passed",
   "releaseLintVital": "passed",
@@ -35,24 +38,21 @@
   "functionalTests": "not_run_at_user_request",
   "deviceTests": "not_run_at_user_request",
   "sourceArchive": {
-    "sha256": "e89a03c00e7aee7556ab993bfeb70714bf6ce1977df94daeba37e7af3af67a35",
-    "bytes": 33957062,
-    "fileCount": 1920,
+    "sha256": "19d4659469768e74ebeb689af2e918aaaf893e59e08433bdfb808b02e27883fe",
+    "bytes": 22443903,
+    "fileCount": 1925,
     "matchesSourceCommit": true
   },
   "additionalBuildInputs": {
     "originalDonationPngSha256": "8ebf7c9b12fbe2917878bad2be227a24987b700a1859177ae63be9bc1bd86ce5"
   },
   "r8Mapping": {
-    "id": "4f2c5fbd572c0625ea30bf4891f2786439334efd99312d6b9f302ac9472c2757",
-    "sha256": "b986d758791067b69a577fbd214dcd4751496a97b5b07f24e144a21a0647d271"
+    "id": "09b3fbd3e38e712901b048e29f03a104179e9089fd6d3be1021a1466cddab237",
+    "sha256": "5cbf361e5953f0457c95cd09bb2d9af0ab4d61bd33f3b1530d64f0d78e06588a"
   },
-  "expectedReleaseUrl": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.3",
-  "releasePublicationStatus": "published",
+  "expectedReleaseUrl": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.4",
+  "releasePublicationStatus": "pending",
   "cloudServicesPaused": true,
   "report": "VERIFICATION.md",
-  "releasePublished": true,
-  "releaseUrl": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.3",
-  "releaseVerifiedAssetSha256": "c6c4b10b968b633c536f3b5fd6853dd5d431c758254d9fc869fd6e80ff2077d0",
-  "releaseWorkflow": "https://github.com/zwwd1/scvtc-kejian/actions/runs/38066999555"
+  "additionalArtifacts": []
 }
