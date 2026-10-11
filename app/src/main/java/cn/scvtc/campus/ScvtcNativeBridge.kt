@@ -45,10 +45,11 @@ internal object ScvtcNativeBridge {
             try {
                 val student = coordinator.withLock {
                     val memory = OfficialLoginMemory(app)
-                    memory.preparePasswordSignIn(account)
+                    memory.rememberInput(account,password)
                     val api = JwxtApi(headers = { memory.apiHeaders(account,it) })
-                    val verified=CasAuthManager(app,api).signIn(account,password)
-                    rememberVerifiedProfile(app,verified.account,api.calendar())
+                    val verified=CasAuthManager(app,api).signIn(account,password) { student ->
+                        rememberVerifiedProfile(app,student.account,api.calendar())
+                    }
                     verified
                 }
                 loginState.value = NativeLoginState(account,verified=true,message="学校身份已核验，正在后台读取课表")
@@ -88,7 +89,7 @@ internal object ScvtcNativeBridge {
 
     /** Persist the verified account before returning to the caller. A long first
      * timetable read may be interrupted without losing the connected identity. */
-    private suspend fun rememberVerifiedProfile(app:CourseScheduleApp,account:String,calendar:Pair<cn.scvtc.campus.core.OfficialTerm,List<Int>>) {
+    internal suspend fun rememberVerifiedProfile(app:CourseScheduleApp,account:String,calendar:Pair<cn.scvtc.campus.core.OfficialTerm,List<Int>>) {
         ScvtcLegacyMigration.run(app)
         val previous=AutoRefreshScheduleStore.load(app)?.takeIf { it.schoolId==SCHOOL && it.username==account }
         val term=calendar.first

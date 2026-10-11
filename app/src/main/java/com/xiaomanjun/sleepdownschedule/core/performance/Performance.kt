@@ -27,6 +27,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.foundation.layout.Box
@@ -55,6 +57,21 @@ enum class StartupPhase {
 }
 
 val LocalStartupPhase = staticCompositionLocalOf { StartupPhase.FullQuality }
+val LocalStartupEntrance = staticCompositionLocalOf<State<Float>> { mutableStateOf(1f) }
+
+@Composable
+fun rememberStartupEntrance(ready:Boolean):State<Float> {
+    val context=LocalContext.current
+    val enabled=remember { cn.scvtc.campus.AppExperiencePreferences.get(context).state.value.entranceAnimation && android.animation.ValueAnimator.areAnimatorsEnabled() }
+    val progress=remember { androidx.compose.animation.core.Animatable(if(enabled)0f else 1f) }
+    LaunchedEffect(ready) {
+        if(ready && progress.value<1f) {
+            withFrameNanos { }
+            progress.animateTo(1f,androidx.compose.animation.core.tween(260,easing=androidx.compose.animation.core.FastOutSlowInEasing))
+        }
+    }
+    return progress.asState()
+}
 val LocalGlassQuality = staticCompositionLocalOf { 1f }
 
 fun animatedGlassQuality(phase: StartupPhase): Float = when (phase) {
@@ -448,7 +465,8 @@ fun ContentEntranceContainer(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit
 ) {
-    Box(modifier = modifier) { content() }
+    val entrance=LocalStartupEntrance.current
+    Box(modifier = modifier.then(Modifier.graphicsLayer { alpha=entrance.value;translationY=(1f-entrance.value)*6.dp.toPx() })) { content() }
 }
 
 @Composable
@@ -457,7 +475,8 @@ fun DockEntranceContainer(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit
 ) {
-    Box(modifier = modifier) { content() }
+    val entrance=LocalStartupEntrance.current
+    Box(modifier = modifier.then(Modifier.graphicsLayer { alpha=entrance.value;translationY=(1f-entrance.value)*10.dp.toPx() })) { content() }
 }
 
 data class HomeWallpaperImages(

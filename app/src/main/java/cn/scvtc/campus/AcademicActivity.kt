@@ -64,8 +64,8 @@ class AcademicActivity : ComponentActivity() {
                     if (snapshot == null) AcademicRepository.requestRefresh(app, account)
                 }
             }
-            LaunchedEffect(account, state.account, state.busy) {
-                if (account.isNotBlank() && state.account == account && !state.busy)
+            LaunchedEffect(account, state.account, state.busy, state.revision) {
+                if (account.isNotBlank() && state.account == account && (!state.busy || state.revision > 0))
                     snapshot = withContext(Dispatchers.IO) { AcademicRepository.cached(app, account) }
             }
             val terms = remember(snapshot, selectedTerm) {
@@ -74,7 +74,7 @@ class AcademicActivity : ComponentActivity() {
             val termRecords = remember(snapshot, selectedTerm) {
                 snapshot?.grades.orEmpty().filter { selectedTerm == "all" || it.fields["学期"] == selectedTerm }
             }
-            val visibleRecords = remember(termRecords, query, sort) {
+            val visibleRecords = remember(termRecords, query, sort, scoreFilter) {
                 val search = query.trim()
                 val matching = termRecords.withIndex().filter {
                     (it.value.title.contains(search, true) || it.value.fields["课程代码"].orEmpty().contains(search, true)) &&
@@ -146,7 +146,7 @@ class AcademicActivity : ComponentActivity() {
                                 if (visibleRecords.isEmpty()) item {
                                     SettingsGroup(backdrop, config) {
                                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                            Text(if (snapshot == null) "尚无已验证记录" else if(scoreFilter==1) "当前筛选没有需要留意的成绩" else if (query.isNotBlank()) "没有匹配的课程" else "该学期暂无成绩")
+                                            Text(if (snapshot == null && state.busy && state.account==account) "正在读取学校成绩…" else if (snapshot == null) "尚无已验证记录" else if(scoreFilter==1) "当前筛选没有需要留意的成绩" else if (query.isNotBlank()) "没有匹配的课程" else "该学期暂无成绩")
                                             Text(if (query.isNotBlank()) "试试课程名称或代码，或清空搜索条件。" else
                                                 "刷新未成功时仍保留原缓存；不会把失败当成学校没有成绩。", style = MaterialTheme.typography.bodySmall)
                                             if (query.isNotBlank()||scoreFilter!=0) SettingsActionButton("显示全部", backdrop, onClick = { query = "";scoreFilter=0 })

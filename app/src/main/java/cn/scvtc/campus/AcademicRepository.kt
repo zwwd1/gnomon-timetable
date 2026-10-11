@@ -16,7 +16,7 @@ internal data class AcademicSnapshot(
     val account:String,val currentTerm:String,val terms:List<String>,val grades:List<NativeRecord>,
     val requiredCredits:String,val fetchedAt:Long,val requiredCreditsFetchedAt:Long=0,
 )
-internal data class AcademicReadState(val account:String="",val message:String="",val busy:Boolean=false,val authRequired:Boolean=false)
+internal data class AcademicReadState(val account:String="",val message:String="",val busy:Boolean=false,val authRequired:Boolean=false,val revision:Long=0)
 
 /** A separate query cache inside the existing Room state table. No course rows
  * or hand-edited schedule profiles are touched by grades/credits refresh. */
@@ -53,24 +53,26 @@ internal object AcademicRepository {
                 mutableState.value=AcademicReadState(account,"正在逐页读取成绩与学分…",true)
                 CampusSyncStatus.phase(SyncStage.READING,"正在读取成绩与学分…")
                 val term=api.calendar().first.semester
-                val terms=api.semesters()
                 val grades=api.service("grades",account,term).records
+                val gradeTime=System.currentTimeMillis()
+                val gradeTerms=(grades.mapNotNull{it.fields["学期"]}+previous?.terms.orEmpty()+term).distinct().sortedDescending()
+                val first=AcademicSnapshot(account,term,gradeTerms,grades,previous?.requiredCredits.orEmpty(),gradeTime,previous?.requiredCreditsFetchedAt?:0)
+                save(app,memory,first)
+                mutableState.value=AcademicReadState(account,"成绩已保存，正在更新毕业学分要求…",true,revision=gradeTime)
+                val terms=try { api.semesters() } catch(e:CancellationException){throw e}
+                    catch(e:JwxtAuthenticationRequired){throw e} catch(_:Exception){gradeTerms}
                 val requirement=try {
                     api.service("credits",account,term).records.single().fields.getValue("毕业学分要求").also{requirementUpdated=true}
                 }catch(e:CancellationException){throw e}
                 catch(e:JwxtAuthenticationRequired){throw e}
                 catch(e:Exception){previous?.requiredCredits.orEmpty()}
                 val fetchedAt=System.currentTimeMillis()
-                val requirementAt=if(requirementUpdated)fetchedAt else previous?.let{it.requiredCreditsFetchedAt.takeIf{date->date>0}?:it.fetchedAt}?:0
+                val requirementAt=if(requirementUpdated)fetchedAt else previous?.takeIf{it.requiredCredits.isNotBlank()}?.let{it.requiredCreditsFetchedAt.takeIf{date->date>0}?:it.fetchedAt}?:0
                 AcademicSnapshot(account,term,(terms+grades.mapNotNull{it.fields["学期"]}).distinct().sortedDescending(),grades,requirement,fetchedAt,requirementAt)
             }
             mutableState.value=AcademicReadState(account,"正在加密保存本机记录…",true)
             CampusSyncStatus.phase(SyncStage.WRITING,"正在保存成绩与学分…")
-            val copies=listOf("all" to snapshot)+snapshot.terms.map { term ->
-                term to snapshot.copy(grades=snapshot.grades.filter{it.fields["学期"]==term})
-            }
-            val encrypted=copies.map{(term,data)->ScvtcState(key(account,term),memory.sealAcademic(account,term,json.encodeToString(data)))}
-            app.database.withTransaction{encrypted.forEach{app.database.scvtcStateDao().put(it)}}
+            save(app,memory,snapshot)
             CampusSyncStatus.success(app,snapshot.fetchedAt)
             mutableState.value=AcademicReadState(account,if(requirementUpdated)"已同步 ${snapshot.grades.size} 条真实成绩；毕业要求来自学校接口" else "已同步 ${snapshot.grades.size} 条成绩；毕业要求未更新，保留已有信息")
             true
@@ -84,4 +86,9 @@ internal object AcademicRepository {
             false
         }
     } }
+    private suspend fun save(app:CourseScheduleApp,memory:OfficialLoginMemory,snapshot:AcademicSnapshot) {
+        val copies=listOf("all" to snapshot)+snapshot.terms.map { term -> term to snapshot.copy(grades=snapshot.grades.filter{it.fields["学期"]==term}) }
+        val encrypted=copies.map{(term,data)->ScvtcState(key(snapshot.account,term),memory.sealAcademic(snapshot.account,term,json.encodeToString(data)))}
+        app.database.withTransaction{encrypted.forEach{app.database.scvtcStateDao().put(it)}}
+    }
 }

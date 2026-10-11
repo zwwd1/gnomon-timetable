@@ -51,7 +51,9 @@ class ScvtcLoginActivity : ComponentActivity() {
         enableEdgeToEdge()
         val form = ViewModelProvider(this)[SchoolLoginForm::class.java]
         val app = application as CourseScheduleApp
-        if(form.account.isBlank()) form.account=AutoRefreshScheduleStore.load(app)?.username.orEmpty()
+        val memory=OfficialLoginMemory(app)
+        if(form.account.isBlank()) form.account=AutoRefreshScheduleStore.load(app)?.username.orEmpty().ifBlank { memory.lastInputAccount() }
+        if(form.password.isBlank()) form.password=memory.inputPassword(form.account)
         setContent {
             var config by remember { mutableStateOf(ScheduleConfigEntity(totalWeeks=20,currentWeek=1,notificationLeadMinutes=10)) }
             var awaiting by rememberSaveable { mutableStateOf(false) }
@@ -88,7 +90,7 @@ class ScvtcLoginActivity : ComponentActivity() {
                 DetailActivityScaffold(if(verification) "补充学校认证" else "连接川职教务",config,
                     onBack={if(verification) verification=false else finish()},compactTopBar=true) { backdrop ->
                     if(verification) {
-                        SchoolVerification(form.account,
+                        SchoolVerification(form.account,form.password,
                             Modifier.fillMaxSize().padding(top=detailContentTopPadding()).navigationBarsPadding()) {
                             form.password="";setResult(RESULT_OK);finish()
                         }
@@ -101,7 +103,7 @@ class ScvtcLoginActivity : ComponentActivity() {
                             Column(Modifier.fillMaxWidth().padding(20.dp),verticalArrangement=Arrangement.spacedBy(14.dp)) {
                                 Text("输入一次，后续自动同步")
                                 Text("使用学校统一认证的学号和密码。身份核验成功后，应用会在后台读取真实课表；以后会话过期也会自动恢复。")
-                                TextField(form.account,{form.account=it.trim()},label="学号",
+                                TextField(form.account,{form.account=it.trim();form.password=memory.inputPassword(form.account)},label="学号",
                                     enabled=!state.busy,singleLine=true,keyboardOptions=KeyboardOptions(keyboardType=KeyboardType.Number,imeAction=ImeAction.Next),
                                     modifier=Modifier.fillMaxWidth())
                                 TextField(form.password,{form.password=it},label="学校密码",
@@ -114,10 +116,13 @@ class ScvtcLoginActivity : ComponentActivity() {
                                     modifier=Modifier.fillMaxWidth().semantics { if(state.busy)disabled() })
                             }
                         }
-                        Text("密码只保存在本机的加密存储中，不会进入备份、日志或云端。")
+                        Text("记住密码已开启。输入按账号加密保存在本机，不会进入备份、日志或云端。")
                         if(!state.busy) SettingsActionButton("学校要求验证码？补充认证",backdrop,
                             onClick={
-                                if(form.account.matches(Regex("[0-9]{6,20}"))) verification=true
+                                if(form.account.matches(Regex("[0-9]{6,20}"))) {
+                                    if(form.password.isNotEmpty())memory.rememberInput(form.account,form.password)
+                                    verification=true
+                                }
                                 else localError="请先填写学号，再打开补充认证"
                             },modifier=Modifier.fillMaxWidth(),monochrome=true)
                         Spacer(Modifier.height(12.dp))
@@ -128,8 +133,10 @@ class ScvtcLoginActivity : ComponentActivity() {
         }
     }
     @Composable
-    private fun SchoolVerification(account:String,modifier:Modifier,onVerified:()->Unit) {
+    private fun SchoolVerification(account:String,password:String,modifier:Modifier,onVerified:()->Unit) {
         var message by remember { mutableStateOf("已填信息会保留；请完成学校要求的验证码或二次认证。") }
+        var retry by remember { mutableIntStateOf(0) }
+        var canRetry by remember { mutableStateOf(false) }
         val app=application as CourseScheduleApp
         val memory=remember { OfficialLoginMemory(app) }
         val api=remember(account) { JwxtApi(headers={memory.apiHeaders(account,it)}) }
@@ -152,7 +159,10 @@ class ScvtcLoginActivity : ComponentActivity() {
                         memory.prepare(view);CookieManager.getInstance().flush()
                         if(Uri.parse(url).host=="www.shulin-soft.com") { view.loadUrl(CasAuthManager.JWXT_SSO_ENTRY);return }
                         if(memory.recoveryNavigation(view,account,url)) return
-                        if(account.isNotBlank() && Uri.parse(url).host=="cas.scvtc.edu.cn") memory.recover(view,account){}
+                        if(account.isNotBlank() && Uri.parse(url).host=="cas.scvtc.edu.cn") {
+                            if(password.isNotEmpty())memory.configure(view,account,password){}
+                            else memory.recover(view,account){}
+                        }
                     }
                     override fun onReceivedError(view:WebView,request:WebResourceRequest,error:WebResourceError) {
                         if(request.isForMainFrame) message="学校页面连接失败；原课表保留，可稍后重试。"
@@ -161,9 +171,10 @@ class ScvtcLoginActivity : ComponentActivity() {
             }
         }
         DisposableEffect(web) { onDispose {web.stopLoading();web.destroy()} }
-        LaunchedEffect(web) {
-            web.loadUrl(CasAuthManager.PROVIDED_H5_ENTRY)
-            withTimeoutOrNull(10*60_000) {
+        LaunchedEffect(web,retry) {
+            canRetry=false
+            if(retry==0)web.loadUrl(CasAuthManager.PROVIDED_H5_ENTRY)
+            val completed=withTimeoutOrNull(10*60_000) {
                 while(isActive) {
                     delay(2000)
                     val student=try {api.student(account)}
@@ -171,18 +182,30 @@ class ScvtcLoginActivity : ComponentActivity() {
                     catch(_:Exception){null}
                     if(student!=null) {
                         memory.confirmed(student.account,promoteEnrollment=true)
-                        app.applicationScope.launch {
-                            val result=ScvtcNativeBridge.sync(app,student.account,recover=false)
-                            if(result.success) AcademicRepository.requestRefresh(app,student.account)
+                        message="学校身份已核验，正在读取学期并保存课表…"
+                        val task=app.applicationScope.async {
+                            ScvtcNativeBridge.rememberVerifiedProfile(app,student.account,api.calendar())
+                            ScvtcNativeBridge.sync(app,student.account,recover=false)
                         }
-                        onVerified();return@withTimeoutOrNull
+                        val result=try { task.await() }
+                        catch(e:CancellationException){throw e}
+                        catch(_:Exception){message="学校身份已核验，但读取学期未完成。请刷新学校页面后重试；原课表保留。";return@withTimeoutOrNull false}
+                        if(result.success) {
+                            AcademicRepository.requestRefresh(app,student.account)
+                            onVerified()
+                        } else message=result.message
+                        return@withTimeoutOrNull result.success
                     }
                 }
             }
-            message="补充认证等待已结束，离线记录仍可使用。"
+            if(completed==null)message="补充认证等待已结束，离线记录仍可使用。"
+            canRetry=completed!=true
         }
         Column(modifier) {
             Text(message,Modifier.fillMaxWidth().padding(16.dp))
+            if(canRetry) androidx.compose.material3.TextButton(onClick={retry++},modifier=Modifier.fillMaxWidth()) {
+                Text("保留当前认证，重试同步")
+            }
             AndroidView(factory={web},modifier=Modifier.fillMaxWidth().weight(1f))
         }
     }

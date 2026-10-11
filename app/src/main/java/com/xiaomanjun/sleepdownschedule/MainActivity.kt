@@ -40,6 +40,7 @@ class MainActivity : ComponentActivity() {
     private val pendingExternalIcsUri = MutableStateFlow<Uri?>(null)
     private val pendingExternalIcsUriFlow = pendingExternalIcsUri.asStateFlow()
     private val startupContentReady = AtomicBoolean(false)
+    private val offerSchoolConnection = MutableStateFlow(false)
     private var startupPreDrawListener: ViewTreeObserver.OnPreDrawListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,10 +68,17 @@ class MainActivity : ComponentActivity() {
             )
             val config by viewModel.themeConfig.collectAsStateWithLifecycle()
             val externalIcsUri by pendingExternalIcsUriFlow.collectAsStateWithLifecycle()
+            val offerConnection by offerSchoolConnection.collectAsStateWithLifecycle()
             CourseScheduleTheme(config = config) {
                 CourseScheduleAppUi(
                     viewModel = viewModel,
                     externalIcsUri = externalIcsUri,
+                    showSchoolConnection = offerConnection,
+                    onSchoolConnectionChoice = { connect ->
+                        getSharedPreferences("scvtc-first-use", Context.MODE_PRIVATE).edit().putBoolean("login-offered", true).apply()
+                        offerSchoolConnection.value=false
+                        if(connect)startActivity(Intent(this@MainActivity,cn.scvtc.campus.ScvtcLoginActivity::class.java))
+                    },
                     onExternalIcsConsumed = { consumed ->
                         pendingExternalIcsUri.compareAndSet(consumed, null)
                     },
@@ -84,7 +92,7 @@ class MainActivity : ComponentActivity() {
         }
         val installation = packageManager.getPackageInfo(packageName, 0)
         val firstInstall = installation.firstInstallTime == installation.lastUpdateTime
-        if (firstInstall && savedInstanceState == null && pendingExternalIcsUri.value == null) {
+        if (firstInstall && pendingExternalIcsUri.value == null) {
             lifecycleScope.launch {
                 val app = application as CourseScheduleApp
                 val prefs = getSharedPreferences("scvtc-first-use", Context.MODE_PRIVATE)
@@ -99,11 +107,9 @@ class MainActivity : ComponentActivity() {
                 }
                 val hasAccount = com.xiaomanjun.sleepdownschedule.feature.schedule.autorefresh.AutoRefreshScheduleStore.load(app) != null ||
                     cn.scvtc.campus.OfficialLoginMemory(app).savedAccounts().isNotEmpty()
-                // Offer only once after local records have loaded, including on upgrades.
-                prefs.edit().putBoolean("login-offered", true).apply()
                 if (snapshot.allCourses.isEmpty() && !hasAccount && snapshot.schedules.size <= 1) {
-                    startActivity(Intent(this@MainActivity, cn.scvtc.campus.ScvtcLoginActivity::class.java))
-                }
+                    offerSchoolConnection.value=true
+                } else prefs.edit().putBoolean("login-offered", true).apply()
             }
         }
     }

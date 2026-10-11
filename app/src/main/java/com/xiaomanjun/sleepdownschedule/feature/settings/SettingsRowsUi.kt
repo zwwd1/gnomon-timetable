@@ -290,7 +290,7 @@ fun SettingsDefaultWallpaperRow(
     val options = DefaultWallpaperStyle.entries
     SleepDownLiquidDropdownPreference(
         items = options.map { style ->
-            if (style == DefaultWallpaperStyle.KANBAN) "川职月光" else "无"
+            if (style == DefaultWallpaperStyle.KANBAN) "留白" else "无"
         },
         selectedIndex = options.indexOf(selected).coerceAtLeast(0),
         title = "默认壁纸",

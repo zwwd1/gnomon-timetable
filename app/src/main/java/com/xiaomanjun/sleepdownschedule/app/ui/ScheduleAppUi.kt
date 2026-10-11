@@ -705,7 +705,9 @@ fun CourseScheduleAppUi(
     viewModel: ScheduleViewModel,
     externalIcsUri: Uri? = null,
     onExternalIcsConsumed: (Uri) -> Unit = {},
-    onStartupContentReady: () -> Unit = {}
+    onStartupContentReady: () -> Unit = {},
+    showSchoolConnection: Boolean = false,
+    onSchoolConnectionChoice: (Boolean) -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val allSchedulesState by viewModel.allSchedulesState.collectAsStateWithLifecycle()
@@ -1070,6 +1072,7 @@ fun CourseScheduleAppUi(
     }
     val weekCardHeight = adaptiveWeekCardHeight * weekCardHeightScale
     val context = LocalContext.current
+    val startupEntrance=rememberStartupEntrance(state.loaded)
     val dayViewMode = remember(screen, state.config.defaultHomeMode, context) {
         DayViewPreferences.mode(
             context = context,
@@ -2239,6 +2242,7 @@ fun CourseScheduleAppUi(
         LocalEditingCourseId provides editingCourseId,
         LocalCourseEditorFlightRegistry provides courseEditorFlightRegistry,
         LocalStartupPhase provides startupPhase,
+        LocalStartupEntrance provides startupEntrance,
         LocalGlassQuality provides glassQuality,
         LocalAdaptiveGlass provides adaptiveGlassState,
         LocalHomeReadability provides homeReadabilityContext,
@@ -2282,6 +2286,14 @@ fun CourseScheduleAppUi(
             }),
         popupHost = {
             Box(Modifier.fillMaxSize()) {
+                if(showSchoolConnection) LiquidAlertDialog(
+                    title="让课表从这里开始", message="连接四川职业技术学院教务账号。密码加密留在本机，登录过期后自动恢复；也可以稍后在设置中连接。",
+                    actions=listOf(
+                        LiquidAlertAction("稍后",LiquidAlertActionStyle.Secondary){onSchoolConnectionChoice(false)},
+                        LiquidAlertAction("连接川职教务",LiquidAlertActionStyle.Primary){onSchoolConnectionChoice(true)}),
+                    backdrop=centeredDialogSceneBackdrop,config=visualState.config,
+                    onDismissRequest={onSchoolConnectionChoice(false)}
+                )
                 HomeAssistantHost(
                     controller = homeAssistant,
                     state = state,
@@ -3772,7 +3784,7 @@ fun CourseScheduleAppUi(
     if (showManagedFreeAiOffer) {
         LiquidAlertDialog(
             title = "启用每日免费 AI？",
-            message = "AI 助理、对话与导入使用你配置的模型服务，密钥加密保存在本机。川职课间的云服务已暂停。",
+            message = "AI 助理、对话与导入使用你配置的模型服务，密钥加密保存在本机。晷的云服务已暂停。",
             actions = listOf(
                 LiquidAlertAction("暂不启用", LiquidAlertActionStyle.Secondary) {
                     AiImportSettingsStore.declineManagedFreeAi(context)
@@ -5299,6 +5311,20 @@ fun FloatingDock(
     onConfig: () -> Unit
 ) {
     val adaptiveGlass = LocalAdaptiveGlass.current
+    val dockContext=LocalContext.current
+    val experiencePrefs=remember(dockContext){cn.scvtc.campus.AppExperiencePreferences.get(dockContext)}
+    val experience by experiencePrefs.state.collectAsStateWithLifecycle()
+    val destinations=experience.dock
+    val currentId=if(selected is Screen.Home)"courses"else"settings"
+    val selectedIndex=destinations.indexOf(currentId).coerceAtLeast(0)
+    val dockWidth=(70*destinations.size).dp
+    fun choose(id:String) { when(id) {
+        "courses"->onHome()
+        "settings"->onConfig()
+        "grades"->dockContext.startActivity(Intent(dockContext,cn.scvtc.campus.AcademicActivity::class.java))
+        "sync"->dockContext.startActivity(Intent(dockContext,SettingsDetailActivity::class.java).putExtra(SettingsDetailPageExtra,SettingsPage.AutoRefreshSchedule.name))
+    } }
+    fun icon(id:String)=when(id){"settings"->R.drawable.ic_settings;"grades"->R.drawable.ic_agent_overview;"sync"->R.drawable.ic_refresh;else->R.drawable.ic_courses}
     val lightGlass = if (selected is Screen.Home) {
         adaptiveGlass.lightGlass
     } else {
@@ -5354,13 +5380,13 @@ fun FloatingDock(
         contentAlignment = dockAlignment
     ) {
         if (backdrop != null) {
-            CompositionLocalProvider(LocalContentColor provides dockTextColor) {
+            key(destinations) { CompositionLocalProvider(LocalContentColor provides dockTextColor) {
                 LiquidBottomTabs(
-                    selectedTabIndex = { if (selected is Screen.Home) 0 else 1 },
-                    onTabSelected = { index -> if (index == 0) onHome() else onConfig() },
+                    selectedTabIndex = { selectedIndex },
+                    onTabSelected = { index -> destinations.getOrNull(index)?.let(::choose) },
                     backdrop = backdrop,
-                    tabsCount = 2,
-                    modifier = Modifier.width(140.dp).excludeHomeAssistantPull(),
+                    tabsCount = destinations.size,
+                    modifier = Modifier.width(dockWidth).excludeHomeAssistantPull(),
                     containerHeight = 54.dp,
                     indicatorHeight = 46.dp,
                     blurRadius = homeChromeBlur(1.3.dp, config),
@@ -5380,19 +5406,19 @@ fun FloatingDock(
                     lightAccentColor = HomeLightGlassSelectedAccentColor,
                     useOfficialGlassParameters = true
                 ) {
-                    LiquidBottomTab(onClick = onHome) {
-                        DockTabContent(R.drawable.ic_courses, "课程", iconSize = 23.dp)
-                    }
-                    LiquidBottomTab(onClick = onConfig) {
-                        DockTabContent(R.drawable.ic_settings, "设置", iconSize = 24.dp)
+                    destinations.forEach { id ->
+                        LiquidBottomTab(onClick = {choose(id)}) {
+                            DockTabContent(icon(id),cn.scvtc.campus.AppExperiencePreferences.destinations.getValue(id),iconSize=23.dp)
+                        }
                     }
                 }
-            }
+            } }
         } else {
-            GlassPill(backdrop = null, config = config, modifier = Modifier.width(140.dp).excludeHomeAssistantPull()) {
+            GlassPill(backdrop = null, config = config, modifier = Modifier.width(dockWidth).excludeHomeAssistantPull()) {
                 Row(modifier = Modifier.height(54.dp).padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                    DockItem(selected is Screen.Home, null, config, R.drawable.ic_courses, "课程", onHome)
-                    DockItem(selected is Screen.Config, null, config, R.drawable.ic_settings, "设置", onConfig)
+                    destinations.forEach { id ->
+                        DockItem(id==currentId,null,config,icon(id),cn.scvtc.campus.AppExperiencePreferences.destinations.getValue(id),{choose(id)})
+                    }
                 }
             }
         }
@@ -8218,7 +8244,7 @@ fun SettingsRootScreen(
     val appName = remember {
         runCatching {
             context.packageManager.getApplicationLabel(context.applicationInfo).toString()
-        }.getOrDefault("川职课间")
+        }.getOrDefault("晷")
     }
 
     val updateAvailable by GiteeAppUpdater.updateAvailable.collectAsStateWithLifecycle()
@@ -8487,7 +8513,7 @@ private fun SettingsUpdateDialogHost(
         null -> Unit
         SettingsUpdateDialog.Checking -> LiquidAlertDialog(
             title = "正在检查更新",
-            message = "正在读取川职课间 GitHub 发布的更新清单。",
+            message = "正在读取晷 GitHub 发布的更新清单。",
             actions = listOf(LiquidAlertAction("取消", LiquidAlertActionStyle.Secondary, onClick = onDismiss)),
             backdrop = backdrop,
             config = config,
@@ -8498,7 +8524,7 @@ private fun SettingsUpdateDialogHost(
             val notes = release.notes.trim().ifBlank { "该版本没有填写更新说明。" }
             LiquidAlertDialog(
                 title = "发现新版本 ${release.name}",
-                message = "$notes\n\n当前将从川职课间 GitHub 发布下载 APK，安装前仍会由系统向你确认。",
+                message = "$notes\n\n当前将从晷 GitHub 发布下载 APK，安装前仍会由系统向你确认。",
                 actions = listOf(
                     LiquidAlertAction("稍后", LiquidAlertActionStyle.Secondary, onClick = onDismiss),
                     LiquidAlertAction("下载并安装", LiquidAlertActionStyle.Primary) { onDownload(release) }
@@ -8510,7 +8536,7 @@ private fun SettingsUpdateDialogHost(
         }
         is SettingsUpdateDialog.UpToDate -> LiquidAlertDialog(
             title = "已是最新版本",
-            message = "当前安装版本已不低于川职·课间 GitHub 最新 Release（${dialog.latestTag}）。",
+            message = "当前安装版本已不低于晷 GitHub 最新 Release（${dialog.latestTag}）。",
             actions = listOf(LiquidAlertAction("知道了", LiquidAlertActionStyle.Primary, onClick = onDismiss)),
             backdrop = backdrop,
             config = config,
@@ -8518,7 +8544,7 @@ private fun SettingsUpdateDialogHost(
         )
         is SettingsUpdateDialog.Downloading -> LiquidAlertDialog(
             title = "正在下载 ${dialog.release.name}",
-            message = "正在从川职·课间 GitHub 下载 APK。现在可以返回或退到桌面，下载会在后台继续，并通过实时活动显示进度。",
+            message = "正在从晷 GitHub 下载 APK。现在可以返回或退到桌面，下载会在后台继续，并通过实时活动显示进度。",
             actions = listOf(
                 LiquidAlertAction(
                     "后台下载",
@@ -8554,7 +8580,7 @@ private fun SettingsUpdateDialogHost(
         )
         SettingsUpdateDialog.InstallPermissionRequired -> LiquidAlertDialog(
             title = "允许安装更新",
-            message = "Android 需要你先允许川职·课间安装来自本项目 GitHub 的更新。授权返回后会继续打开系统安装确认页面。",
+            message = "Android 需要你先允许晷安装来自本项目 GitHub 的更新。授权返回后会继续打开系统安装确认页面。",
             actions = listOf(
                 LiquidAlertAction("取消", LiquidAlertActionStyle.Secondary, onClick = onDismiss),
                 LiquidAlertAction("去授权", LiquidAlertActionStyle.Primary, onClick = onRequestInstallPermission)
@@ -8776,7 +8802,7 @@ fun AboutSettingsScreen(state: AppState, backdrop: Backdrop?) {
                     )
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
-                            text = "川职课间",
+                            text = "晷",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -8786,7 +8812,7 @@ fun AboutSettingsScreen(state: AppState, backdrop: Backdrop?) {
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "版本 $versionName · 川职·课间 · zwwd1",
+                            text = "版本 $versionName · 晷 · zwwd1",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -9100,7 +9126,7 @@ private fun AboutHero(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "川职·课间",
+                text = "晷",
                 style = MaterialTheme.typography.displaySmall.copy(brush = titleBrush),
                 fontSize = if (maxWidth < 320.dp) 30.sp else 36.sp,
                 lineHeight = if (maxWidth < 320.dp) 36.sp else 43.sp,
@@ -9119,7 +9145,7 @@ private fun AboutHero(
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = "版本 $versionName  ·  川职·课间 · zwwd1",
+            text = "版本 $versionName  ·  晷 · zwwd1",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.56f)
@@ -9332,8 +9358,8 @@ fun ChangelogSettingsScreen(
             item(key = "about-project") {
                 AboutGlassPanel(darkTheme = darkTheme, modifier = Modifier.fillMaxWidth()) {
                     SettingsValueRow("项目维护", "zwwd1")
-                    SettingsInfoRow("致谢项目", "SleepDown课程表、Miuix 与 Backdrop。原项目许可和版权声明保留于仓库，川职课间由 zwwd1 维护。")
-                    SettingsNavigationRow("川职课间开源项目", "github.com/zwwd1/scvtc-kejian", onClick = { openProjectPage("https://github.com/zwwd1/scvtc-kejian") })
+                    SettingsInfoRow("致谢项目", "SleepDown课程表、Miuix 与 Backdrop。原项目许可和版权声明保留于仓库，晷由 zwwd1 维护。")
+                    SettingsNavigationRow("晷开源项目", "github.com/zwwd1/scvtc-kejian", onClick = { openProjectPage("https://github.com/zwwd1/scvtc-kejian") })
                     SettingsDivider()
                     Row(
                         modifier = Modifier
@@ -9446,6 +9472,7 @@ fun ChangelogSettingsScreen(
                 // One continuous panel. Canvas clipping avoids a texture as tall as all expanded
                 // versions; each details animation still owns only its own small graphics layer.
                 AboutGlassPanel(darkTheme, Modifier.fillMaxWidth(), longContent = true) {
+            changelogItem("1.2.4", "更名为晷，使用原创头像和简洁日夜背景。修正学校移动认证表单等待与补充认证后的同步衔接，密码在本机加密记住。首次安装先邀请连接学校；成绩取得后立即显示，学分随后更新。入场动画可开关，底栏入口可增减，保留原玻璃动效与本机记录。")
             changelogItem("1.2.2", "在应用里填写学号和密码即可开始学校认证。身份核验后后台同步课表和成绩，会话到期自动恢复。成绩增加需要留意筛选，学分增加真实进度与学期入口；课表编辑、原有 Miuix 底栏和完整玻璃动效继续保留。")
             changelogItem("1.2.1", "完善成绩与学分：新增分栏、学期选择、搜索排序、加权绩点、确认学分及可展开的成绩卡片。刷新在应用任务中继续，离开页面后保留同步。保留原有 Miuix 底栏、液态玻璃、完整动效与用户数据，云服务仍暂停。")
             changelogItem("1.2.0", "修复检查更新失败，优先读取本项目 GitHub 更新清单。使用原创川职月光壁纸与校园助手小澄，提供五种待机和互动状态。统一项目名称与反馈渠道，保留原有 Miuix 双入口底栏、液态玻璃和完整动效。保留账号、课表、本地编辑与自定义壁纸，云服务继续暂停。")

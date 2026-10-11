@@ -81,6 +81,8 @@ fun GeneralSettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val topPadding = detailContentTopPadding()
+    val experiencePrefs=remember(context){cn.scvtc.campus.AppExperiencePreferences.get(context)}
+    val experience by experiencePrefs.state.collectAsStateWithLifecycle()
     var draft by remember(state.config.id) { mutableStateOf(state.config) }
     var hasLocalEdits by remember(state.config.id) { mutableStateOf(false) }
     var dayViewMode by remember(context, state.config.id) {
@@ -231,9 +233,26 @@ fun GeneralSettingsScreen(
                 }
             }
         }
+        item(key="general-navigation") {
+            GlassPreferenceSection("底部导航入口") {
+                SettingsGroup(backdrop=backdrop,config=visualConfig) {
+                    cn.scvtc.campus.AppExperiencePreferences.destinations.forEach { (id,title) ->
+                        if(id=="settings") Text("设置 · 固定保留",Modifier.padding(16.dp))
+                        else SettingsToggleRow(title=title,subtitle="在底栏显示此入口",checked=id in experience.dock,
+                            backdrop=backdrop,onCheckedChange={enabled ->
+                                experiencePrefs.dock(if(enabled)experience.dock.filter{it!="settings"}+id+"settings" else experience.dock.filter{it!=id})
+                            })
+                    }
+                    SettingsActionButton("恢复默认底栏",backdrop,onClick={experiencePrefs.dock(listOf("courses","settings"))})
+                }
+            }
+        }
         item(key = "general-system-behavior") {
             GlassPreferenceSection("系统行为") {
                 SettingsGroup(backdrop = backdrop, config = visualConfig, modifier = Modifier.fillMaxWidth()) {
+                SettingsToggleRow(title="启动入场动画",subtitle="短暂淡入首屏；关闭后直接显示。遵循系统动画设置。",checked=experience.entranceAnimation,
+                    backdrop=backdrop,onCheckedChange=experiencePrefs::entrance)
+                SettingsDivider()
                 SettingsToggleRow(
                     title = "隐藏后台卡片",
                     subtitle = "以任意方式离开应用后，都从最近任务列表中隐藏本应用。",
@@ -245,7 +264,7 @@ fun GeneralSettingsScreen(
                     SettingsDivider()
                     SettingsToggleRow(
                         title = "自动检查更新",
-                        subtitle = "每天首次打开应用时检查川职课间 GitHub 发布的新版本。",
+                        subtitle = "每天首次打开应用时检查晷 GitHub 发布的新版本。",
                         checked = draft.autoCheckUpdates,
                         backdrop = backdrop,
                         onCheckedChange = { applyChange(draft.copy(autoCheckUpdates = it)) }

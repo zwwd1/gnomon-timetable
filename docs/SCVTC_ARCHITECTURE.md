@@ -1,6 +1,6 @@
-# 川职·课间构建原理
+# 晷构建原理
 
-课间直接使用 **SleepDown-Schedule v1.2.6 完整源码**作为原生基底。Miuix 0.9.3 使用基底附带的三份补丁，Kyant Backdrop 沿用项目内的修改版。课程首页、双入口玻璃底栏、切周、设置、课程编辑和 Morph 弹层由原设计系统实现。
+晷直接使用 **SleepDown-Schedule v1.2.6 完整源码**作为原生基底。Miuix 0.9.3 使用基底附带的三份补丁，Kyant Backdrop 沿用项目内的修改版。课程首页、玻璃底栏、切周、设置、课程编辑和 Morph 弹层由原设计系统实现。底栏只调整入口数量，保持原玻璃参数和拖动交互。
 
 ```mermaid
 flowchart LR
@@ -36,7 +36,7 @@ flowchart LR
 
 Hash 路由 `#/jwxt/js/student/index` 只用于 SPA 页面导航。课表只接受真实 JSON，账号、周次和结果完整性必须通过校验后才能写入 Room。网络或认证失败不删除离线课程。
 
-`AcademicRepository` 与课表复用认证与串行同步锁，在 IO 线程读取成绩/学期/毕业要求，完整分页校验后按账号和学期 AES-GCM 加密写入原 Room 缓存表。`CreditSummary` 依据实际成绩中的所得字段和课程代码处理重修；未取得数据不会显示假零值。
+`AcademicRepository` 与课表复用认证与串行同步锁，在 IO 线程读取成绩、学期与毕业要求。完整成绩分页校验后先按账号和学期 AES-GCM 加密写入原 Room 缓存表，再读取毕业要求，页面不再被较慢的学分查询挡住。`CreditSummary` 依据实际成绩中的所得字段和课程代码处理重修；未取得数据不会显示假零值。
 
 `CampusSyncStatus` 区分尝试时间和事务完成时间；课表右上角刷新使用同一桥接，不另建登录链。完全相同的课程安排仅在周视图合并显示，数据库记录保留；单周修改检查实际周次集合。
 
@@ -61,6 +61,6 @@ Windows 使用 `gradlew.bat`。Miuix 来源由 `sleepdown.miuixSourcePath=third-
 
 发布构建保留签名校验，需要在本机环境配置 `SLEEPDOWN_RELEASE_STORE_FILE`、`SLEEPDOWN_RELEASE_STORE_PASSWORD`、`SLEEPDOWN_RELEASE_KEY_ALIAS` 和 `SLEEPDOWN_RELEASE_KEY_PASSWORD`。私有配置不写入仓库；覆盖项目历史安装必须保留原证书、`cn.scvtc.campus.preview` 和递增版本码。
 
-赞赏原图通过仓库外环境变量 `SCVTC_DONATION_PNG` 输入，未配置时公开源码不包含私人支付图；签名和原图均不提交。角色、图标与素材来源见 [BRANDING_20261009.md](BRANDING_20261009.md)。
+赞赏原图通过仓库外环境变量 `SCVTC_DONATION_PNG` 输入，未配置时公开源码不包含私人支付图；签名和原图均不提交。角色、图标与素材来源见 [BRANDING_20261011.md](BRANDING_20261011.md)。
 
 构建结果、证书、源码对应关系与真实手机结果分别报告。编译通过不代表自动登录、所有升级来源或所有 Android 版本已经通过验收。

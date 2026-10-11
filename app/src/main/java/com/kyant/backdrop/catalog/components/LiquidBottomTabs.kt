@@ -241,7 +241,9 @@ fun LiquidBottomTabs(
             DampedDragAnimation(
                 animationScope = animationScope,
                 initialValue = selectedTabIndex().toFloat(),
-                valueRange = 0f..(tabsCount - 1).toFloat(),
+                // A single visible entry has no travel, but velocity normalization
+                // still needs a nonzero range. Drag targets remain clamped below.
+                valueRange = 0f..(tabsCount - 1).coerceAtLeast(1).toFloat(),
                 visibilityThreshold = 0.001f,
                 initialScale = 1f,
                 pressedScale = 78f / 56f,
