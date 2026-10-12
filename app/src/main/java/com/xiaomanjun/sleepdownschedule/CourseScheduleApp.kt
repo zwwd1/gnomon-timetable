@@ -60,6 +60,8 @@ class CourseScheduleApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        cn.scvtc.campus.LocalCrashReports.install(this)
+        cn.scvtc.campus.OfficialAuthHost.install(this)
         AppIconManager.onIconChanged = { TodayCoursesWidgetProvider.refreshAll(this) }
         AppIconManager.applyStoredMode(this)
         AutoRefreshScheduleWorker.ensureSchedule(this, AutoRefreshScheduleStore.load(this))

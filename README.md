@@ -6,7 +6,7 @@
 
 这是为四川职业技术学院重构的 Android 课表应用，基于 SleepDown-Schedule，保留原生 Miuix 界面、液态玻璃底栏和课表编辑体验。适合想打开就看课、课余少一点折腾的同学。
 
-[下载 APK](https://github.com/zwwd1/scvtc-kejian/releases/latest) · [反馈问题](https://github.com/zwwd1/scvtc-kejian/issues) · [更新记录](release-notes/v1.2.6.md)
+[下载 APK](https://github.com/zwwd1/scvtc-kejian/releases/latest) · [反馈问题](https://github.com/zwwd1/scvtc-kejian/issues) · [更新记录](release-notes/v1.2.7.md)
 
 ## 从一张课表开始
 

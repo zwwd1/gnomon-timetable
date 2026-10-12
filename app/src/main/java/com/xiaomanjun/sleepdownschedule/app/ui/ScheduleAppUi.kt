@@ -9472,6 +9472,8 @@ fun ChangelogSettingsScreen(
                 // One continuous panel. Canvas clipping avoids a texture as tall as all expanded
                 // versions; each details animation still owns only its own small graphics layer.
                 AboutGlassPanel(darkTheme, Modifier.fillMaxWidth(), longContent = true) {
+            changelogItem("1.2.7", "接续学校认证后的教务主页，以学生接口确认身份；不再等待随页面跳转丢失的提交回调。官网菜单改用窗口弹层，增加网页超时、重开、新窗口和缩放。本机异常报告只记录脱敏堆栈或退出原因，保留原课表与原生玻璃界面。")
+            changelogItem("1.2.6", "身份核验与学期、课表同步分开。登录支持取消、重试和随时打开官方认证，记住的密码按账号匹配，待执行的首次同步也可以取消。")
             changelogItem("1.2.5", "首次连接按本机账号和课表判断，清除数据后重新邀请。直接进入川职教务 SSO，保留完整认证回调。处理永久失效的本机密钥，原课表和密文保留，既有编辑、提醒、组件和玻璃动效继续可用。")
             changelogItem("1.2.4", "更名为晷，使用原创头像和简洁日夜背景。修正学校移动认证表单等待与补充认证后的同步衔接，密码在本机加密记住。首次安装先邀请连接学校；成绩取得后立即显示，学分随后更新。入场动画可开关，底栏入口可增减，保留原玻璃动效与本机记录。")
             changelogItem("1.2.2", "在应用里填写学号和密码即可开始学校认证。身份核验后后台同步课表和成绩，会话到期自动恢复。成绩增加需要留意筛选，学分增加真实进度与学期入口；课表编辑、原有 Miuix 底栏和完整玻璃动效继续保留。")

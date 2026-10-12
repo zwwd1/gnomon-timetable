@@ -18,7 +18,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.input.*
@@ -33,7 +32,6 @@ import com.xiaomanjun.sleepdownschedule.CourseScheduleTheme
 import com.xiaomanjun.sleepdownschedule.app.ui.DetailActivityScaffold
 import com.xiaomanjun.sleepdownschedule.app.ui.HomeIconButton
 import com.xiaomanjun.sleepdownschedule.app.ui.detailContentTopPadding
-import com.xiaomanjun.sleepdownschedule.core.ui.settings.SleepDownLiquidCascadingPopup
 import com.xiaomanjun.sleepdownschedule.core.ui.settings.SleepDownLiquidMenuItem
 import com.xiaomanjun.sleepdownschedule.feature.settings.SettingsActionButton
 import com.xiaomanjun.sleepdownschedule.feature.settings.SettingsGroup
@@ -64,6 +62,8 @@ class ScvtcLoginActivity : ComponentActivity() {
             var awaiting by rememberSaveable{mutableStateOf(false)}
             var verification by rememberSaveable{mutableStateOf(false)}
             var full by rememberSaveable{mutableStateOf(false)}
+            var browserEpoch by rememberSaveable{mutableIntStateOf(0)}
+            var automaticHandoff by rememberSaveable{mutableStateOf(true)}
             var menu by remember{mutableStateOf(false)}
             var handingOff by remember{mutableStateOf(false)}
             var slowConnection by remember{mutableStateOf(false)}
@@ -81,7 +81,7 @@ class ScvtcLoginActivity : ComponentActivity() {
                             ScvtcNativeBridge.cancelSignIn()
                             if(form.account.matches(Regex("[0-9]{6,20}"))&&form.password.length in 1..512)
                                 memory.rememberInput(form.account,form.password)
-                            verification=true
+                            automaticHandoff=true;verification=true
                         } catch(e:CancellationException){throw e}
                         catch(_:Exception){localError="未能准备学校页面，请重试"}
                         finally{handingOff=false}
@@ -121,12 +121,12 @@ class ScvtcLoginActivity : ComponentActivity() {
                     onBack={back()},compactTopBar=true,topBarVisible=!full,
                     topBarActions={backdrop->
                         Box {
-                            HomeIconButton(backdrop,config,R.drawable.ic_more_horizontal,"学校认证操作",selected=false,onClick={menu=true})
+                            HomeIconButton(backdrop,config,R.drawable.ic_more_horizontal,"学校认证操作",selected=false,onClick={LocalCrashReports.mark(app,"学校认证菜单");menu=true})
                             val items=if(verification)listOf(
-                                SleepDownLiquidMenuItem("home","返回教务首页",onClick={officialWeb?.loadUrl(School.HOME)}),
-                                SleepDownLiquidMenuItem("portal","一网通办",onClick={officialWeb?.loadUrl(School.PORTAL)}),
-                                SleepDownLiquidMenuItem("reload","刷新当前页面",onClick={officialWeb?.reload()}),
-                                SleepDownLiquidMenuItem("auth","重新认证",onClick={officialWeb?.loadUrl(CasAuthManager.JWXT_SSO_ENTRY)}),
+                                SleepDownLiquidMenuItem("home","返回教务首页",enabled=officialWeb!=null,onClick={automaticHandoff=true;officialWeb?.loadUrl(School.HOME)}),
+                                SleepDownLiquidMenuItem("portal","一网通办",enabled=officialWeb!=null,onClick={automaticHandoff=false;officialWeb?.loadUrl(School.PORTAL)}),
+                                SleepDownLiquidMenuItem("reload","刷新当前页面",onClick={officialWeb?.reload()?:run{browserEpoch++}}),
+                                SleepDownLiquidMenuItem("auth","重新认证",onClick={automaticHandoff=true;browserEpoch++}),
                                 SleepDownLiquidMenuItem("form","返回账号密码登录",onClick={verification=false}),
                                 SleepDownLiquidMenuItem("full","全屏浏览",onClick={full=true}),
                                 SleepDownLiquidMenuItem("browser","在系统浏览器打开",onClick={
@@ -134,14 +134,24 @@ class ScvtcLoginActivity : ComponentActivity() {
                                         .onFailure{localError="系统没有可用的浏览器"}
                                 })
                             )else listOf(SleepDownLiquidMenuItem("official","打开学校认证页",onClick=openOfficial))
-                            SleepDownLiquidCascadingPopup(menu,Rect.Zero,items,{menu=false},backdrop,config,
-                                panelMinWidth=220.dp,horizontalSafeInset=12.dp)
+                            // The window menu used by the newer browser does not
+                            // capture WebView into the detail's animated backdrop.
+                            val entries=items.map { item ->
+                                top.yukonga.miuix.kmp.basic.DropdownItem(item.text,
+                                    enabled=item.enabled,onClick={menu=false;item.onClick()})
+                            }
+                            top.yukonga.miuix.kmp.popup.WindowDropdownPopup(
+                                entry=top.yukonga.miuix.kmp.basic.DropdownEntry(entries),
+                                show=menu,onDismiss={menu=false},onDismissFinished={},
+                                maxHeight=420.dp,
+                                dropdownColors=top.yukonga.miuix.kmp.basic.DropdownDefaults.dropdownColors()
+                            )
                         }
                     }
                 ){backdrop->
                     if(verification){
                         Box(Modifier.fillMaxSize()){
-                            SchoolVerification(form.account,form.password,
+                            SchoolVerification(form.account,form.password,browserEpoch,automaticHandoff,{browserEpoch++},
                                 Modifier.fillMaxSize().padding(top=if(full)0.dp else detailContentTopPadding())
                                     .imePadding().navigationBarsPadding()){finishVerified()}
                             if(full)SettingsActionButton("退出全屏",backdrop,onClick={full=false},
@@ -209,32 +219,101 @@ class ScvtcLoginActivity : ComponentActivity() {
     }
     /** Probe only an actual JWXT page; typing in CAS never triggers API polling. */
     @Composable
-    private fun SchoolVerification(account:String,password:String,modifier:Modifier,onVerified:()->Unit){
+    private fun SchoolVerification(account:String,password:String,browserEpoch:Int,automaticHandoff:Boolean,onRestart:()->Unit,modifier:Modifier,onVerified:()->Unit){
         var message by remember{mutableStateOf("请在学校官方页面完成认证。成功后，应用会自动继续同步。")}
         var documentReady by remember{mutableStateOf(false)}
+        var pageLoading by remember{mutableStateOf(true)}
+        var loadEpoch by remember{mutableIntStateOf(0)}
         var detectedAccount by remember{mutableStateOf("")}
         var probeEpoch by remember{mutableIntStateOf(0)}
-        var browserEpoch by remember{mutableIntStateOf(0)}
         var rendererGone by remember(browserEpoch){mutableStateOf(false)}
         var checking by remember{mutableStateOf(false)}
+        var popup by remember{mutableStateOf<android.app.Dialog?>(null)}
         val app=application as CourseScheduleApp
         val memory=remember(browserEpoch){OfficialLoginMemory(app)}
+        val navigation=remember(account,browserEpoch){OfficialAuthNavigation()}
         val verifiedCallback by rememberUpdatedState(onVerified)
+        val continueAutomatically by rememberUpdatedState(automaticHandoff)
         val web=remember(account,browserEpoch){
             WebView(this).apply{
                 settings.apply{
                     javaScriptEnabled=true;domStorageEnabled=true;useWideViewPort=true;loadWithOverviewMode=true
+                    setSupportZoom(true);builtInZoomControls=true;displayZoomControls=false
+                    setSupportMultipleWindows(true);javaScriptCanOpenWindowsAutomatically=false
                     allowFileAccess=false;allowContentAccess=false;mixedContentMode=WebSettings.MIXED_CONTENT_NEVER_ALLOW
                 }
-                webChromeClient=WebChromeClient()
+                webChromeClient=object:WebChromeClient() {
+                    override fun onCreateWindow(parent:WebView,isDialog:Boolean,isUserGesture:Boolean,resultMsg:android.os.Message):Boolean {
+                        if(!isUserGesture||rendererGone||isFinishing||isDestroyed)return false
+                        popup?.dismiss()
+                        val child=WebView(this@ScvtcLoginActivity)
+                        val childMemory=OfficialLoginMemory(app)
+                        var childDestroyed=false
+                        val dialog=android.app.Dialog(this@ScvtcLoginActivity)
+                        child.settings.apply {
+                            javaScriptEnabled=true;domStorageEnabled=true
+                            useWideViewPort=true;loadWithOverviewMode=true
+                            setSupportZoom(true);builtInZoomControls=true;displayZoomControls=false
+                            allowFileAccess=false;allowContentAccess=false
+                            mixedContentMode=WebSettings.MIXED_CONTENT_NEVER_ALLOW
+                        }
+                        CookieManager.getInstance().setAcceptThirdPartyCookies(child,true)
+                        childMemory.install(child,onIdentity={value->
+                            detectedAccount=value
+                            parent.loadUrl(School.HOME);dialog.dismiss()
+                        },onAuthLanding={page->
+                            if(continueAutomatically&&navigation.continueFrom(page)!=null){
+                                parent.loadUrl(School.HOME);dialog.dismiss()
+                            }
+                        }){account}
+                        child.webViewClient=object:WebViewClient(){
+                            override fun shouldOverrideUrlLoading(view:WebView,request:WebResourceRequest):Boolean {
+                                if(!request.isForMainFrame)return false
+                                val u=request.url
+                                if(u.toString()=="about:blank")return false
+                                return !(u.scheme=="https"&&u.userInfo==null&&
+                                    (u.host in School.allowedHosts+"cas.scvtc.edu.cn"&&u.port in setOf(-1,443)||
+                                     u.host=="www.shulin-soft.com"&&u.port==8267&&u.path=="/casLogin.html"))
+                            }
+                            override fun onPageFinished(view:WebView,url:String){if(!childDestroyed)childMemory.prepare(view)}
+                            override fun onRenderProcessGone(view:WebView,detail:RenderProcessGoneDetail):Boolean {
+                                childDestroyed=true;childMemory.dispose()
+                                (view.parent as? android.view.ViewGroup)?.removeView(view);view.destroy()
+                                message="学校新窗口已关闭，可刷新或重新认证";dialog.dismiss();return true
+                            }
+                        }
+                        child.webChromeClient=object:WebChromeClient(){
+                            override fun onCloseWindow(window:WebView){dialog.dismiss()}
+                        }
+                        val layout=android.widget.LinearLayout(this@ScvtcLoginActivity).apply{
+                            orientation=android.widget.LinearLayout.VERTICAL
+                            addView(android.widget.Button(context).apply{text="关闭学校新窗口";setOnClickListener{dialog.dismiss()}})
+                            addView(child,android.widget.LinearLayout.LayoutParams(-1,0,1f))
+                        }
+                        dialog.setContentView(layout)
+                        dialog.setOnDismissListener{
+                            childMemory.dispose()
+                            if(!childDestroyed){childDestroyed=true;child.stopLoading();child.destroy()}
+                            if(popup===dialog)popup=null
+                        }
+                        popup=dialog;dialog.show();dialog.window?.setLayout(-1,-1)
+                        (resultMsg.obj as WebView.WebViewTransport).webView=child
+                        resultMsg.sendToTarget();return true
+                    }
+                }
                 CookieManager.getInstance().setAcceptCookie(true)
                 CookieManager.getInstance().setAcceptThirdPartyCookies(this,true)
-                memory.install(this,onIdentity={value->detectedAccount=value;probeEpoch++}){account}
+                memory.install(this,onIdentity={value->detectedAccount=value;probeEpoch++},
+                    onAuthLanding={page->if(continueAutomatically)navigation.continueFrom(page)?.let{target->
+                        documentReady=false;message="正在进入教务首页…";loadUrl(target)
+                    }}){account}
                 var homeRetried=false
                 webViewClient=object:WebViewClient(){
                     override fun onPageStarted(view:WebView,url:String?,icon:android.graphics.Bitmap?){
-                        documentReady=false;detectedAccount="";message="正在打开学校页面…";probeEpoch++
+                        documentReady=false;pageLoading=true;loadEpoch++
+                        detectedAccount="";message="正在打开学校页面…";probeEpoch++
                     }
+                    override fun onPageCommitVisible(view:WebView,url:String){if(!rendererGone)pageLoading=false}
                     override fun shouldOverrideUrlLoading(view:WebView,request:WebResourceRequest):Boolean{
                         if(!request.isForMainFrame)return false
                         val u=request.url
@@ -247,6 +326,7 @@ class ScvtcLoginActivity : ComponentActivity() {
                     }
                     override fun onPageFinished(view:WebView,url:String){
                         if(rendererGone||view.url!=url)return
+                        pageLoading=false
                         memory.prepare(view);CookieManager.getInstance().flush()
                         if(Uri.parse(url).host=="www.shulin-soft.com"){view.loadUrl(CasAuthManager.JWXT_SSO_ENTRY);return}
                         if(memory.recoveryNavigation(view,account,url))return
@@ -259,17 +339,17 @@ class ScvtcLoginActivity : ComponentActivity() {
                         probeEpoch++
                     }
                     override fun onReceivedError(view:WebView,request:WebResourceRequest,error:WebResourceError){
-                        if(request.isForMainFrame){documentReady=false;memory.failedNetwork(account);message="学校页面连接失败，可从菜单刷新或重新认证"}
+                        if(request.isForMainFrame){documentReady=false;pageLoading=false;memory.failedNetwork(account);message="学校页面连接失败，可从菜单刷新或重新认证"}
                     }
                     override fun onReceivedHttpError(view:WebView,request:WebResourceRequest,response:WebResourceResponse){
                         if(!request.isForMainFrame)return
-                        documentReady=false
+                        documentReady=false;pageLoading=false
                         if(request.url.host=="jwxt.scvtc.edu.cn"&&request.url.path=="/api/cas/login"&&!homeRetried){
                             homeRetried=true;view.loadUrl(School.HOME)
                         }else message="学校页面暂不可用（HTTP "+response.statusCode+"），可刷新重试"
                     }
                     override fun onRenderProcessGone(view:WebView,detail:RenderProcessGoneDetail):Boolean{
-                        documentReady=false;rendererGone=true;officialWeb=null
+                        documentReady=false;pageLoading=false;rendererGone=true;officialWeb=null;memory.dispose()
                         (view.parent as? android.view.ViewGroup)?.removeView(view);view.destroy()
                         message="学校页面已关闭，点击重新打开；已填内容保留";return true
                     }
@@ -278,9 +358,17 @@ class ScvtcLoginActivity : ComponentActivity() {
         }
         DisposableEffect(web){
             officialWeb=web;web.onResume()
-            onDispose{if(officialWeb===web)officialWeb=null;if(!rendererGone){web.stopLoading();web.destroy()}}
+            onDispose{popup?.dismiss();memory.dispose();if(officialWeb===web)officialWeb=null;if(!rendererGone){web.stopLoading();web.destroy()}}
         }
         LaunchedEffect(web){web.loadUrl(CasAuthManager.JWXT_SSO_ENTRY)}
+        LaunchedEffect(web,loadEpoch) {
+            if(!pageLoading||rendererGone)return@LaunchedEffect
+            delay(25_000)
+            if(pageLoading&&!rendererGone) {
+                pageLoading=false;web.stopLoading()
+                message="学校页面连接超时，可刷新或重新认证；当前认证与课表保留"
+            }
+        }
         LaunchedEffect(web,probeEpoch){
             if(!documentReady||rendererGone)return@LaunchedEffect
             val expected=account.ifBlank{detectedAccount}
@@ -306,7 +394,8 @@ class ScvtcLoginActivity : ComponentActivity() {
         Column(modifier){
             Text(message,Modifier.fillMaxWidth().padding(horizontal=16.dp,vertical=10.dp).semantics{liveRegion=LiveRegionMode.Polite},
                 style=MaterialTheme.typography.bodySmall)
-            if(rendererGone)TextButton(onClick={browserEpoch++},modifier=Modifier.fillMaxWidth()){Text("重新打开学校页面")}
+            if(pageLoading)LinearProgressIndicator(Modifier.fillMaxWidth())
+            if(rendererGone)TextButton(onClick=onRestart,modifier=Modifier.fillMaxWidth()){Text("重新打开学校页面")}
             else{
                 if(documentReady&&!checking)TextButton(onClick={probeEpoch++},modifier=Modifier.fillMaxWidth()){Text("我已完成认证，确认身份")}
                 AndroidView(factory={web},modifier=Modifier.fillMaxWidth().weight(1f))
