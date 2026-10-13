@@ -1,14 +1,14 @@
-# 晷
+# Gnomon 课程表
 
-> 把日子排成课表，把空白留给生活。
+用智慧川职的时候，有些地方真的挺让人烦的。只是想看一眼课表，还得来回找入口；登录和页面又常常不太顺手。我就按自己的习惯，折腾了这份 Gnomon 课程表。
 
-晷（guǐ），取意日晷。它记下课程与作息，也把时间交还给你。
+没有多大的道理，就是自己随心而动的作品。希望它也能帮到川职院的同辈，少折腾一点。它基于 SleepDown-Schedule，保留课程编辑、作息、提醒、小部件和玻璃界面，再接上川职教务、成绩与学分。
 
-这是为四川职业技术学院重构的 Android 课表应用，基于 SleepDown-Schedule，保留原生 Miuix 界面、液态玻璃底栏和课表编辑体验。适合想打开就看课、课余少一点折腾的同学。
+我不会实时维护这个应用。学校哪天换了登录方式或接口，它可能就失效了；到时不一定能及时修。源码在这里，有兴趣就 fork 一份，自行 vibe coding，按自己的需要改。
 
-[下载 APK](https://github.com/zwwd1/scvtc-kejian/releases/latest) · [反馈问题](https://github.com/zwwd1/scvtc-kejian/issues) · [更新记录](release-notes/v1.2.7.md)
+[下载 APK](https://github.com/zwwd1/gnomon-timetable/releases/latest) · [反馈问题](https://github.com/zwwd1/gnomon-timetable/issues) · [更新记录](release-notes/v1.2.7.md)
 
-## 从一张课表开始
+## 能做什么
 
 首次安装会邀请你连接川职教务。填写学号和学校密码后，身份核验通过便返回应用，课表和成绩随后同步；密码加密留在手机，登录过期时尝试自动恢复。等待中可以取消或打开官方页面，验证码和账号安全提示在学校页面完成。
 
@@ -18,7 +18,7 @@
 
 [使用方法](docs/SCVTC_USAGE.md)
 
-## 代码里的来路
+## 实现
 
 `cn/scvtc/campus` 连接学校 CAS 与真实教务接口；`com/xiaomanjun/sleepdownschedule` 承载课表界面、编辑和提醒；`school-core` 处理课程、学分与导入规则。认证页面只负责建立会话，学生身份接口确认账号后才保存连接。
 
@@ -36,8 +36,8 @@
 
 正式包沿用第一版包名和签名，可以保留数据覆盖安装。自行签名的 APK 无法覆盖正式包；签名配置需放在仓库外，具体方式见构建说明。
 
-[GitHub Release](https://github.com/zwwd1/scvtc-kejian/releases) 提供安装包、源码标签与 SHA-256。[验证记录](VERIFICATION.md) 区分构建检查与实机结果。
+[GitHub Release](https://github.com/zwwd1/gnomon-timetable/releases) 提供安装包、源码标签与 SHA-256。[验证记录](VERIFICATION.md) 区分构建检查与实机结果。
 
 ## 致谢项目
 
-[SleepDown-Schedule](https://github.com/xiaomanjun233/SleepDown-Schedule)、Miuix 与 AndroidLiquidGlass。开源让这些日常的小事有了继续生长的余地；项目与第三方组件的许可见 [LICENSE.md](LICENSE.md) 和 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+[SleepDown-Schedule](https://github.com/xiaomanjun233/SleepDown-Schedule)、Miuix 与 AndroidLiquidGlass。项目与第三方组件的许可见 [LICENSE.md](LICENSE.md) 和 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
