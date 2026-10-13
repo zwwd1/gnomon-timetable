@@ -10,8 +10,10 @@
 
 ## 看图上手
 
+<p align="center">
 <img src="docs/images/timetable-empty.png" width="240" alt="Gnomon 真机周课表">
 <img src="docs/images/school-auth.png" width="240" alt="Gnomon 真机学校认证页，输入为空">
+</p>
 
 [图文使用说明](docs/SCVTC_USAGE.md) 按连接学校、查看课程、设置提醒和处理同步问题讲解。截图来自 10 月 12 日实机，早于本次英文改名与使用指南更新；图中的作息不是学校官方时间。
 
