@@ -1,62 +1,65 @@
 {
-  "repository": "zwwd1/scvtc-kejian",
-  "version": "1.2.6",
-  "name": "晷",
-  "sourceCommit": "54911cf02bdd338be801ea03caff78ff7f835d22",
+  "repository": "zwwd1/gnomon-timetable",
+  "version": "1.2.9",
+  "name": "Gnomon 课程表",
+  "sourceCommit": "9f09afbbff5c4fb3cf41cfadf1d705c7c9ace264",
   "artifact": {
-    "file": "scvtc-kejian-1.2.6.apk",
+    "file": "Gnomon-课程表-1.2.9.apk",
     "packageName": "cn.scvtc.campus.preview",
-    "versionCode": 19,
+    "versionCode": 22,
     "certificateSha256": "5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3",
-    "size": 14855380,
-    "sha256": "5c133f8afdd9950b4e9a32a3a6dcc47098a57c2ee2d036cdef7c753e63c3bec6",
+    "size": 14889416,
+    "sha256": "2a407a578a3ec707cd6300b02499a6398329ea28b9be33d3678e6e82c70c2eaa",
     "abi": "universal"
   },
   "parts": [
     {
-      "blob": "7b02a8259963806bd6c867e561eacf7308f81629",
+      "offset": 0,
       "size": 2097152,
-      "sha256": "06423607b237aaa19c0143de1e3d3a49277c6cacee3485262d5e39a82d2f19de"
+      "sha256": "a3f59a70cf9a91b8fb754e50bb88b8e6eb6130e2a5ad5d692861aefac6443037",
+      "blob": "79189769bdfca9974671a2d7f75d1cd4a39ce7b6"
     },
     {
-      "blob": "c594361264d0b70c8f317e629f215afc993b184f",
+      "offset": 2097152,
       "size": 2097152,
-      "sha256": "ec2f14b8331f1896000933cca17c1193282aeca4792f7cf19d638e0c8310d95f"
+      "sha256": "a64f11dcc49b49599beea43ccb5a9074bb9f4b764a9a00db0ff45677873a121b",
+      "blob": "32eb632f9aff10030fe5c0497d0c1d4acf57b778"
     },
     {
-      "blob": "22200d615b1079004cd2235c6db52a5667baa356",
+      "offset": 4194304,
       "size": 2097152,
-      "sha256": "03d86a2974167f7ac02303897b88933e80af2a37062430c8d43d5b0163b2200d"
+      "sha256": "5a62128fa88b7f1460a93497b814ecfcd6eeed2556a9a3fa4d3e4a501df027cb",
+      "blob": "08ef3599e33425e41f2938ed235b9a391e5afe84"
     },
     {
-      "blob": "ea88d501be3dfdcd638666d408fea4e92dca5cbd",
+      "offset": 6291456,
       "size": 2097152,
-      "sha256": "ec8ff61c614113e1ede44e47c631a787704d69a3a55e17799d5ffbc19b1dfb85"
+      "sha256": "a3247bf6906cb973652b90b4111cf8a59c4277ce731f147fbfa027f281e278de",
+      "blob": "c8d698ace55f4d0c24482e0f8510824e9dbc1f61"
     },
     {
-      "blob": "8d22f26ca23bfc59ad4cfbe8bc14164d9015e876",
+      "offset": 8388608,
       "size": 2097152,
-      "sha256": "4ed105e73359ca1fed14966b27b31b316f00978721bfe5803f99de6eef23cd0b"
+      "sha256": "d8dadf5b426847fa9f12c64435bc35f04a63bb4133ce194c0fd35023cfe3863b",
+      "blob": "03f2d68b19c44aa9375e93cf6e1ddcb154593a10"
     },
     {
-      "blob": "e958c27bb43faee3ea212b508d3f59698bb10e5b",
-      "size": 16732,
-      "sha256": "98506ae32868a558fad873736e8f0a11282679665be09549a2b6a26997e4321f"
-    },
-    {
-      "blob": "45b3d10c4876da2b56e69570ce952465e1eccc12",
+      "offset": 10485760,
       "size": 2097152,
-      "sha256": "ff1d8c03a3f68458eb2ad4dc94eece3ed74b10affedaf528c406c48863147dec"
+      "sha256": "15a0fdebf4ae89ea1333ce3c1221a541765bda8048c1af386536b68009bc47c1",
+      "blob": "77d9234f9f7348458de0181490dd03abc96b53df"
     },
     {
-      "blob": "4588f5ff699a196a924b5b14605de273826e0921",
+      "offset": 12582912,
       "size": 2097152,
-      "sha256": "a71e9cb04c2b9234c4fdae952c30e515e2be9f3d6d04a9339ea7c6f52ee2415b"
+      "sha256": "729f7fb528edd2f21cbf092812a206a3d8e4d8f53438f61d263b0a0e9e45a4bc",
+      "blob": "5ca439a3fefe6f6c2583a815d9f2a2f082f5fb97"
     },
     {
-      "blob": "b7e092498de0147804350c62541a90266f47b4d0",
-      "size": 158584,
-      "sha256": "698578260b3a2b511e13d37328499320d327fabe0c9ffb8aaee6613528d55406"
+      "offset": 14680064,
+      "size": 209352,
+      "sha256": "f5050539701b4e8f7ceffa9597d590951636f4e9c4b952f2c723dd0d3a112dc4",
+      "blob": "774ed3d9ad306d0fb68aa256af93b480219b7ec3"
     }
   ],
   "publisherRevision": 3,

@@ -1,24 +1,20 @@
 {
-  "schemaVersion": 2,
-  "name": "晷",
-  "builtAtDate": "2026-10-11",
-  "sourceCommit": "54911cf02bdd338be801ea03caff78ff7f835d22",
-  "sourceTree": "25ddfe9095daae146ce739eb0e4205d69f12143c",
-  "sourceRepository": "https://github.com/zwwd1/scvtc-kejian",
-  "productionInputsUnchangedAfterBuild": true,
+  "version": "1.2.9",
+  "sourceCommit": "9f09afbbff5c4fb3cf41cfadf1d705c7c9ace264",
+  "sourceRepository": "zwwd1/gnomon-timetable",
   "artifact": {
-    "file": "scvtc-kejian-1.2.6.apk",
-    "sha256": "5c133f8afdd9950b4e9a32a3a6dcc47098a57c2ee2d036cdef7c753e63c3bec6",
-    "size": 14855380,
+    "file": "Gnomon-课程表-1.2.9.apk",
     "packageName": "cn.scvtc.campus.preview",
-    "versionName": "1.2.6",
-    "versionCode": 19,
+    "versionCode": 22,
     "certificateSha256": "5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3",
-    "nativeLibraryCount": 4,
-    "abi": "universal",
-    "distribution": "legacy"
+    "size": 14889416,
+    "sha256": "2a407a578a3ec707cd6300b02499a6398329ea28b9be33d3678e6e82c70c2eaa",
+    "abi": "universal"
   },
-  "checks": {
+  "releaseBuild": "passed",
+  "releaseLintVital": "passed",
+  "originalSignature": "passed",
+  "artifactChecks": {
     "manifest": true,
     "originalSignature": true,
     "zip16KiBAlignment": true,
@@ -27,56 +23,24 @@
     "nativeAbiCoverage": true,
     "crc": true,
     "sourceAssets": true,
-    "sourceCommit": true,
+    "sourceBaseCommit": true,
+    "localBuildInputs": true,
     "originalDonationPng": true,
     "noPlaintextCredentials": true,
     "r8Mapping": true,
+    "appName": true,
     "nativeLibrariesPreserved": true
   },
-  "releaseBuild": "passed",
-  "releaseLintVital": "passed",
-  "fullLint": "not_completed",
-  "functionalTests": "not_run_at_user_request",
-  "deviceTests": "not_run_at_user_request",
-  "sourceArchive": {
-    "sha256": "ae7c9700fd312928c695a5176674cc894e1c4c55cf1d0e232b43035a86a476d5",
-    "bytes": 22454524,
-    "fileCount": 1931,
-    "matchesSourceCommit": true
+  "localBuildInputsSha256": "99183e53acb9af705bb5b8da03a6cf9c0964a4679f68c8c01baf09fe18147ba7",
+  "sourceGitMatch": {
+    "exact": 164,
+    "lineEndingsOnly": 1508,
+    "contentDifferent": 0
   },
-  "additionalBuildInputs": {
-    "originalDonationPngSha256": "8ebf7c9b12fbe2917878bad2be227a24987b700a1859177ae63be9bc1bd86ce5"
+  "mappingId": "039f1f6cb56c9b732280862e076429ac166b64a18a46c7a1f2766fcbcbf7568f",
+  "deviceTests": {
+    "final129": "not_run_user_deferred_phone",
+    "previous128": "controlled_slow_auth_passed"
   },
-  "r8Mapping": {
-    "id": "443f12a13348a3f048ba7d02f144a2d7776e693fafcf8ae4f87989e77711cb36",
-    "sha256": "a214f446885e71b4e47817954527bcfa2fb84fd7bbadf4f6f594612211debc52"
-  },
-  "expectedReleaseUrl": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.6",
-  "releasePublicationStatus": "published",
-  "cloudServicesPaused": true,
-  "report": "VERIFICATION.md",
-  "additionalArtifacts": [],
-  "publicRelease": {
-    "url": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.6",
-    "tag": "v1.2.6",
-    "publishedAt": "2026-10-11T12:07:51Z",
-    "sourceTagCommit": "54911cf02bdd338be801ea03caff78ff7f835d22",
-    "publisherCommit": "edf20d48cb02faff469c8cb1792980432ba425f5",
-    "workflowRuns": [
-      {
-        "id": 38138082649,
-        "jobId": 114466003875,
-        "conclusion": "success",
-        "url": "https://github.com/zwwd1/scvtc-kejian/actions/runs/38138082649"
-      }
-    ],
-    "assets": [
-      {
-        "name": "scvtc-kejian-1.2.6.apk",
-        "size": 14855380,
-        "sha256": "5c133f8afdd9950b4e9a32a3a6dcc47098a57c2ee2d036cdef7c753e63c3bec6",
-        "url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.6/scvtc-kejian-1.2.6.apk"
-      }
-    ]
-  }
+  "additionalArtifacts": []
 }
