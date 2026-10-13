@@ -2,11 +2,18 @@
 
 用智慧川职的时候，有些地方真的挺让人烦的。只是想看一眼课表，还得来回找入口；登录和页面又常常不太顺手。我就按自己的习惯，折腾了这份 Gnomon 课程表。
 
-没有多大的道理，就是自己随心而动的作品。希望它也能帮到川职院的同辈，少折腾一点。它基于 SleepDown-Schedule，保留课程编辑、作息、提醒、小部件和玻璃界面，再接上川职教务、成绩与学分。
+这是自己随心而动的作品，希望也能帮到川职院的同辈，少折腾一点。它基于 SleepDown-Schedule，保留课程编辑、作息、提醒、小部件和玻璃界面，再接上川职教务、成绩与学分。
 
 我不会实时维护这个应用。学校哪天换了登录方式或接口，它可能就失效了；到时不一定能及时修。源码在这里，有兴趣就 fork 一份，自行 vibe coding，按自己的需要改。
 
 [下载 APK](https://github.com/zwwd1/gnomon-timetable/releases/latest) · [反馈问题](https://github.com/zwwd1/gnomon-timetable/issues) · [更新记录](release-notes/v1.2.7.md)
+
+## 看图上手
+
+<img src="docs/images/timetable-empty.png" width="240" alt="Gnomon 真机周课表">
+<img src="docs/images/school-auth.png" width="240" alt="Gnomon 真机学校认证页，输入为空">
+
+[图文使用说明](docs/SCVTC_USAGE.md) 按连接学校、查看课程、设置提醒和处理同步问题讲解。截图来自 10 月 12 日实机，早于本次英文改名与使用指南更新；图中的作息不是学校官方时间。
 
 ## 能做什么
 
