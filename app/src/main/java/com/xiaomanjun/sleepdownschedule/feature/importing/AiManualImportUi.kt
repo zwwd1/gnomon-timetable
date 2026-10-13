@@ -567,7 +567,7 @@ fun NormalizedAiManualImportScreen(
         onJsonTextChange = { jsonText = it },
         onCopyPrompt = {
             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            clipboard.setPrimaryClip(ClipData.newPlainText("晷课表提示词", SchedulePromptBuilder.buildTokenPrompt()))
+            clipboard.setPrimaryClip(ClipData.newPlainText("Gnomon 课程表提示词", SchedulePromptBuilder.buildTokenPrompt()))
         },
         onCleanText = { jsonText = ScheduleImportParser.cleanMarkdown(jsonText) },
         selectedFileName = selectedFileName,

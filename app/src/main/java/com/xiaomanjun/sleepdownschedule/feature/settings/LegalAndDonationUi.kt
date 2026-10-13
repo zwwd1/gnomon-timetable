@@ -25,12 +25,12 @@ import java.math.BigDecimal
 private data class PrivacyPolicySection(val title: String, val body: String)
 
 private val SleepDownPrivacyPolicySections = listOf(
-    PrivacyPolicySection("一、本机与学校", "晷由 zwwd1 维护，是基于 SleepDown 的非官方适配项目。登录仅访问学校 CAS 和教务系统；课表数据由已验证身份的官方 JSON 接口读取。"),
+    PrivacyPolicySection("一、本机与学校", "Gnomon 课程表由 zwwd1 维护，是基于 SleepDown 的非官方适配项目。登录仅访问学校 CAS 和教务系统；课表数据由已验证身份的官方 JSON 接口读取。"),
     PrivacyPolicySection("二、凭据加密", "账号密码、认证备份由 Android Keystore 管理的 AES-GCM 密钥在本机加密，身份核验成功后才正式保存。私钥不能随课表导出。WebView 保留学校 Cookie，App 每次以真实学生接口确认会话有效。"),
     PrivacyPolicySection("三、课表与系统备份", "课表存储于应用私有 Room 数据库，受 Android 沙箱和设备文件加密保护；并非 SQLCipher 全库加密。系统云备份和设备迁移备份已关闭。用户主动导出的课表含课程与地点，请自行保管。"),
     PrivacyPolicySection("四、云服务与可选联网", "本版本暂停云同步、上游云配置和安装统计，不把学校密码或课程上传给维护者。可选 AI、天气、更新和第三方适配器在主动使用或明确启用后连接对应服务；AI 上下文可能包含你选定的课程。"),
     PrivacyPolicySection("五、退出与故障", "退出教务连接会取消自动同步，移除本机保存的密码与 WebView 登录状态，保留离线课表。网络故障、过期会话或解析失败不会清空课表。学校要求补充验证时仍需本人操作。"),
-    PrivacyPolicySection("六、权限与反馈", "通知、闹钟和后台任务用于课程提醒与同步；文件和照片由系统选择器授权。反馈请使用 github.com/zwwd1/scvtc-kejian/issues，只提交脱敏信息，不发送账号密码、Cookie 或原始抓包。")
+    PrivacyPolicySection("六、权限与反馈", "通知、闹钟和后台任务用于课程提醒与同步；文件和照片由系统选择器授权。反馈请使用 github.com/zwwd1/gnomon-timetable/issues，只提交脱敏信息，不发送账号密码、Cookie 或原始抓包。")
 )
 
 @Composable
@@ -43,7 +43,7 @@ fun PrivacyPolicySettingsScreen(state: AppState, backdrop: Backdrop?) {
         item(key = "privacy-meta") {
             SettingsGroup(backdrop = backdrop, config = state.config, modifier = Modifier.fillMaxWidth()) {
                 SettingsInfoRow(
-                    "晷隐私政策",
+                    "Gnomon 课程表隐私政策",
                     "版本 1.0\n更新日期：2026 年 10 月 8 日\n生效日期：2026 年 10 月 8 日\n\n请在使用前完整阅读。各项联网能力均不影响本机课表的基本查看与编辑。"
                 )
             }

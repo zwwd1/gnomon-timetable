@@ -1,6 +1,7 @@
 package com.xiaomanjun.sleepdownschedule.feature.schedule.autorefresh
 
 import android.content.Context
+import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -8,6 +9,9 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import cn.scvtc.campus.core.BackgroundSyncOutcome
+import cn.scvtc.campus.core.BackgroundSyncResult
+import cn.scvtc.campus.core.executeBackgroundSync
 import com.xiaomanjun.sleepdownschedule.CourseScheduleApp
 import com.xiaomanjun.sleepdownschedule.CourseEntity
 import com.xiaomanjun.sleepdownschedule.TodayCoursesWidgetProvider
@@ -15,6 +19,8 @@ import com.xiaomanjun.sleepdownschedule.feature.importing.EduAdapter
 import com.xiaomanjun.sleepdownschedule.feature.reminder.NotificationScheduler
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.TimeUnit
@@ -22,7 +28,8 @@ import java.util.concurrent.TimeUnit
 internal data class AutoRefreshOutcome(
     val success: Boolean,
     val message: String,
-    val profile: AutoRefreshScheduleProfile? = null
+    val profile: AutoRefreshScheduleProfile? = null,
+    val retryable: Boolean = false
 )
 
 internal object AutoRefreshScheduleCoordinator {
@@ -94,7 +101,7 @@ internal object AutoRefreshScheduleCoordinator {
         }
     }
 
-    suspend fun refreshSaved(context: Context): AutoRefreshOutcome = refreshMutex.withLock {
+    suspend fun refreshSaved(context: Context): AutoRefreshOutcome = withContext(Dispatchers.IO) { refreshMutex.withLock {
         val profile = AutoRefreshScheduleStore.load(context)
             ?: return@withLock AutoRefreshOutcome(false, "请先登录教务系统")
         if (profile.schoolId == cn.scvtc.campus.ScvtcNativeBridge.SCHOOL) return@withLock cn.scvtc.campus.ScvtcNativeBridge.sync(context, profile.username)
@@ -103,7 +110,7 @@ internal object AutoRefreshScheduleCoordinator {
         val adapter = ShiguangApiAdapterCatalog.find(adapters, profile.schoolId, profile.adapterId)
             ?: return@withLock recordFailure(context, profile, "该教务入口已更新，请重新选择学校并登录")
         execute(context, adapter, profile)
-    }
+    } }
 
     /** Retain browser state only; HTML adapters still require their normal preview and confirmation. */
     suspend fun retainSession(
@@ -163,7 +170,8 @@ internal object AutoRefreshScheduleCoordinator {
                 context,
                 profile,
                 error.message?.takeIf(String::isNotBlank)
-                    ?: "刷新失败，请检查网络、账号或教务系统状态"
+                    ?: "刷新失败，请检查网络、账号或教务系统状态",
+                retryable = error is java.io.IOException || error is TimeoutCancellationException
             )
         }
     }
@@ -179,7 +187,8 @@ internal object AutoRefreshScheduleCoordinator {
     private fun recordFailure(
         context: Context,
         profile: AutoRefreshScheduleProfile,
-        message: String
+        message: String,
+        retryable: Boolean = false
     ): AutoRefreshOutcome {
         val friendly = when {
             message.contains("timed out", ignoreCase = true) ->
@@ -193,7 +202,7 @@ internal object AutoRefreshScheduleCoordinator {
                 } else current
             }
         }
-        return AutoRefreshOutcome(false, friendly, AutoRefreshScheduleStore.load(context))
+        return AutoRefreshOutcome(false, friendly, AutoRefreshScheduleStore.load(context), retryable)
     }
 }
 
@@ -232,8 +241,14 @@ class AutoRefreshScheduleWorker(
     override suspend fun doWork(): Result {
         val profile = AutoRefreshScheduleStore.load(applicationContext)
         if (profile?.automaticRefreshEnabled != true) return Result.success()
-        AutoRefreshScheduleCoordinator.refreshSaved(applicationContext)
-        return Result.success()
+        return when (executeBackgroundSync(runAttemptCount) {
+            val outcome = AutoRefreshScheduleCoordinator.refreshSaved(applicationContext)
+            BackgroundSyncOutcome(outcome.success, outcome.retryable)
+        }) {
+            BackgroundSyncResult.SAVED -> Result.success()
+            BackgroundSyncResult.RETRY -> Result.retry()
+            BackgroundSyncResult.FAILED -> Result.failure()
+        }
     }
 
     companion object {
@@ -265,6 +280,7 @@ class AutoRefreshScheduleWorker(
                         .build()
                 )
                 .setInitialDelay(minutes, TimeUnit.MINUTES)
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
                 .build()
             manager.enqueueUniquePeriodicWork(
                 WorkName,

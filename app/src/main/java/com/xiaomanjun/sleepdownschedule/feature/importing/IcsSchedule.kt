@@ -236,7 +236,7 @@ object IcsScheduleCodec {
         courses: List<CourseEntity>
     ): File {
         val directory = File(context.cacheDir, "shared_schedules").apply { mkdirs() }
-        val safeName = calendarName.replace(Regex("[\\\\/:*?\"<>|]"), "_").ifBlank { "晷课表" }
+        val safeName = calendarName.replace(Regex("[\\\\/:*?\"<>|]"), "_").ifBlank { "Gnomon 课程表" }
         return File(directory, "$safeName.ics").apply {
             writeText(export(calendarName, config, periods, courses), Charsets.UTF_8)
         }

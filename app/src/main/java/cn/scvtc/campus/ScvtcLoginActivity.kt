@@ -265,6 +265,8 @@ class ScvtcLoginActivity : ComponentActivity() {
                             if(continueAutomatically&&navigation.continueFrom(page)!=null){
                                 parent.loadUrl(School.HOME);dialog.dismiss()
                             }
+                        },onSessionRequired={page->
+                            if(child.url==page)navigation.restoreService()?.let(child::loadUrl)
                         }){account}
                         child.webViewClient=object:WebViewClient(){
                             override fun shouldOverrideUrlLoading(view:WebView,request:WebResourceRequest):Boolean {
@@ -306,7 +308,11 @@ class ScvtcLoginActivity : ComponentActivity() {
                 memory.install(this,onIdentity={value->detectedAccount=value;probeEpoch++},
                     onAuthLanding={page->if(continueAutomatically)navigation.continueFrom(page)?.let{target->
                         documentReady=false;message="正在进入教务首页…";loadUrl(target)
-                    }}){account}
+                    }},onSessionRequired={page->
+                        if(continueAutomatically&&url==page)navigation.restoreService()?.let{target->
+                            documentReady=false;message="正在建立教务会话…";loadUrl(target)
+                        }
+                    }){account}
                 var homeRetried=false
                 webViewClient=object:WebViewClient(){
                     override fun onPageStarted(view:WebView,url:String?,icon:android.graphics.Bitmap?){
@@ -379,7 +385,12 @@ class ScvtcLoginActivity : ComponentActivity() {
                     delay(if(attempt==0)600 else 1200)
                     if(!documentReady||Uri.parse(web.url.orEmpty()).host!="jwxt.scvtc.edu.cn")return@LaunchedEffect
                     val student=try{JwxtApi(headers={memory.apiHeaders(expected,it)}).student(expected)}
-                        catch(e:JwxtAuthenticationRequired){null}
+                        catch(e:JwxtAuthenticationRequired){
+                            navigation.restoreService()?.let{target->
+                                documentReady=false;web.loadUrl(target)
+                            }
+                            null
+                        }
                     if(student!=null){
                         memory.confirmed(student.account,promoteEnrollment=true)
                         ScvtcNativeBridge.completeOfficialSignIn(app,student)

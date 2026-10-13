@@ -161,8 +161,9 @@ internal object ScvtcNativeBridge {
             val migration = runCatching { ScvtcLegacyMigration.run(app) }
             if (migration.isFailure) return@launch // Never synchronize over an incomplete migration.
             val profile = AutoRefreshScheduleStore.load(app)
+            val memory = OfficialLoginMemory(app)
             val account = profile?.takeIf { it.schoolId == SCHOOL }?.username
-                ?: OfficialLoginMemory(app).savedAccounts().singleOrNull()
+                ?: memory.lastVerifiedAccount().ifBlank { memory.savedAccounts().singleOrNull().orEmpty() }.takeIf { it.isNotBlank() }
             if (account != null && profile?.automatic != false) sync(app, account)
         }
     }
@@ -238,24 +239,26 @@ internal object ScvtcNativeBridge {
                 throw e
             }
             CampusSyncStatus.failure(app)
-            failure(app, "登录恢复超时；已保存的课表仍可使用")
+            failure(app, "登录恢复超时；已保存的课表仍可使用", retryable = true)
         } catch (e: Exception) {
             CampusSyncStatus.failure(app,e is JwxtAuthenticationRequired)
             val message = if (e is JwxtAuthenticationRequired) "学校需要补充认证，请打开官方登录；离线课表已保留"
                 else "同步未完成，离线课表已保留。请检查网络或稍后重试"
-            failure(app, message)
+            failure(app, message, retryable = e is java.io.IOException)
         }
     }
 
-    private fun failure(app: Context, message: String): AutoRefreshOutcome {
+    private fun failure(app: Context, message: String, retryable: Boolean = false): AutoRefreshOutcome {
         AutoRefreshScheduleStore.update(app) { it.copy(lastResult = message) }
-        return AutoRefreshOutcome(false, message, AutoRefreshScheduleStore.load(app))
+        return AutoRefreshOutcome(false, message, AutoRefreshScheduleStore.load(app), retryable)
     }
 
     suspend fun disconnect(context: Context) {
         synchronized(this) { loginJob?.cancel() }
         coordinator.withLock {
-        AutoRefreshScheduleStore.load(context)?.let { OfficialLoginMemory(context).forget(it.username) }
+        val memory=OfficialLoginMemory(context)
+        val account=AutoRefreshScheduleStore.load(context)?.username.orEmpty().ifBlank { memory.lastVerifiedAccount() }
+        if(account.isNotBlank())memory.forget(account)
         AutoRefreshScheduleWorker.updateSchedule(context, null)
         AutoRefreshScheduleStore.clear(context)
         withContext(Dispatchers.Main) {

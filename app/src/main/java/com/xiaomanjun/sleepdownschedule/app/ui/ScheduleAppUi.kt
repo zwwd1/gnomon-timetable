@@ -2287,7 +2287,7 @@ fun CourseScheduleAppUi(
         popupHost = {
             Box(Modifier.fillMaxSize()) {
                 if(showSchoolConnection) LiquidAlertDialog(
-                    title="让课表从这里开始", message="连接四川职业技术学院教务账号。密码加密留在本机，登录过期后自动恢复；也可以稍后在设置中连接。",
+                    title="Gnomon 课程表 · 使用指南", message="1. 连接学校\n填写学号和学校密码，登录后自动读取课表。密码加密记在本机。\n\n2. 查看与调整\n在课程页切换日、周视图，点课程查看详情或修改。\n\n3. 开启提醒\n在设置里填写节次时间，再开启课前提醒；外观和底栏也在这里调整。\n\n暂不连接也能手动添加课程。学校要求验证码时，在官方页面完成。",
                     actions=listOf(
                         LiquidAlertAction("稍后",LiquidAlertActionStyle.Secondary){onSchoolConnectionChoice(false)},
                         LiquidAlertAction("连接川职教务",LiquidAlertActionStyle.Primary){onSchoolConnectionChoice(true)}),
@@ -3784,7 +3784,7 @@ fun CourseScheduleAppUi(
     if (showManagedFreeAiOffer) {
         LiquidAlertDialog(
             title = "启用每日免费 AI？",
-            message = "AI 助理、对话与导入使用你配置的模型服务，密钥加密保存在本机。晷的云服务已暂停。",
+            message = "AI 助理、对话与导入使用你配置的模型服务，密钥加密保存在本机。Gnomon 课程表的云服务已暂停。",
             actions = listOf(
                 LiquidAlertAction("暂不启用", LiquidAlertActionStyle.Secondary) {
                     AiImportSettingsStore.declineManagedFreeAi(context)
@@ -8244,7 +8244,7 @@ fun SettingsRootScreen(
     val appName = remember {
         runCatching {
             context.packageManager.getApplicationLabel(context.applicationInfo).toString()
-        }.getOrDefault("晷")
+        }.getOrDefault("Gnomon 课程表")
     }
 
     val updateAvailable by GiteeAppUpdater.updateAvailable.collectAsStateWithLifecycle()
@@ -8513,7 +8513,7 @@ private fun SettingsUpdateDialogHost(
         null -> Unit
         SettingsUpdateDialog.Checking -> LiquidAlertDialog(
             title = "正在检查更新",
-            message = "正在读取晷 GitHub 发布的更新清单。",
+            message = "正在读取Gnomon 课程表 GitHub 发布的更新清单。",
             actions = listOf(LiquidAlertAction("取消", LiquidAlertActionStyle.Secondary, onClick = onDismiss)),
             backdrop = backdrop,
             config = config,
@@ -8524,7 +8524,7 @@ private fun SettingsUpdateDialogHost(
             val notes = release.notes.trim().ifBlank { "该版本没有填写更新说明。" }
             LiquidAlertDialog(
                 title = "发现新版本 ${release.name}",
-                message = "$notes\n\n当前将从晷 GitHub 发布下载 APK，安装前仍会由系统向你确认。",
+                message = "$notes\n\n当前将从Gnomon 课程表 GitHub 发布下载 APK，安装前仍会由系统向你确认。",
                 actions = listOf(
                     LiquidAlertAction("稍后", LiquidAlertActionStyle.Secondary, onClick = onDismiss),
                     LiquidAlertAction("下载并安装", LiquidAlertActionStyle.Primary) { onDownload(release) }
@@ -8536,7 +8536,7 @@ private fun SettingsUpdateDialogHost(
         }
         is SettingsUpdateDialog.UpToDate -> LiquidAlertDialog(
             title = "已是最新版本",
-            message = "当前安装版本已不低于晷 GitHub 最新 Release（${dialog.latestTag}）。",
+            message = "当前安装版本已不低于Gnomon 课程表 GitHub 最新 Release（${dialog.latestTag}）。",
             actions = listOf(LiquidAlertAction("知道了", LiquidAlertActionStyle.Primary, onClick = onDismiss)),
             backdrop = backdrop,
             config = config,
@@ -8544,7 +8544,7 @@ private fun SettingsUpdateDialogHost(
         )
         is SettingsUpdateDialog.Downloading -> LiquidAlertDialog(
             title = "正在下载 ${dialog.release.name}",
-            message = "正在从晷 GitHub 下载 APK。现在可以返回或退到桌面，下载会在后台继续，并通过实时活动显示进度。",
+            message = "正在从Gnomon 课程表 GitHub 下载 APK。现在可以返回或退到桌面，下载会在后台继续，并通过实时活动显示进度。",
             actions = listOf(
                 LiquidAlertAction(
                     "后台下载",
@@ -8580,7 +8580,7 @@ private fun SettingsUpdateDialogHost(
         )
         SettingsUpdateDialog.InstallPermissionRequired -> LiquidAlertDialog(
             title = "允许安装更新",
-            message = "Android 需要你先允许晷安装来自本项目 GitHub 的更新。授权返回后会继续打开系统安装确认页面。",
+            message = "Android 需要你先允许Gnomon 课程表安装来自本项目 GitHub 的更新。授权返回后会继续打开系统安装确认页面。",
             actions = listOf(
                 LiquidAlertAction("取消", LiquidAlertActionStyle.Secondary, onClick = onDismiss),
                 LiquidAlertAction("去授权", LiquidAlertActionStyle.Primary, onClick = onRequestInstallPermission)
@@ -8802,7 +8802,7 @@ fun AboutSettingsScreen(state: AppState, backdrop: Backdrop?) {
                     )
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
-                            text = "晷",
+                            text = "Gnomon 课程表",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -8812,7 +8812,7 @@ fun AboutSettingsScreen(state: AppState, backdrop: Backdrop?) {
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "版本 $versionName · 晷 · zwwd1",
+                            text = "版本 $versionName · Gnomon 课程表 · zwwd1",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -8924,8 +8924,8 @@ fun AboutSettingsScreen(state: AppState, backdrop: Backdrop?) {
     }
 }
 
-private const val SleepDownWebsiteUrl = "https://github.com/zwwd1/scvtc-kejian"
-private const val SleepDownSourceUrl = "https://github.com/zwwd1/scvtc-kejian"
+private const val SleepDownWebsiteUrl = "https://github.com/zwwd1/gnomon-timetable"
+private const val SleepDownSourceUrl = "https://github.com/zwwd1/gnomon-timetable"
 private const val SleepDownReleasesUrl = "$SleepDownSourceUrl/releases"
 private const val SleepDownIssuesUrl = "$SleepDownSourceUrl/issues"
 private const val SleepDownLicenseUrl = "$SleepDownSourceUrl/blob/main/LICENSE.md"
@@ -9126,7 +9126,7 @@ private fun AboutHero(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "晷",
+                text = "Gnomon 课程表",
                 style = MaterialTheme.typography.displaySmall.copy(brush = titleBrush),
                 fontSize = if (maxWidth < 320.dp) 30.sp else 36.sp,
                 lineHeight = if (maxWidth < 320.dp) 36.sp else 43.sp,
@@ -9145,7 +9145,7 @@ private fun AboutHero(
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = "版本 $versionName  ·  晷 · zwwd1",
+            text = "版本 $versionName  ·  Gnomon 课程表 · zwwd1",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.56f)
@@ -9358,8 +9358,8 @@ fun ChangelogSettingsScreen(
             item(key = "about-project") {
                 AboutGlassPanel(darkTheme = darkTheme, modifier = Modifier.fillMaxWidth()) {
                     SettingsValueRow("项目维护", "zwwd1")
-                    SettingsInfoRow("致谢项目", "SleepDown课程表、Miuix 与 Backdrop。原项目许可和版权声明保留于仓库，晷由 zwwd1 维护。")
-                    SettingsNavigationRow("晷开源项目", "github.com/zwwd1/scvtc-kejian", onClick = { openProjectPage("https://github.com/zwwd1/scvtc-kejian") })
+                    SettingsInfoRow("致谢项目", "SleepDown课程表、Miuix 与 Backdrop。原项目许可和版权声明保留于仓库，Gnomon 课程表由 zwwd1 维护。")
+                    SettingsNavigationRow("Gnomon 课程表开源项目", "github.com/zwwd1/gnomon-timetable", onClick = { openProjectPage("https://github.com/zwwd1/gnomon-timetable") })
                     SettingsDivider()
                     Row(
                         modifier = Modifier

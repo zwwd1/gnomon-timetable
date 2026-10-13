@@ -53,7 +53,7 @@ object NotificationScheduler {
     private const val KEY_DND_ENABLED_BY_APP = "dnd_enabled_by_app"
     private const val KEY_DND_RULE_ID = "dnd_rule_id"
     private const val KEY_DND_RULE_MIGRATED = "dnd_rule_migrated"
-    private const val DND_RULE_NAME = "晷课程勿扰"
+    private const val DND_RULE_NAME = "Gnomon 课程表 · 课程勿扰"
     private const val LIVE_UPDATE_ID = 20260522
     private const val LIVE_UPDATE_ALTERNATE_ID = 20260523
     private const val SUPER_ISLAND_ID = 20260524

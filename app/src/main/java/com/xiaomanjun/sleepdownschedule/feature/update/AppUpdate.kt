@@ -45,7 +45,7 @@ import java.net.URL
 import java.time.LocalDate
 
 private const val GiteeOwner = "zwwd1"
-private const val GiteeRepository = "scvtc-kejian"
+private const val GiteeRepository = "gnomon-timetable"
 private const val GiteeApiBase = "https://api.github.com"
 private const val GiteeRepositoryUrl = "https://github.com/$GiteeOwner/$GiteeRepository"
 private const val ReleaseFeedUrl = "https://raw.githubusercontent.com/$GiteeOwner/$GiteeRepository/main/releases/update.json"

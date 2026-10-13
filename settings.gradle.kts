@@ -65,7 +65,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "CourseSchedule"
+rootProject.name = "gnomon-timetable"
 include(":app")
 include(":school-core")
 include(":benchmark")

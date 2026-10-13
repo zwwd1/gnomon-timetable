@@ -45,12 +45,14 @@ class OfficialLoginMemory(private val context:Context) {
             .putString("last-input",seal("native-input:last",JSONObject().put("username",account).toString())).commit())
     }
     fun lastInputAccount():String=prefs.getString("last-input",null)?.let { open("native-input:last",it) }?.optString("username").orEmpty()
+    fun lastVerifiedAccount():String=prefs.getString("last-verified",null)?.let { open("native-verified:last",it) }?.optString("username").orEmpty()
     fun inputPassword(account:String):String {
         val input=prefs.getString("input:$account",null)?.let { open("input:$account",it) }
             ?:prefs.getString(account,null)?.let { open(account,it) }
         return input?.takeIf { it.optString("username")==account }?.optString("password").orEmpty()
     }
-    fun savedAccounts():List<String> = prefs.all.keys.filter { it.matches(Regex("[0-9]{6,20}")) && configured(it) }
+    fun savedAccounts():List<String> = (prefs.all.keys.filter { it.matches(Regex("[0-9]{6,20}")) && configured(it) }+
+        listOfNotNull(lastVerifiedAccount().takeIf { it.matches(Regex("[0-9]{6,20}")) })).distinct()
     private fun enrollment(account:String):JSONObject? {
         val value=prefs.getString("enrollment:$account",null)?.let{open(account,it)}?:return null
         val age=System.currentTimeMillis()-value.optLong("capturedAt",0)
@@ -72,7 +74,8 @@ class OfficialLoginMemory(private val context:Context) {
         val service=current.getQueryParameter("service")?:return false
         val callback=Uri.parse(service)
         if(callback.scheme!="https"||callback.host!="jwxt.scvtc.edu.cn"||callback.port !in setOf(-1,443)||callback.userInfo!=null||callback.path!="/api/cas/login")return false
-        val mobile=Uri.parse("https://cas.scvtc.edu.cn/cas/H5/index.html").buildUpon().appendQueryParameter("service",service).fragment("/").build()
+        // Vue hash routing needs the literal #/; fragment("/") produces #%2F.
+        val mobile=Uri.parse("https://cas.scvtc.edu.cn/cas/H5/index.html").buildUpon().appendQueryParameter("service",service).encodedFragment("/").build()
         usedH5Entry=true
         web.loadUrl(mobile.toString())
         return true
@@ -121,7 +124,7 @@ class OfficialLoginMemory(private val context:Context) {
         if(value.optString("LYSESSIONID").isNotBlank())runCatching{prefs.edit().putString("session:$account",seal(account,value.toString())).commit()}
         android.webkit.CookieManager.getInstance().flush()
     }
-    fun install(web:WebView,onIdentity:(String)->Unit={},onAuthLanding:(String)->Unit={},expectedAccount:()->String={""}) {
+    fun install(web:WebView,onIdentity:(String)->Unit={},onAuthLanding:(String)->Unit={},onSessionRequired:(String)->Unit={},expectedAccount:()->String={""}) {
         if(!WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER))return
         WebViewCompat.addWebMessageListener(web,"OfficialLoginBridge",origins){_,message,origin,main,_->
             if(!disposed && main && origin.toString().trimEnd('/') in origins)runCatching {
@@ -148,6 +151,10 @@ class OfficialLoginMemory(private val context:Context) {
                 val doc=m.getString("documentId");require(doc.matches(Regex("[0-9a-fA-F-]{36}")))
                 if(doc!=document){document=doc;verified="";staged.clear()}
                 val url=m.getString("url").substringBefore('?');require(url in setOf(JwxtApi.IDENTITY,JwxtApi.TERM,JwxtApi.SCHEDULE))
+                if(m.optString("kind")=="session-required") {
+                    require(url==JwxtApi.IDENTITY)
+                    onSessionRequired(m.getString("page"));return@runCatching
+                }
                 staged[url]=m.getJSONObject("headers")
                 if(url==JwxtApi.IDENTITY){
                     verified=cn.scvtc.campus.core.OfficialIdentity.account(m.optString("identityBody"))
@@ -166,6 +173,8 @@ class OfficialLoginMemory(private val context:Context) {
     }
     fun confirmed(account:String,promoteEnrollment:Boolean=false) {
         if(account.isBlank())return
+        check(prefs.edit().putString("last-verified",seal("native-verified:last",
+            JSONObject().put("username",account).toString())).commit())
         lastAttempt=0L
         recoveringPage=""
         usedH5Entry=false
@@ -280,10 +289,15 @@ class OfficialLoginMemory(private val context:Context) {
             }
         }
     }
+    fun clearRememberedPassword(account:String) {
+        prefs.edit().remove("input:$account").remove("enrollment:$account").remove(account)
+            .remove("attempt:$account").remove("pending:$account").commit()
+    }
     fun forget(account:String){
         recoveringPage="";usedH5Entry=false
         val edit=prefs.edit().remove("input:$account").remove("enrollment:$account").remove(account).remove("attempt:$account").remove("pending:$account").remove("session:$account")
         if(lastInputAccount()==account)edit.remove("last-input")
+        if(lastVerifiedAccount()==account)edit.remove("last-verified")
         prefs.all.keys.filter{it.startsWith("headers:$account:")}.forEach(edit::remove);edit.apply()
     }
 }
