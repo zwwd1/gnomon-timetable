@@ -1,19 +1,18 @@
 {
-  "version": "1.2.9",
-  "sourceCommit": "9f09afbbff5c4fb3cf41cfadf1d705c7c9ace264",
+  "version": "1.2.11",
+  "sourceCommit": "5487edb35834ba07c24c2a11aa750ee42b25e58b",
   "sourceRepository": "zwwd1/gnomon-timetable",
   "artifact": {
-    "file": "Gnomon-Timetable-1.2.9.apk",
+    "file": "Gnomon-Timetable-1.2.11.apk",
     "packageName": "cn.scvtc.campus.preview",
-    "versionCode": 22,
+    "versionCode": 24,
     "certificateSha256": "5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3",
-    "size": 14889416,
-    "sha256": "2a407a578a3ec707cd6300b02499a6398329ea28b9be33d3678e6e82c70c2eaa",
+    "size": 14894237,
+    "sha256": "89b88f763ffd311554c357fc4cdd98b91b334e257f39b7bf240b18ebac0e42ce",
     "abi": "universal"
   },
   "releaseBuild": "passed",
   "releaseLintVital": "passed",
-  "originalSignature": "passed",
   "artifactChecks": {
     "manifest": true,
     "originalSignature": true,
@@ -31,16 +30,12 @@
     "appName": true,
     "nativeLibrariesPreserved": true
   },
-  "localBuildInputsSha256": "99183e53acb9af705bb5b8da03a6cf9c0964a4679f68c8c01baf09fe18147ba7",
+  "localBuildInputsSha256": "45c88ec7bfe041538b7bc434fa9af3fc71d480c9e732eda69651c837ad173184",
   "sourceGitMatch": {
-    "exact": 164,
-    "lineEndingsOnly": 1508,
-    "contentDifferent": 0
+    "contentDifferent": 0,
+    "lineEndingsOnly": 1506
   },
-  "mappingId": "039f1f6cb56c9b732280862e076429ac166b64a18a46c7a1f2766fcbcbf7568f",
-  "deviceTests": {
-    "final129": "not_run_user_deferred_phone",
-    "previous128": "controlled_slow_auth_passed"
-  },
+  "mappingId": "0e598633b90d5fe560fca353dcc411f02787e41196346ee72182dc87007e142e",
+  "deviceTests": "not_run_device_not_connected",
   "additionalArtifacts": []
 }
