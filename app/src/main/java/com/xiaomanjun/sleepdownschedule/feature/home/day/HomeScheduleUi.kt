@@ -2265,7 +2265,7 @@ fun CourseCard(course: CourseEntity, periods: List<PeriodEntity>, showTime: Bool
                 semanticLongClick("编辑课程") {
                     ownBounds[0]?.let { bounds ->
                         shortcuts?.open(CourseShortcutRequest(course, displayedWeek ?: config.currentWeek,
-                            bounds, with(density) { 24.dp.toPx() }, .5f, {}))
+                            bounds, with(density) { 24.dp.toPx() }, .5f, null))
                     }
                     true
                 }
@@ -2276,7 +2276,7 @@ fun CourseCard(course: CourseEntity, periods: List<PeriodEntity>, showTime: Bool
                         ownBounds[0]?.let { bounds ->
                             shortcuts?.open(CourseShortcutRequest(course,
                                 displayedWeek ?: config.currentWeek, bounds,
-                                with(density) { 24.dp.toPx() }, .5f, {}))
+                                with(density) { 24.dp.toPx() }, .5f, null))
                         }
                     }
                 )

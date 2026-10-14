@@ -50,7 +50,7 @@ internal data class CourseShortcutRequest(
     val bounds: Rect,
     val cornerPx: Float,
     val pivotX: Float,
-    val enterEditMode: () -> Unit
+    val enterEditMode: (() -> Unit)?
 )
 
 internal val LocalCourseShortcuts = staticCompositionLocalOf<CourseShortcutController?> { null }
@@ -241,7 +241,7 @@ internal fun CourseShortcutOverlay(
                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         controller.close { onRemove(request.course, request.week) }
                     }
-                )
+                ).filterIndexed { index, _ -> index != 0 || request.enterEditMode != null }
             }
             val target = placement.bounds
             HomeAddMenuMorphPanel(
