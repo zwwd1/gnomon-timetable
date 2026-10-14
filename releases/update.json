@@ -1,5 +1,34 @@
 [
   {
+    "name": "Gnomon 课程表 1.2.11",
+    "tag_name": "v1.2.11",
+    "body": "# Gnomon 课程表 1.2.11\n\n• 点按课程放大查看课名、老师和地点，长按再编辑；缩短课程卡片的展开、收起和表单过渡。\n• 刷新先校验账号、学期和覆盖范围，保留手动修改、已删除课程和其他教学周的数据。\n• 两版更新历史联网同步 GitHub 发布记录；离线仍能查看本地日志。\n• 保留原包名与签名，可直接覆盖安装。\n\nGnomon 侧重周课表、课程编辑、作息、提醒和桌面组件，安装包兼容多个架构。\n\n包含此前 1.2.10 的数据保护和同步修复。学校验证码仍需在官方认证页完成，原有离线数据保留。\n\n安装包：**Gnomon-Timetable-1.2.11.apk**，14.20 MiB。\n\nSHA-256：`89b88f763ffd311554c357fc4cdd98b91b334e257f39b7bf240b18ebac0e42ce`\n\n[使用说明](https://github.com/zwwd1/gnomon-timetable/blob/v1.2.11/docs/SCVTC_USAGE.md) · [源码](https://github.com/zwwd1/gnomon-timetable/tree/5487edb35834ba07c24c2a11aa750ee42b25e58b)\n",
+    "html_url": "https://github.com/zwwd1/gnomon-timetable/releases/tag/v1.2.11",
+    "published_at": "2026-10-14T11:25:41Z",
+    "draft": false,
+    "prerelease": false,
+    "assets": [
+      {
+        "name": "BUILD_PROVENANCE.json",
+        "size": 1395,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.11/BUILD_PROVENANCE.json",
+        "digest": "sha256:7a46123371d20c42e26af828f8525e07bdcb13b68f8be1c47f0686671b22bf04"
+      },
+      {
+        "name": "Gnomon-Timetable-1.2.11.apk",
+        "size": 14894237,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.11/Gnomon-Timetable-1.2.11.apk",
+        "digest": "sha256:89b88f763ffd311554c357fc4cdd98b91b334e257f39b7bf240b18ebac0e42ce"
+      },
+      {
+        "name": "Gnomon-Timetable-1.2.11.apk.sha256",
+        "size": 94,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.11/Gnomon-Timetable-1.2.11.apk.sha256",
+        "digest": "sha256:db9f05b41d3ac206e8eb59e82447886acead60868d4df187ce95cfa4732cee59"
+      }
+    ]
+  },
+  {
     "name": "Gnomon 课程表 1.2.9",
     "tag_name": "v1.2.9",
     "body": "# Gnomon 课程表 1.2.9\r\n\r\n这次把登录和后台同步再理了一遍，也补上第一次使用的说明。\r\n\r\n应用与项目更名为 Gnomon 课程表，沿用原包名、签名和本机数据。登录表单就绪后即可提交，不再等待无关图片全部加载。旧版后台刷新失败会正确重试，网络故障采用有限次数与递增间隔；需要学校补充认证时保留缓存。手动同步的读取和处理移到后台线程，保留原有玻璃动效、课表编辑、提醒与桌面组件。\r\n\r\n首次打开且没有账号和课程时，会显示连接学校、查看课程和设置提醒的使用指南。可选择稍后，继续手动添加课程。\r\n\r\n本次发布一份日常安装包，保留原包名和原签名，可以直接覆盖安装。Gnomon 侧重课程编辑、作息、提醒和桌面组件；查看教务服务较多时，也可选择 Lumen。\r\n\r\n已完成 Release 构建、原签名与安装包检查，以及后台核心 5 项定向回归。此前 1.2.8 在 Android 17 真机验证过受控慢加载原生认证；1.2.9 的首次弹窗、流畅度对比、自然会话到期和真正后台同步尚待手机复测，不承诺学校认证永久有效。\r\n\r\n安装包：**Gnomon-Timetable-1.2.9.apk**，约 14.20 MiB。\r\n\r\nSHA-256：`2a407a578a3ec707cd6300b02499a6398329ea28b9be33d3678e6e82c70c2eaa`\r\n\r\n[图文使用说明](https://github.com/zwwd1/gnomon-timetable/blob/v1.2.9/docs/SCVTC_USAGE.md) · [对应源码](https://github.com/zwwd1/gnomon-timetable/tree/9f09afbbff5c4fb3cf41cfadf1d705c7c9ace264)\r\n",
