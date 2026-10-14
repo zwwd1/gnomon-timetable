@@ -1365,7 +1365,7 @@ internal fun CollapsibleChangelogRow(version: String, body: String, date: String
             body.splitToSequence('；')
         }
         rawEntries
-            .map { it.trim() }
+            .map { it.trim().removePrefix("• ").removePrefix("- ") }
             .filter { it.isNotEmpty() }
             .map { entry ->
                 if (entry.lastOrNull() in setOf('。', '！', '？', '!', '?', '…')) {
