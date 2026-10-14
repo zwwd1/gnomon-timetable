@@ -1355,9 +1355,9 @@ private val changelogReleaseDates = mapOf(
 )
 
 @Composable
-internal fun CollapsibleChangelogRow(version: String, body: String) {
+internal fun CollapsibleChangelogRow(version: String, body: String, date: String? = null) {
     val isCurrentVersion = version == BuildConfig.VERSION_NAME || version == "下一版本（开发中）"
-    val releaseDate = if(version == "1.1.0" || version == "1.0.0 · 第一版") "2026-10-09" else changelogReleaseDates[version]
+    val releaseDate = date ?: if(version == "1.1.0" || version == "1.0.0 · 第一版") "2026-10-09" else changelogReleaseDates[version]
     val entries = remember(body) {
         val rawEntries = if ('\n' in body) {
             body.lineSequence()
@@ -1382,7 +1382,7 @@ internal fun CollapsibleChangelogRow(version: String, body: String) {
     }
     val arrowRotation by animateFloatAsState(
         targetValue = if (expanded) 90f else -90f,
-        animationSpec = tween(280, easing = gentleExpansionEasing),
+        animationSpec = tween(180, easing = gentleExpansionEasing),
         label = "changelog-arrow-$version"
     )
     val details: @Composable () -> Unit = {

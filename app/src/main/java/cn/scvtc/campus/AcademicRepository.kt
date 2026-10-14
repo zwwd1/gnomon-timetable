@@ -68,12 +68,13 @@ internal object AcademicRepository {
                 catch(e:Exception){previous?.requiredCredits.orEmpty()}
                 val fetchedAt=System.currentTimeMillis()
                 val requirementAt=if(requirementUpdated)fetchedAt else previous?.takeIf{it.requiredCredits.isNotBlank()}?.let{it.requiredCreditsFetchedAt.takeIf{date->date>0}?:it.fetchedAt}?:0
-                AcademicSnapshot(account,term,(terms+grades.mapNotNull{it.fields["学期"]}).distinct().sortedDescending(),grades,requirement,fetchedAt,requirementAt)
+                AcademicSnapshot(account,term,(terms+grades.mapNotNull{it.fields["学期"]}).distinct().sortedDescending(),grades,requirement,gradeTime,requirementAt)
             }
             mutableState.value=AcademicReadState(account,"正在加密保存本机记录…",true)
             CampusSyncStatus.phase(SyncStage.WRITING,"正在保存成绩与学分…")
             save(app,memory,snapshot)
-            CampusSyncStatus.success(app,snapshot.fetchedAt)
+            if(requirementUpdated)CampusSyncStatus.success(app,snapshot.fetchedAt)
+            else CampusSyncStatus.partial(app,snapshot.fetchedAt,"成绩已更新；毕业学分未更新，保留上次记录")
             mutableState.value=AcademicReadState(account,if(requirementUpdated)"已同步 ${snapshot.grades.size} 条真实成绩；毕业要求来自学校接口" else "已同步 ${snapshot.grades.size} 条成绩；毕业要求未更新，保留已有信息")
             true
         } catch(e:CancellationException){

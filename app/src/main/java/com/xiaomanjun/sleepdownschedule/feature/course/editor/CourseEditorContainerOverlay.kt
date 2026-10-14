@@ -123,18 +123,18 @@ import kotlin.math.sin
 private val CourseEditorOpenPositionEasing = CubicBezierEasing(0.18f, 0.72f, 0.18f, 1.0f)
 private val CourseEditorOpenSizeEasing = CubicBezierEasing(0.22f, 0.62f, 0.22f, 1.0f)
 private val CourseEditorClosePositionEasing = CubicBezierEasing(0.30f, 0.10f, 0.22f, 1.0f)
-private const val CourseEditorOpenDurationMillis = 380
-internal const val CourseEditorCloseDurationMillis = 440
+private const val CourseEditorOpenDurationMillis = 240
+internal const val CourseEditorCloseDurationMillis = 200
 // The background zoom runs on its own, slower timeline than the card morph so it keeps
 // settling after the card has finished expanding/collapsing — reading as inertial pull
 // on the home surface behind the editor rather than a motion locked to the card.
 internal const val BackgroundZoomOpenScale = 1.08f
-private const val BackgroundZoomDelayMillis = 20
-private const val BackgroundZoomOpenDurationMillis = 420
+private const val BackgroundZoomDelayMillis = 0
+private const val BackgroundZoomOpenDurationMillis = 240
 private const val BackgroundZoomCloseDurationMillis = CourseEditorCloseDurationMillis
 private val BackgroundZoomInertialEasing = CubicBezierEasing(0.30f, 0.0f, 0.20f, 1.0f)
 // A short overlapping entrance follows the shell; offscreen rows mount only when scrolled in.
-internal const val CourseEditorFormRevealDurationMillis = 300
+internal const val CourseEditorFormRevealDurationMillis = 160
 private val CourseEditorRowRevealEasing = CubicBezierEasing(0.22f, 0f, 0.30f, 1f)
 // 需要逐行飞入的行数：固定标题栏 + 表单行（课程名称/教师/地点/星期/节次/周次/单双周/颜色/备注/删除/错误）。
 internal const val CourseEditorFormRowCount = 12
@@ -192,7 +192,8 @@ data class CourseEditorOverlayRequest(
     val sourceIsDayCard: Boolean = false,
     val copyDraft: CourseEntity? = null,
     internal val sourceGrid: CourseEditorWeekGrid? = null,
-    val contextMessage: String? = null
+    val contextMessage: String? = null,
+    val previewOnly: Boolean = false
 )
 
 
@@ -401,6 +402,7 @@ internal fun CourseEditorContainerOverlayHost(
     val overlayPhase = motionState.phase
     val isOverlayActive = overlayPhase != CourseEditorOverlayPhase.Idle
     val shownRequest = request ?: renderedRequest ?: return
+    var previewEditing by remember(shownRequest) { mutableStateOf(false) }
     val formData = remember(state.config, state.periods, state.courses) {
         CourseEditorFormData(
             config = state.config,
@@ -677,7 +679,17 @@ internal fun CourseEditorContainerOverlayHost(
                     .courseEditorContentTaper { taper.value }
             ) {
                 if (request != null && editorContentMounted && overlayPhase == CourseEditorOverlayPhase.Open) {
-                    CourseEditorFormLayer(
+                    if (shownRequest.previewOnly && !previewEditing) {
+                        CourseExpandedCard(
+                            course = shownRequest.course,
+                            periods = state.periods,
+                            week = shownRequest.targetWeek,
+                            contextMessage = shownRequest.contextMessage,
+                            textColor = textColor,
+                            onClose = dismissEditor,
+                            onLongPress = { previewEditing = true }
+                        )
+                    } else CourseEditorFormLayer(
                         targetRect = targetRect,
                         corner = corner.value,
                         textColor = textColor,
@@ -748,8 +760,8 @@ private fun CourseEditorFormLayer(
     }
     // Top-to-bottom order, with overlapping, independently eased upward entrances.
     val courseEditorFormRowEntrance: (Int) -> Float = { rowIndex ->
-        val delayMillis = rowIndex.coerceIn(0, CourseEditorFormRowCount) * 8f
-        val t = ((formStagger.value * CourseEditorFormRevealDurationMillis - delayMillis) / 200f)
+        val delayMillis = rowIndex.coerceIn(0, CourseEditorFormRowCount) * 4f
+        val t = ((formStagger.value * CourseEditorFormRevealDurationMillis - delayMillis) / 110f)
             .coerceIn(0f, 1f)
         CourseEditorRowRevealEasing.transform(t)
     }

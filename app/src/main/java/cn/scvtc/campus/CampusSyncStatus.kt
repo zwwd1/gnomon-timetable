@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.text.DateFormat
 import java.util.Date
 
-internal enum class SyncStage { NONE, PREPARING, AUTHENTICATING, READING, WRITING, SUCCESS, FAILED, OFFLINE, AUTH_REQUIRED, CACHE }
+internal enum class SyncStage { NONE, PREPARING, AUTHENTICATING, READING, WRITING, SUCCESS, PARTIAL, FAILED, OFFLINE, AUTH_REQUIRED, CACHE }
 internal data class CampusSyncState(
     val stage:SyncStage=SyncStage.NONE,val operation:String="课表",val lastAttempt:Long=0,
     val lastSuccess:Long=0,val message:String="尚未同步",
@@ -38,6 +38,10 @@ internal object CampusSyncStatus {
     fun success(context:Context,time:Long){
         context.getSharedPreferences("campus_sync_status",Context.MODE_PRIVATE).edit().putLong("success:$scopeKey",time).apply()
         mutableState.value=mutableState.value.copy(stage=SyncStage.SUCCESS,lastSuccess=time,message="同步成功")
+    }
+    fun partial(context:Context,time:Long,message:String){
+        context.getSharedPreferences("campus_sync_status",Context.MODE_PRIVATE).edit().putLong("success:$scopeKey",time).apply()
+        mutableState.value=mutableState.value.copy(stage=SyncStage.PARTIAL,lastSuccess=time,message=message)
     }
     fun failure(context:Context,authentication:Boolean=false){
         val offline=context.getSystemService(ConnectivityManager::class.java).activeNetwork==null

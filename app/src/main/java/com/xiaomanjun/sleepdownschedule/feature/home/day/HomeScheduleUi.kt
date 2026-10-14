@@ -19,6 +19,11 @@ import com.xiaomanjun.sleepdownschedule.feature.home.*
 import com.xiaomanjun.sleepdownschedule.feature.agent.background.*
 import com.xiaomanjun.sleepdownschedule.feature.home.week.*
 import com.xiaomanjun.sleepdownschedule.feature.home.overlay.LocalCourseCopy
+import com.xiaomanjun.sleepdownschedule.feature.home.overlay.LocalCourseShortcuts
+import com.xiaomanjun.sleepdownschedule.feature.home.overlay.CourseShortcutRequest
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.onClick as semanticClick
+import androidx.compose.ui.semantics.onLongClick as semanticLongClick
 import com.xiaomanjun.sleepdownschedule.feature.home.overlay.courseRemovalMotion
 
 import com.xiaomanjun.sleepdownschedule.core.performance.*
@@ -2230,6 +2235,8 @@ fun CourseCard(course: CourseEntity, periods: List<PeriodEntity>, showTime: Bool
     val resolvedCardColor = if (muted) MutedCourseLightColor else if (courseCardUsesAssignments(config)) courseCardBaseColor(config, course) else cardColor
     val textColor = homeForegroundColor(config)
     val ownBounds = remember(course.id) { arrayOfNulls<Rect>(1) }
+    val shortcuts = LocalCourseShortcuts.current
+    val density = LocalDensity.current
     val editId = LocalEditingCourseId.current
     val startupPhase = LocalStartupPhase.current
     val sharedScope = if (startupPhase == StartupPhase.FullQuality && enableSharedTransition && course.id > 0L) LocalSharedTransitionScope.current else null
@@ -2253,11 +2260,31 @@ fun CourseCard(course: CourseEntity, periods: List<PeriodEntity>, showTime: Bool
             backdrop = backdrop,
             config = config,
             course = course,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().then(if (onClick != null) Modifier.semantics {
+                semanticClick("查看课程") { onClick(ownBounds[0]); true }
+                semanticLongClick("编辑课程") {
+                    ownBounds[0]?.let { bounds ->
+                        shortcuts?.open(CourseShortcutRequest(course, displayedWeek ?: config.currentWeek,
+                            bounds, with(density) { 24.dp.toPx() }, .5f, {}))
+                    }
+                    true
+                }
+            }.pointerInput(course, displayedWeek) {
+                detectTapGestures(
+                    onTap = { onClick(ownBounds[0]) },
+                    onLongPress = {
+                        ownBounds[0]?.let { bounds ->
+                            shortcuts?.open(CourseShortcutRequest(course,
+                                displayedWeek ?: config.currentWeek, bounds,
+                                with(density) { 24.dp.toPx() }, .5f, {}))
+                        }
+                    }
+                )
+            } else Modifier),
             shape = RoundedRectangle(24.dp),
             expandedOutlineLight = true,
             muted = muted,
-            onClick = if (onClick != null) ({ onClick(ownBounds[0]) }) else null
+            onClick = null
         ) {
             DayCourseCardTextContent(
                 course = course,

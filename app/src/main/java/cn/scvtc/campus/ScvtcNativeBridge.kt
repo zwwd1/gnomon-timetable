@@ -3,6 +3,7 @@ package cn.scvtc.campus
 import android.content.Context
 import androidx.room.withTransaction
 import cn.scvtc.campus.core.Meeting
+import cn.scvtc.campus.core.ScheduleWriteGuard
 import com.xiaomanjun.sleepdownschedule.CourseScheduleApp
 import com.xiaomanjun.sleepdownschedule.TodayCoursesWidgetProvider
 import com.xiaomanjun.sleepdownschedule.model.*
@@ -11,7 +12,6 @@ import com.xiaomanjun.sleepdownschedule.feature.reminder.NotificationScheduler
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import org.json.JSONObject
 import java.security.MessageDigest
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -104,9 +104,7 @@ internal object ScvtcNativeBridge {
     }
     const val SCHOOL = "scvtc"
     fun profileKey(account: String, term: String) = "profile:" + scvtcKey("$account|$term")
-    fun fingerprint(course: CourseEntity) = scvtcKey(course.copy(id = 0).toString())
-    private fun schoolKey(course: CourseEntity) = scvtcKey(listOf(course.name, course.teacher,
-        course.location, course.weekday, course.periods).joinToString("|"))
+    fun fingerprint(course: CourseEntity) = ScvtcCourseWriter.fingerprint(course)
 
     /** Persist the verified account before returning to the caller. A long first
      * timetable read may be interrupted without losing the connected identity. */
@@ -192,6 +190,8 @@ internal object ScvtcNativeBridge {
             }
             val account = student.account
             val term = calendar.first
+            require(fetched.extraction.account == account && fetched.extraction.semester == term.semester)
+            ScheduleWriteGuard.validate(null, fetched.extraction)
             val db = app.database
             CampusSyncStatus.phase(SyncStage.WRITING,"正在保存课表…")
             val scheduleId = db.withTransaction {
@@ -215,7 +215,13 @@ internal object ScvtcNativeBridge {
                 db.configDao().upsertPeriods((1..maxOf(maxNode, periods.keys.maxOrNull() ?: 0)).map { node ->
                     periods[node] ?: PeriodEntity(node, "", "", id) // No invented school bell times.
                 })
-                merge(app, id, incoming)
+                ScvtcCourseWriter.write(object : SchoolCourseStore {
+                    override suspend fun courses(scheduleId: Int) = db.courseDao().getCourses(scheduleId)
+                    override suspend fun ownership(scheduleId: Int) = ledger.get("courses:$scheduleId")
+                    override suspend fun put(course: CourseEntity) = db.courseDao().insertCourse(course)
+                    override suspend fun delete(id: Long) = db.courseDao().deleteCourse(id)
+                    override suspend fun ownership(scheduleId: Int, value: String) = ledger.put(ScvtcState("courses:$scheduleId", value))
+                }, id, fetched.extraction)
                 if (old == null || old.username != account || old.scheduleId != id) db.scheduleProfileDao().activateProfile(id)
                 id
             }
@@ -269,40 +275,4 @@ internal object ScvtcNativeBridge {
         }
     }
 
-    private suspend fun merge(app: CourseScheduleApp, id: Int, incoming: List<CourseEntity>) {
-        val dao = app.database.courseDao()
-        val ledger = app.database.scvtcStateDao()
-        val key = "courses:$id"
-        val previous = ledger.get(key)?.let(::JSONObject) ?: JSONObject()
-        val current = dao.getCourses(id).associateBy { it.id }
-        val next = JSONObject()
-        // School keys group repeated arrangements so odd/even variants cannot overwrite one another.
-        val groups = incoming.groupBy(::schoolKey)
-        for ((base, rows) in groups) for ((index, row) in rows.sortedBy { it.weeks.joinToString(",") }.withIndex()) {
-            val item = "$base:$index"
-            val saved = previous.optJSONObject(item)
-            val before = saved?.optLong("id")?.let(current::get)
-            if (saved != null && (before == null || fingerprint(before) != saved.optString("hash"))) {
-                next.put(item, saved) // User deletion or edit is authoritative.
-                continue
-            }
-            val duplicate = if (saved == null) current.values.firstOrNull {
-                it.name == row.name && it.weekday == row.weekday && it.periods == row.periods &&
-                    it.weeks.sorted() == row.weeks && it.teacher == row.teacher && it.location == row.location
-            } else null
-            if (duplicate != null) continue // Migrated/manual rows remain user-owned.
-            val value = row.copy(id = before?.id ?: 0)
-            val rowId = dao.insertCourse(value)
-            next.put(item, JSONObject().put("id", rowId).put("hash", fingerprint(value.copy(id = rowId))))
-        }
-        previous.keys().forEach { keyName ->
-            if (!next.has(keyName)) {
-                val saved = previous.getJSONObject(keyName)
-                val before = current[saved.getLong("id")]
-                if (before != null && fingerprint(before) == saved.getString("hash")) dao.deleteCourse(before.id)
-                else next.put(keyName, saved)
-            }
-        }
-        ledger.put(ScvtcState(key, next.toString()))
-    }
 }

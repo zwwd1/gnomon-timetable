@@ -815,7 +815,7 @@ fun CourseScheduleAppUi(
     val courseEditorMotionState = rememberCourseEditorMotionState()
     val courseEditorFlightRegistry = remember { CourseEditorFlightRegistry() }
     val courseEditorOverlayPhase = courseEditorMotionState.phase
-    fun openCourseEditor(course: CourseEntity, targetWeek: Int?, sourceBounds: Rect?, copyDraft: CourseEntity? = null, contextMessage: String? = null) {
+    fun openCourseEditor(course: CourseEntity, targetWeek: Int?, sourceBounds: Rect?, copyDraft: CourseEntity? = null, contextMessage: String? = null, previewOnly: Boolean = false) {
         if (courseEditorRequest != null) return
         val sourceGrid = targetWeek?.let(courseEditorFlightRegistry::grid)
         courseEditorFlightRegistry.frozen = true
@@ -826,7 +826,8 @@ fun CourseScheduleAppUi(
             sourceIsDayCard = homeMode != HomeMode.Week && sourceBounds != null,
             copyDraft = copyDraft,
             sourceGrid = sourceGrid,
-            contextMessage = contextMessage
+            contextMessage = contextMessage,
+            previewOnly = previewOnly
         )
     }
     fun openAdjustedCourseEditor(courseId: Long, date: LocalDate, sourceBounds: Rect?) {
@@ -839,7 +840,7 @@ fun CourseScheduleAppUi(
         } else if (adjustment != null) {
             "$date 已停课。这里编辑保留的原课程；当天是否上课由调休安排决定。"
         } else null
-        openCourseEditor(original, originalWeek, sourceBounds, contextMessage = message)
+        openCourseEditor(original, originalWeek, sourceBounds, contextMessage = message, previewOnly = true)
     }
     fun closeCourseEditor() {
         courseEditorRequest = null
@@ -2287,7 +2288,7 @@ fun CourseScheduleAppUi(
         popupHost = {
             Box(Modifier.fillMaxSize()) {
                 if(showSchoolConnection) LiquidAlertDialog(
-                    title="Gnomon 课程表 · 使用指南", message="1. 连接学校\n填写学号和学校密码，登录后自动读取课表。密码加密记在本机。\n\n2. 查看与调整\n在课程页切换日、周视图，点课程查看详情或修改。\n\n3. 开启提醒\n在设置里填写节次时间，再开启课前提醒；外观和底栏也在这里调整。\n\n暂不连接也能手动添加课程。学校要求验证码时，在官方页面完成。",
+                        title="Gnomon 课程表 · 使用指南", message="1. 连接学校\n填写学号和学校密码，登录后自动读取课表。密码加密记在本机。\n\n2. 查看与调整\n点按课程放大查看课名、老师和地点；长按课程再编辑。\n\n3. 开启提醒\n在设置里填写节次时间，再开启课前提醒；外观和底栏也在这里调整。\n\n暂不连接也能手动添加课程。学校要求验证码时，在官方页面完成。",
                     actions=listOf(
                         LiquidAlertAction("稍后",LiquidAlertActionStyle.Secondary){onSchoolConnectionChoice(false)},
                         LiquidAlertAction("连接川职教务",LiquidAlertActionStyle.Primary){onSchoolConnectionChoice(true)}),
@@ -2785,7 +2786,7 @@ fun CourseScheduleAppUi(
                                     },
                                     onAgentDismissed = {},
                                     onCourseClick = { course, week, sourceBounds ->
-                                        openCourseEditor(course, week, sourceBounds)
+                                        openCourseEditor(course, week, sourceBounds, previewOnly = true)
                                     },
                                     onAddCourse = viewModel::addCourse,
                                     onAgentAction = handleHomeAgentAction,
@@ -9211,11 +9212,7 @@ fun ChangelogSettingsScreen(
     val darkTheme = appUsesDarkTheme(state.config)
     val listState = rememberLazyListState()
     val heroHeightPx = with(density) { AboutHeroHeight.toPx() }
-    @Composable
-    fun changelogItem(version: String, body: String) {
-        CollapsibleChangelogRow(version, body)
-        if (version != "1.0") SettingsDivider()
-    }
+    val history = cn.scvtc.campus.rememberReleaseHistory("gnomon-timetable")
     val heroScrollOffsetPx = remember(listState, heroHeightPx) {
         derivedStateOf {
             if (listState.firstVisibleItemIndex > 0) {
@@ -9472,15 +9469,10 @@ fun ChangelogSettingsScreen(
                 // One continuous panel. Canvas clipping avoids a texture as tall as all expanded
                 // versions; each details animation still owns only its own small graphics layer.
                 AboutGlassPanel(darkTheme, Modifier.fillMaxWidth(), longContent = true) {
-            changelogItem("1.2.7", "接续学校认证后的教务主页，以学生接口确认身份；不再等待随页面跳转丢失的提交回调。官网菜单改用窗口弹层，增加网页超时、重开、新窗口和缩放。本机异常报告只记录脱敏堆栈或退出原因，保留原课表与原生玻璃界面。")
-            changelogItem("1.2.6", "身份核验与学期、课表同步分开。登录支持取消、重试和随时打开官方认证，记住的密码按账号匹配，待执行的首次同步也可以取消。")
-            changelogItem("1.2.5", "首次连接按本机账号和课表判断，清除数据后重新邀请。直接进入川职教务 SSO，保留完整认证回调。处理永久失效的本机密钥，原课表和密文保留，既有编辑、提醒、组件和玻璃动效继续可用。")
-            changelogItem("1.2.4", "更名为晷，使用原创头像和简洁日夜背景。修正学校移动认证表单等待与补充认证后的同步衔接，密码在本机加密记住。首次安装先邀请连接学校；成绩取得后立即显示，学分随后更新。入场动画可开关，底栏入口可增减，保留原玻璃动效与本机记录。")
-            changelogItem("1.2.2", "在应用里填写学号和密码即可开始学校认证。身份核验后后台同步课表和成绩，会话到期自动恢复。成绩增加需要留意筛选，学分增加真实进度与学期入口；课表编辑、原有 Miuix 底栏和完整玻璃动效继续保留。")
-            changelogItem("1.2.1", "完善成绩与学分：新增分栏、学期选择、搜索排序、加权绩点、确认学分及可展开的成绩卡片。刷新在应用任务中继续，离开页面后保留同步。保留原有 Miuix 底栏、液态玻璃、完整动效与用户数据，云服务仍暂停。")
-            changelogItem("1.2.0", "修复检查更新失败，优先读取本项目 GitHub 更新清单。使用原创川职月光壁纸与校园助手小澄，提供五种待机和互动状态。统一项目名称与反馈渠道，保留原有 Miuix 双入口底栏、液态玻璃和完整动效。保留账号、课表、本地编辑与自定义壁纸，云服务继续暂停。")
-            changelogItem("1.1.0", "新增真实成绩与学分查询、学期筛选和本机加密缓存。修正重复导入引起的误报冲突，调整课程前先确认，并保留单周编辑。新增右上角液态玻璃刷新与同步状态。更新二次元头像图标和小澄多状态互动，使用新的赞赏原图。保留 SleepDown 双入口底栏和原有动效，云服务继续暂停。")
-            changelogItem("1.0.0 · 第一版", "以 SleepDown 1.2.6 完整源码重建川职课表应用，保留 Miuix 组件、玻璃双入口底栏、课程编辑与切周动效。接入本校 CAS 认证和原生课表接口，保存本机加密凭据并恢复过期会话。覆盖升级迁移原课表，保留离线课程与本地编辑。云同步和统计暂停。")
+                    history.forEachIndexed { index, entry ->
+                        CollapsibleChangelogRow(entry.version, cn.scvtc.campus.ReleaseHistory.plainNotes(entry.body), entry.date)
+                        if (index < history.lastIndex) SettingsDivider()
+                    }
                 }
             }
         }
