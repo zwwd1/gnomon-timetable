@@ -1,67 +1,67 @@
 {
   "repository": "zwwd1/gnomon-timetable",
-  "version": "1.2.11",
+  "version": "1.2.12",
   "name": "Gnomon 课程表",
-  "sourceCommit": "5487edb35834ba07c24c2a11aa750ee42b25e58b",
+  "sourceCommit": "582f533b8eba81ce936eb4a7b4bb378076840bc4",
   "artifact": {
-    "file": "Gnomon-Timetable-1.2.11.apk",
+    "file": "Gnomon-Timetable-1.2.12.apk",
     "packageName": "cn.scvtc.campus.preview",
-    "versionCode": 24,
+    "versionCode": 25,
     "certificateSha256": "5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3",
-    "size": 14894237,
-    "sha256": "89b88f763ffd311554c357fc4cdd98b91b334e257f39b7bf240b18ebac0e42ce",
+    "size": 14943697,
+    "sha256": "9eb6be8a23041a6c90867ac4e27214671288070174b5711846d88e5d7ca57f67",
     "abi": "universal"
   },
   "parts": [
     {
       "offset": 0,
       "size": 2097152,
-      "sha256": "d58a51efdbbff75499f43820d922c0b4ed5f8befbda22fd1d52a62e2ad3dcd63",
-      "blob": "18a86b46d2ed163e7241a4c8440ec1e68fa3e81c"
+      "sha256": "88ace97038602f8b73385fc4123194e0ebf052ea8a235f24e344d02a356d6c89",
+      "blob": "45e4d850860cb24bea6ca562b3256c4db8dafb4d"
     },
     {
       "offset": 2097152,
       "size": 2097152,
-      "sha256": "bb0e0a232fecbece0b4228221c2a1fcee505be29c9db6bc90b6270c4becff921",
-      "blob": "f603a4085bb34e588a7af2ae9c665a06112fb5c6"
+      "sha256": "d8168ad0f2d472e9c94b21dda31a861e641dc0b218e8b9b674170a4b49ce4084",
+      "blob": "0b55b8fe3c6bad204df9b341cba25444fc8089c4"
     },
     {
       "offset": 4194304,
       "size": 2097152,
-      "sha256": "ec23525a07a130a2c4dbfaf42217b4a2cc19e40a132197906c80453a24ce1c59",
-      "blob": "aba8f5fd3baddd903f2c1ad37197322be365014b"
+      "sha256": "bc69c679af3cb5162296324be7079c435cb63614341beda6fe9f234f23846a37",
+      "blob": "4224ba5d8f301e07eab2b6446b48d53122733bc2"
     },
     {
       "offset": 6291456,
       "size": 2097152,
-      "sha256": "0128702d00776b0e4e837eaf2ba1cdf6cfedea83444147345dee5285f89bebc0",
-      "blob": "8ea44ffb44e5dd96b22c1e3e216d4e9a6f3db079"
+      "sha256": "f2eb05ca012ffaeac492935a3df27bcae5a1709800accc82d4c65a7f86399b56",
+      "blob": "951fdb7384f8d04c4ff78d94ab4baa72c32b68db"
     },
     {
       "offset": 8388608,
       "size": 2097152,
-      "sha256": "e925730a9de458b2a23e42bcb4c756e15f7a5fe3bb8a240e6bee7f4b164ef230",
-      "blob": "c0a9443c23f03f7d32782066b7b657db01edbe25"
+      "sha256": "c2cb5f09b7c1d85e498be7f61315d1fa686f8142b5ba83dfa48fe21b93f516ea",
+      "blob": "8f4f13818a237df7d40935b922481e748e7139f2"
     },
     {
       "offset": 10485760,
       "size": 2097152,
-      "sha256": "348dbda40f763310353e1b6345f0b60ca65ba5d13ac203c225105227701c7eef",
-      "blob": "f84f761f8facf9938ff259d998e920fae2396f86"
+      "sha256": "8b49574137e798a27874a838f5bfaa06a8cdc47d1b5c6b9ddb557976fb2d2c08",
+      "blob": "e09463eadfa24c2e2bec3d5106bdedc4c9188abd"
     },
     {
       "offset": 12582912,
       "size": 2097152,
-      "sha256": "4c946781b4fac41c32ea8685621f64552f884c85bfb6085391dc308e9072999f",
-      "blob": "170a39a9198408a4862753c2d9466a6700a9108e"
+      "sha256": "4f0d3053bb97664da4df0ea59995162f32e2bdf549b1d4228d364e44eebd42b4",
+      "blob": "fbf3172d52779f2e0caf8773b69dea65147b28e8"
     },
     {
       "offset": 14680064,
-      "size": 214173,
-      "sha256": "2bed001379d45641f64ccafd93c113571535038963652faeed9876c771750ce9",
-      "blob": "bd0d1615b25ea5fbd01b1a22012f5089aa9c70cb"
+      "size": 263633,
+      "sha256": "ff0f083ef8ebbbd48282110f50b535be2275863e5b5fbbaf87f7b84ba13ee055",
+      "blob": "526a0f7b77f7f5e7ff1b976a4adf7ba219da22bc"
     }
   ],
-  "publisherRevision": 4,
+  "publisherRevision": 3,
   "additionalArtifacts": []
 }
