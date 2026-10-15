@@ -22,17 +22,18 @@ import kotlin.math.abs
 class DampedDragAnimation(
     private val animationScope: CoroutineScope,
     val initialValue: Float,
-    val valueRange: ClosedRange<Float>,
+    var valueRange: ClosedRange<Float>,
     val visibilityThreshold: Float,
     val initialScale: Float,
-    val pressedScale: Float,
+    var pressedScale: Float,
     val onDragStarted: DampedDragAnimation.(position: Offset) -> Unit,
     val onDragStopped: DampedDragAnimation.() -> Unit,
     val onDrag: DampedDragAnimation.(size: IntSize, dragAmount: Offset) -> Unit,
 ) {
 
-    private val valueAnimationSpec =
-        spring(1f, 1000f, visibilityThreshold)
+    var responseFactor: Float = 1f
+    private val valueAnimationSpec get() =
+        spring(1f, 1000f * responseFactor, visibilityThreshold)
     private val velocityAnimationSpec =
         spring(0.5f, 300f, visibilityThreshold * 10f)
     private val pressProgressAnimationSpec =

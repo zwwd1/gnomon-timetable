@@ -13,6 +13,10 @@ import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import com.kyant.shapes.RoundedRectangle
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.layer.GraphicsLayer
@@ -169,7 +173,15 @@ fun Modifier.sleepDownGlassSurface(
         }
     }
 
-    val currentShape = rememberUpdatedState(shape)
+    val appearance = LocalGlassAppearance.current.takeIf {
+        it.customized && material.role in setOf(GlassMaterialRole.Control, GlassMaterialRole.Pill,
+            GlassMaterialRole.Dialog, GlassMaterialRole.Popup, GlassMaterialRole.Editor) &&
+            !descriptor.sceneKey.contains("course", ignoreCase = true)
+    }
+    val currentAppearance = rememberUpdatedState(appearance)
+    val dark = androidx.compose.material3.MaterialTheme.colorScheme.background.let { it.red + it.green + it.blue < 1.5f }
+    val currentDark = rememberUpdatedState(dark)
+    val currentShape = rememberUpdatedState<() -> Shape>(if (appearance != null) ({ RoundedRectangle(appearance.current.corner.dp) }) else shape)
     val resolvedShape = remember { derivedGlassShape(currentShape) }
     val currentFrame = rememberUpdatedState(effectFrame)
     val currentMaterialFrame = rememberUpdatedState(effectFrame.materialEffectsOnly())
@@ -186,7 +198,7 @@ fun Modifier.sleepDownGlassSurface(
     val currentRenderEnabled = rememberUpdatedState(renderEnabled)
     val currentRenderBounds = rememberUpdatedState(renderBounds)
     // Only an explicit complete key may bypass evaluation; custom shapes/effects can read state.
-    val currentEffectInputKey = rememberUpdatedState(effectInputKey)
+    val currentEffectInputKey = rememberUpdatedState(if (appearance == null) effectInputKey else Pair(effectInputKey, appearance))
     // Read the flag in the draw node, not composition. Freeze/resume must retain existing
     // materials, effects and node identities rather than rebuild every course surface.
     val currentCoordinatesFrozen = rememberUpdatedState(LocalGlassCoordinatesFrozen.current)
@@ -215,7 +227,10 @@ fun Modifier.sleepDownGlassSurface(
     val stableEffects: BackdropEffectScope.() -> Unit = remember(diagnosticSceneState, descriptor) {
         val applyEffects: BackdropEffectScope.() -> Unit = {
             val override = currentEffectsOverride.value
-            if (override != null) {
+            val appearanceOverride = currentAppearance.value
+            if (appearanceOverride != null) {
+                appearanceEffects(appearanceOverride)
+            } else if (override != null) {
                 override.invoke(this)
             } else {
                 val frame = currentMaterialFrame.value
@@ -243,14 +258,16 @@ fun Modifier.sleepDownGlassSurface(
         }
     }
 
-    val hasHighlight = effectFrame.highlight != null || highlightOverride != null
+    val hasHighlight = appearance != null || effectFrame.highlight != null || highlightOverride != null
     val stableHighlight: (() -> Highlight?)? = remember(hasHighlight) {
         if (!hasHighlight) {
             null
         } else {
             {
                 val override = currentHighlightOverride.value
-                if (override != null) {
+                val custom = currentAppearance.value
+                if (custom != null) Highlight.Default.copy(alpha = custom.current.highlight)
+                else if (override != null) {
                     override.invoke()
                 } else {
                     val highlight = currentFrame.value.highlight
@@ -263,13 +280,14 @@ fun Modifier.sleepDownGlassSurface(
             }
         }
     }
-    val hasShadow = effectFrame.shadowAlpha != null || shadowOverride != null
+    val hasShadow = appearance != null || effectFrame.shadowAlpha != null || shadowOverride != null
     val stableShadow: (() -> Shadow?)? = remember(hasShadow) {
         if (!hasShadow) {
             null
         } else {
             ({
-                currentShadowOverride.value?.invoke()
+                currentAppearance.value?.let { Shadow(radius = it.current.shadow.dp, alpha = .14f) }
+                    ?: currentShadowOverride.value?.invoke()
                     ?: currentFrame.value.shadowAlpha?.let { Shadow(alpha = it) }
             })
         }
@@ -280,11 +298,11 @@ fun Modifier.sleepDownGlassSurface(
             null
         } else {
             {
-                val override = currentInnerShadowOverride.value
+                val override = currentInnerShadowOverride.value.takeIf { currentAppearance.value == null }
                 if (override != null) {
                     override.invoke()
                 } else {
-                    currentFrame.value.innerShadow?.let {
+                    currentFrame.value.innerShadow?.takeIf { currentAppearance.value == null }?.let {
                         InnerShadow(radius = it.radius, alpha = it.alpha)
                     }
                 }
@@ -332,16 +350,35 @@ fun Modifier.sleepDownGlassSurface(
     val stableOnDrawBehind: (DrawScope.() -> Unit)? = remember(onDrawBehind != null) {
         if (onDrawBehind == null) null else ({ currentOnDrawBehind.value?.invoke(this) })
     }
-    val stableOnDrawSurface: (DrawScope.() -> Unit)? = remember(onDrawSurface != null, sampleBackdrop, diagnosticSceneState, descriptor) {
-        if (onDrawSurface == null && (sampleBackdrop || diagnosticSceneState == null)) null else ({
+    val stableOnDrawSurface: (DrawScope.() -> Unit)? = remember(onDrawSurface != null, appearance != null, sampleBackdrop, diagnosticSceneState, descriptor) {
+        if (onDrawSurface == null && appearance == null && (sampleBackdrop || diagnosticSceneState == null)) null else ({
             if (!sampleBackdrop) diagnosticSceneState?.recordConsumerDraw(
                 descriptor, IntSize(ceil(size.width).toInt(), ceil(size.height).toInt())
             )
-            currentOnDrawSurface.value?.invoke(this)
+            val custom = currentAppearance.value
+            if (custom == null) currentOnDrawSurface.value?.invoke(this) else {
+                val p = custom.current
+                val base = if (currentDark.value) Color(0xFF171A20) else Color(0xFFF7F9FC)
+                drawRect(base.copy(alpha = p.opacity))
+                drawRect(Color(0xFF7CA8CB).copy(alpha = p.tint * .35f))
+                if (custom.style == GlassStyle.SOFT) drawRect(base.copy(alpha = p.blend))
+                if (descriptor.sceneKey == "liquid-bottom-tabs-indicator") drawRect(Color(0xFF389AFF).copy(alpha = .16f))
+                // Buttons retain semantic blue/red fills and readable white labels.
+                if (descriptor.sceneKey == "liquid-button") currentOnDrawSurface.value?.invoke(this)
+            }
         })
     }
-    val stableOnDrawFront: (DrawScope.() -> Unit)? = remember(onDrawFront != null) {
-        if (onDrawFront == null) null else ({ currentOnDrawFront.value?.invoke(this) })
+    val stableOnDrawFront: (DrawScope.() -> Unit)? = remember(onDrawFront != null, appearance != null) {
+        if (onDrawFront == null && appearance == null) null else ({
+            currentOnDrawFront.value?.invoke(this)
+            currentAppearance.value?.current?.let { p ->
+                val width = p.stroke.dp.toPx()
+                if (width > 0f) drawRoundRect(Color.White.copy(alpha = p.highlight),
+                    topLeft = androidx.compose.ui.geometry.Offset(width / 2, width / 2),
+                    size = androidx.compose.ui.geometry.Size((size.width - width).coerceAtLeast(0f), (size.height - width).coerceAtLeast(0f)),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(p.corner.dp.toPx()), style = Stroke(width))
+            }
+        })
     }
     val effectStructure = GlassEffectStructure(
         usesOverride = effectsOverride != null,

@@ -31,6 +31,7 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.*
@@ -154,6 +155,7 @@ internal fun PeriodSchemeEditor(
     var session by remember(config.id) { mutableStateOf<PeriodTimelineSession?>(null) }
     var initialSession by remember(config.id) { mutableStateOf<PeriodTimelineSession?>(null) }
     var showChoice by remember { mutableStateOf(false) }
+    var repairingTimes by remember(config.id) { mutableStateOf(false) }
     var showWizard by remember { mutableStateOf(false) }
     var showDeleteScheme by remember { mutableStateOf(false) }
     var showExitConfirmation by remember { mutableStateOf(false) }
@@ -187,10 +189,15 @@ internal fun PeriodSchemeEditor(
         drawRect(pageColor)
         drawContent()
     }
-    SideEffect { chromeProgress?.floatValue = timelineSceneProgress(motion.value, closing) }
+    SideEffect { chromeProgress?.floatValue = if (repairingTimes) 1f else timelineSceneProgress(motion.value, closing) }
     DisposableEffect(chromeProgress) { onDispose { chromeProgress?.floatValue = 0f } }
 
     fun enter(value: PeriodTimelineSession) {
+        val editable = editablePeriodTimes(value.config, value.active)
+        if (editable.isEmpty() || validateResolvedPeriodTimes(editable) != null) {
+            repairingTimes = true
+            return
+        }
         initialSession = PeriodTimelineSession(config, draft)
         frozenActionSource = actionSource
         localError = null
@@ -269,6 +276,10 @@ internal fun PeriodSchemeEditor(
     Box(Modifier.fillMaxSize()) {
         Column(
             Modifier.fillMaxSize()
+                .layout { measurable, constraints ->
+                    val child = measurable.measure(constraints)
+                    layout(child.width, child.height) { if (!repairingTimes && (session == null || motion.value < 1f)) child.placeRelative(0, 0) }
+                }
                 .graphicsLayer {
                     val p = timelineSceneProgress(motion.value, closing)
                     alpha = 1f - p
@@ -339,6 +350,11 @@ internal fun PeriodSchemeEditor(
                 }
             }
         }
+        if (repairingTimes) IncompletePeriodTimesEditor(config, active, popupBackdrop,
+            onCancel = { repairingTimes = false }, onDone = { updated ->
+                onDraftChange(draft.copy(schemes = draft.schemes.map { if (it.scheme.id == active.scheme.id) updated else it }))
+                repairingTimes = false
+            })
         session?.let { edit ->
             // Keep the sinking underlay from receiving editor touches.
             Box(Modifier.fillMaxSize().clickable(interactionSource = null, indication = null) {})

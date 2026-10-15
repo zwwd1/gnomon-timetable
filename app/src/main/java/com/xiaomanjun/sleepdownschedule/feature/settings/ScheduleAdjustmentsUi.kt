@@ -54,9 +54,16 @@ private fun shortDate(date: LocalDate) = "${date.monthValue}/${date.dayOfMonth}"
 fun ScheduleAdjustmentsSettings(state: AppState, backdrop: Backdrop?, value: String, onChange: (String) -> Unit) {
     val context = LocalContext.current
     val currentOnChange by rememberUpdatedState(onChange)
+    val currentScheduleId by rememberUpdatedState(state.config.id)
+    val currentValue by rememberUpdatedState(value)
+    var launchError by remember(state.config.id) { mutableStateOf<String?>(null) }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            result.data?.getStringExtra(ScheduleAdjustmentsActivity.ArrangementsExtra)?.let(currentOnChange)
+            val data = result.data
+            if (data?.getIntExtra(ScheduleAdjustmentsActivity.ScheduleIdExtra, -1) == currentScheduleId &&
+                data.getStringExtra(ScheduleAdjustmentsActivity.OriginalArrangementsExtra) == encodeScheduleAdjustments(decodeScheduleAdjustments(currentValue))) {
+                data.getStringExtra(ScheduleAdjustmentsActivity.ArrangementsExtra)?.let(currentOnChange)
+            } else launchError = "课表草稿已变化，请重新打开调休设置。原安排保留。"
         }
     }
     val entries = remember(value) { decodeScheduleAdjustments(value) }
@@ -67,11 +74,17 @@ fun ScheduleAdjustmentsSettings(state: AppState, backdrop: Backdrop?, value: Str
                 subtitle = if (entries.isEmpty()) "自定义停课与补课，或获取节假日后确认" else
                     "${entries.count { it.sourceDate == null }} 天停课 · ${entries.count { it.sourceDate != null }} 天补课",
                 onClick = {
-                    context.openRegisteredActivity(TransitionRouteId.SettingsToScheduleAdjustments,
+                    launchError = null
+                    if (state.config.id <= 0) launchError = "课表尚未加载，请加载完成后重试。" else {
+                    val result = context.openRegisteredActivity(TransitionRouteId.SettingsToScheduleAdjustments,
                         ScheduleAdjustmentsActivity.intent(context, state.config, value),
                         launchActivity = { launcher.launch(it) })
+                    if (result is com.xiaomanjun.sleepdownschedule.transition.TransitionLaunchResult.Failed)
+                        launchError = "调休页面未能打开，请返回后重试。课表和草稿保持不变。"
+                    }
                 }
             )
+            launchError?.let { Text(it, Modifier.padding(14.dp), color = MaterialTheme.colorScheme.error) }
         }
     }
 }

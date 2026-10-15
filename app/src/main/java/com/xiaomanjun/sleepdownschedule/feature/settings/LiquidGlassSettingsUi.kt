@@ -7,6 +7,7 @@ import com.xiaomanjun.sleepdownschedule.glass.ui.*
 import com.xiaomanjun.sleepdownschedule.*
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,6 +38,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -103,93 +105,8 @@ private fun homeChromeBlurSliderFromScale(scale: Float): Float {
 }
 
 @Composable
-fun LiquidGlassSettingsScreen(
-    state: AppState,
-    backdrop: Backdrop?,
-    onUpdateBlurScale: (Float) -> Unit
-) {
-    var previewBlurScale by remember(state.config.id) {
-        mutableFloatStateOf(normalizedHomeChromeBlurScale(state.config.homeChromeBlurScale))
-    }
-    LaunchedEffect(state.config.homeChromeBlurScale) {
-        previewBlurScale = normalizedHomeChromeBlurScale(state.config.homeChromeBlurScale)
-    }
-
-    val topPadding = detailContentTopPadding()
-    val darkTheme = appUsesDarkTheme(state.config)
-    val previewConfig = state.config.copy(
-        wallpaperUri = null,
-        defaultWallpaperStyle = DefaultWallpaperStyle.KANBAN,
-        dockAlignment = DockAlignment.CENTER,
-        homeChromeBlurScale = previewBlurScale
-    )
-
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(
-            start = 16.dp,
-            end = 16.dp,
-            top = topPadding + 32.dp,
-            bottom = DockScrollPadding
-        ),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
-        item(key = "liquid-glass-preview") {
-            LiquidGlassDockPreview(
-                config = previewConfig,
-                darkTheme = darkTheme
-            )
-        }
-        item(key = "liquid-glass-blur") {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    GlassBlurEndpointIcon(
-                        filled = false,
-                        modifier = Modifier.semantics { contentDescription = "更通透" }
-                    )
-                    LiquidControlSlider(
-                        value = homeChromeBlurSliderFromScale(previewBlurScale),
-                        onValueChange = { position ->
-                            val next = anchoredHomeChromeBlurScale(
-                                homeChromeBlurScaleFromSlider(position)
-                            )
-                            previewBlurScale = next
-                            onUpdateBlurScale(next)
-                        },
-                        onLiveValueChange = { position ->
-                            previewBlurScale = anchoredHomeChromeBlurScale(
-                                homeChromeBlurScaleFromSlider(position)
-                            )
-                        },
-                        valueRange = 0f..1f,
-                        snapValue = HomeChromeBlurSliderAnchor,
-                        visibilityThreshold = HomeChromeBlurSliderSnapThreshold,
-                        backdrop = backdrop,
-                        modifier = Modifier.weight(1f)
-                    )
-                    GlassBlurEndpointIcon(
-                        filled = true,
-                        modifier = Modifier.semantics { contentDescription = "更模糊" }
-                    )
-                }
-                Text(
-                    text = "清透会更加透明；着色会提高不透明度，为内容和控件增加对比度。",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(horizontal = 4.dp)
-                )
-            }
-        }
-    }
+fun LiquidGlassSettingsScreen(state: AppState, backdrop: Backdrop?, onUpdateBlurScale: (Float) -> Unit) {
+    GlassAppearanceEditor(state, backdrop)
 }
 
 @Composable
@@ -237,10 +154,13 @@ private fun GlassBlurEndpointIcon(
 }
 
 @Composable
-private fun LiquidGlassDockPreview(
+internal fun LiquidGlassDockPreview(
     config: ScheduleConfigEntity,
     darkTheme: Boolean
 ) {
+    var previewScreen by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<Screen>(Screen.Home) }
+    val images by com.xiaomanjun.sleepdownschedule.core.performance.rememberHomeWallpaperImages(config)
+    var previewPressed by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     val previewBackdrop = rememberGlassLayerBackdrop(
         domain = GlassBackdropDomain.Background,
         providerId = "liquid-glass-settings-preview"
@@ -253,7 +173,7 @@ private fun LiquidGlassDockPreview(
     }
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val previewWidth = minOf(maxWidth, 560.dp)
-        val previewHeight = (previewWidth * 0.905f).coerceIn(250.dp, 500.dp)
+        val previewHeight = (previewWidth * 0.905f).coerceIn(250.dp, 380.dp)
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
@@ -266,25 +186,30 @@ private fun LiquidGlassDockPreview(
                     .fillMaxSize()
                     .glassBackdropProducer(previewBackdrop)
             ) {
-                Image(
-                    painter = painterResource(
-                        if (darkTheme) R.drawable.default_wallpaper_dark
-                        else R.drawable.default_wallpaper_light
-                    ),
-                    contentDescription = "液态玻璃预览壁纸",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
+                val currentWallpaper = images.source
+                if (currentWallpaper != null) Image(currentWallpaper.asImageBitmap(), "当前壁纸", Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                else Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
             }
             CompositionLocalProvider(LocalAdaptiveGlass provides adaptiveGlass) {
+                if (previewScreen is Screen.Grades) cn.scvtc.campus.AcademicContent(config, previewBackdrop, autoRefresh = false)
+                else Box(Modifier.fillMaxSize().padding(24.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(if (previewScreen is Screen.Sync) "教务同步" else if (previewScreen is Screen.Config) "设置" else "Gnomon 课程表", style = MaterialTheme.typography.headlineSmall)
+                        com.xiaomanjun.sleepdownschedule.core.ui.designsystem.DialogLiquidButton(previewBackdrop,
+                            if (previewPressed) "再次试试按压" else "试试按压", { previewPressed = !previewPressed }, monochromeNeutral = true)
+                        com.xiaomanjun.sleepdownschedule.core.ui.designsystem.DialogLiquidButton(previewBackdrop,
+                            "预览成绩控件", { previewScreen = Screen.Grades }, monochromeNeutral = true)
+                    }
+                }
                 FloatingDock(
-                    selected = Screen.Home,
+                    selected = previewScreen,
                     backdrop = previewBackdrop,
                     config = config,
                     modifier = Modifier.align(Alignment.BottomCenter),
                     previewMode = true,
-                    onHome = {},
-                    onConfig = {}
+                    onHome = { previewScreen = Screen.Home },
+                    onConfig = { previewScreen = Screen.Config },
+                    onDestination = { previewScreen = if (it == "grades") Screen.Grades else Screen.Sync }
                 )
             }
         }

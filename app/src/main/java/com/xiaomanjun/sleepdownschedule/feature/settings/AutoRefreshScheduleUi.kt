@@ -53,8 +53,19 @@ import java.util.Date
 fun AutoRefreshScheduleSettingsScreen(
     state: AppState,
     backdrop: Backdrop?,
-    warehouseRefreshRequest: Int = 0
+    warehouseRefreshRequest: Int = 0,
+    rootPage: Boolean = false
 ) {
+    if (rootPage) {
+        Column(Modifier.fillMaxSize().padding(bottom = 78.dp)) {
+            Text("教务同步", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold,
+                modifier = Modifier.statusBarsPadding().padding(horizontal = 16.dp, vertical = 24.dp))
+            CompositionLocalProvider(com.xiaomanjun.sleepdownschedule.core.ui.settings.LocalGlassSettingsContentTopPadding provides 0.dp) {
+                Box(Modifier.weight(1f)) { AutoRefreshScheduleSettingsScreen(state, backdrop, warehouseRefreshRequest) }
+            }
+        }
+        return
+    }
     val context = LocalContext.current
     val profile by AutoRefreshScheduleStore.observe(context).collectAsState()
     val login = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {}

@@ -157,8 +157,8 @@ fun GeneralSettingsScreen(
                     )
                     SettingsDivider()
                     SettingsNavigationRow(
-                        title = "液态玻璃",
-                        subtitle = "调整首页顶栏、表头和底栏的玻璃效果。",
+                        title = "玻璃材质",
+                        subtitle = "液态、高斯与柔光，独立调节并实时预览。",
                         onClick = onOpenLiquidGlass
                     )
                     SettingsDivider()
@@ -243,7 +243,9 @@ fun GeneralSettingsScreen(
                                 experiencePrefs.dock(if(enabled)experience.dock.filter{it!="settings"}+id+"settings" else experience.dock.filter{it!=id})
                             })
                     }
-                    SettingsActionButton("恢复默认底栏",backdrop,onClick={experiencePrefs.dock(listOf("courses","settings"))})
+                    Row(Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp, top = 4.dp, bottom = 16.dp)) {
+                        SettingsActionButton("恢复默认底栏",backdrop,onClick={experiencePrefs.dock(listOf("courses","settings"))})
+                    }
                 }
             }
         }
@@ -907,10 +909,10 @@ fun AiImportSettingsSection(
             )
             SettingsDivider()
         }
-        SettingsTextFieldRow("接口地址", baseUrl, { baseUrl = it }, KeyboardType.Uri)
+        AiConnectionField("HTTPS 服务地址", baseUrl, { baseUrl = it }, uri = true)
         SettingsDivider()
-        SettingsTextFieldRow(
-            "模型",
+        AiConnectionField(
+            "模型名称",
             model,
             {
                 if (modelEditable) {
@@ -938,14 +940,11 @@ fun AiImportSettingsSection(
             )
             SettingsDivider()
         }
-        SettingsTextFieldRow(
+        AiConnectionField(
             title = if (saved.apiKey.isBlank()) "API Key" else "API Key（已保存）",
             value = apiKeyInput,
-            onValueChange = { apiKeyInput = it },
-            // Password mode can trigger an OEM secure keyboard and block paste/password-manager
-            // affordances. Keep the key local and encrypted, but use the normal ASCII editor.
-            keyboardType = KeyboardType.Ascii,
-            moveCursorToEndOnFocus = true
+            onChange = { apiKeyInput = it },
+            secret = true
         )
                 }
             }

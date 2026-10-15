@@ -431,6 +431,15 @@ private fun android.view.Window.setStatusBarDarkIcons(darkIcons: Boolean) {
 sealed interface Screen {
     data object Home : Screen
     data object Config : Screen
+    data object Grades : Screen
+    data object Sync : Screen
+}
+
+private fun Screen.destinationId() = when (this) {
+    Screen.Home -> "courses"; Screen.Config -> "settings"; Screen.Grades -> "grades"; Screen.Sync -> "sync"
+}
+private fun rootScreen(id: String) = when (id) {
+    "courses" -> Screen.Home; "grades" -> Screen.Grades; "sync" -> Screen.Sync; else -> Screen.Config
 }
 
 enum class HomeMode { Day, Week }
@@ -503,7 +512,7 @@ private const val EduAdapterExtra = "edu_adapter"
 private fun SettingsPage.title(): String = when (this) {
     SettingsPage.Root -> "设置"
     SettingsPage.General -> "通用设置"
-    SettingsPage.LiquidGlass -> "液态玻璃"
+    SettingsPage.LiquidGlass -> "玻璃材质"
     SettingsPage.Widgets -> "小组件设置"
     SettingsPage.AiImport -> "AI 设置"
     SettingsPage.DayAgent -> "AI助理"
@@ -778,14 +787,15 @@ fun CourseScheduleAppUi(
     var snapshotJob by remember { mutableStateOf<Job?>(null) }
     var cacheHydrationJob by remember { mutableStateOf<Job?>(null) }
     var entryPrewarmJob by remember { mutableStateOf<Job?>(null) }
-    var screen by remember { mutableStateOf<Screen>(Screen.Home) }
+    var screen by androidx.compose.runtime.saveable.rememberSaveable(stateSaver = androidx.compose.runtime.saveable.Saver<Screen, String>(
+        save = { it.destinationId() }, restore = { rootScreen(it) })) { mutableStateOf<Screen>(Screen.Home) }
     var settingsExitInterceptionRequired by remember { mutableStateOf(false) }
     var settingsExitRequest by remember { mutableIntStateOf(0) }
     var pendingSettingsExitAction by remember { mutableStateOf<(() -> Unit)?>(null) }
     var homeMode by remember(state.loaded, state.config.defaultHomeMode) {
         mutableStateOf(state.config.defaultHomeMode.toHomeMode())
     }
-    val rootPageMotion = rememberHomeSwitchMotion(screen is Screen.Config, "home-settings")
+    val rootPageMotion = rememberHomeSwitchMotion(screen !is Screen.Home, "home-root")
     val homeModeMotion = key(state.loaded) {
         rememberHomeSwitchMotion(homeMode == HomeMode.Week, "day-week")
     }
@@ -1092,6 +1102,23 @@ fun CourseScheduleAppUi(
         } else {
             action()
         }
+    }
+    val rootPreferences = remember(context) { cn.scvtc.campus.AppExperiencePreferences.get(context) }
+    val rootFocusManager = androidx.compose.ui.platform.LocalFocusManager.current
+    val rootExperience by rootPreferences.state.collectAsStateWithLifecycle()
+    val rootRequest by com.xiaomanjun.sleepdownschedule.feature.home.RootDestinationRequests.pending.collectAsStateWithLifecycle()
+    LaunchedEffect(rootRequest) {
+        rootRequest?.let { id ->
+            rootFocusManager.clearFocus()
+            requestSettingsExit { screen = rootScreen(id) }
+            com.xiaomanjun.sleepdownschedule.feature.home.RootDestinationRequests.pending.value = null
+        }
+    }
+    LaunchedEffect(rootExperience.dock) {
+        if (screen.destinationId() !in rootExperience.dock) screen = rootScreen(rootExperience.dock.first())
+    }
+    BackHandler(enabled = screen !is Screen.Home && !settingsExitInterceptionRequired) {
+        if ("courses" in rootExperience.dock) screen = Screen.Home else context.findActivity()?.finish()
     }
     BackHandler(enabled = screen is Screen.Config && settingsExitInterceptionRequired) {
         requestSettingsExit { context.findActivity()?.finish() }
@@ -2250,7 +2277,8 @@ fun CourseScheduleAppUi(
         LocalCourseCardPalette provides homeCoursePalette,
         LocalCourseCardColorAssignments provides homeCourseColorAssignments,
         LocalGlassSceneState provides glassSceneState,
-        LocalCenteredDialogSceneBackdrop provides centeredDialogSceneBackdrop
+        LocalCenteredDialogSceneBackdrop provides centeredDialogSceneBackdrop,
+        com.xiaomanjun.sleepdownschedule.feature.home.LocalRootDestination provides { id -> requestSettingsExit { screen = rootScreen(id) } }
     ) {
     // Home now owns an explicit Miuix root scaffold, matching the already-fixed secondary-page
     // topology. Its complete business stack is the underlay; Miuix renders every second-level
@@ -2826,7 +2854,16 @@ fun CourseScheduleAppUi(
                             )
                         }
                         HomeSwitchPane(rootPageMotion, secondary = true, modifier = Modifier.fillMaxSize(),
-                            pageClip = HomeSwitchClip.Page) {
+                            pageClip = HomeSwitchClip.Page, retainContent = true) {
+                          com.xiaomanjun.sleepdownschedule.feature.home.RootDestinationPane(screen is Screen.Grades) {
+                            cn.scvtc.campus.AcademicContent(state.config, backgroundBackdrop)
+                          }
+                          com.xiaomanjun.sleepdownschedule.feature.home.RootDestinationPane(screen is Screen.Sync) {
+                            GlassMiuixSettingsTheme(settingsVisualConfig(state.config)) {
+                            AutoRefreshScheduleSettingsScreen(state, backgroundBackdrop, rootPage = true)
+                            }
+                          }
+                          com.xiaomanjun.sleepdownschedule.feature.home.RootDestinationPane(screen is Screen.Config) {
                             rootPageStateHolder.SaveableStateProvider("settings") {
                                 SettingsScreen(
                                         page = SettingsPage.Root,
@@ -2860,13 +2897,14 @@ fun CourseScheduleAppUi(
                                     )
                             }
                         }
+                          }
                     }
                 }
             if (screen !is Screen.Home) {
                 showScheduleEntryPill = false
                 if (pickerState.phase is CustomizeUiState.ShowingEntryButton) pickerState.phase = CustomizeUiState.Home
             }
-            if (screen is Screen.Home || screen is Screen.Config) {
+            run {
                 DockEntranceContainer(
                     phase = startupPhase,
                     modifier = Modifier
@@ -2877,10 +2915,12 @@ fun CourseScheduleAppUi(
                         selected = screen,
                         backdrop = chromeBackdrop,
                         config = if (screen is Screen.Home) visualState.config else state.config,
-                        onHome = { requestSettingsExit { screen = Screen.Home } },
+                        onHome = { rootFocusManager.clearFocus(); requestSettingsExit { screen = Screen.Home } },
                         onConfig = {
+                            rootFocusManager.clearFocus()
                             screen = Screen.Config
-                        }
+                        },
+                        onDestination = { id -> rootFocusManager.clearFocus(); requestSettingsExit { screen = rootScreen(id) } }
                     )
                 }
             }
@@ -4481,7 +4521,7 @@ private fun rootTopBarLayoutHeight(
                 metrics.topOverlayHeight
             }
         }
-        Screen.Config -> detailTopOverlayHeight()
+        Screen.Config, Screen.Grades, Screen.Sync -> detailTopOverlayHeight()
     }
 }
 
@@ -4875,7 +4915,7 @@ internal fun AppTopBar(
                     when (settingsPage) {
                         SettingsPage.Root -> "设置"
                         SettingsPage.General -> "通用设置"
-                        SettingsPage.LiquidGlass -> "液态玻璃"
+                        SettingsPage.LiquidGlass -> "玻璃材质"
                         SettingsPage.Widgets -> "小组件设置"
                         SettingsPage.AiImport -> "AI 设置"
                         SettingsPage.DayAgent -> "AI助理"
@@ -5309,21 +5349,26 @@ fun FloatingDock(
     modifier: Modifier = Modifier,
     previewMode: Boolean = false,
     onHome: () -> Unit,
-    onConfig: () -> Unit
+    onConfig: () -> Unit,
+    onDestination: (String) -> Unit = com.xiaomanjun.sleepdownschedule.feature.home.LocalRootDestination.current
 ) {
     val adaptiveGlass = LocalAdaptiveGlass.current
     val dockContext=LocalContext.current
     val experiencePrefs=remember(dockContext){cn.scvtc.campus.AppExperiencePreferences.get(dockContext)}
     val experience by experiencePrefs.state.collectAsStateWithLifecycle()
-    val destinations=experience.dock
-    val currentId=if(selected is Screen.Home)"courses"else"settings"
+    val currentId=selected.destinationId()
+    val destinations=remember(experience.dock, currentId) {
+        // A settings shortcut may open a hidden root page. Show its real selected identity
+        // temporarily without changing the user's saved dock choices.
+        if (currentId in experience.dock) experience.dock
+        else experience.dock.filter { it != "settings" } + currentId + "settings"
+    }
     val selectedIndex=destinations.indexOf(currentId).coerceAtLeast(0)
-    val dockWidth=(70*destinations.size).dp
+    val dockWidth by androidx.compose.animation.core.animateDpAsState((70*destinations.size).dp, tween(280), label="dock-width")
     fun choose(id:String) { when(id) {
         "courses"->onHome()
         "settings"->onConfig()
-        "grades"->dockContext.startActivity(Intent(dockContext,cn.scvtc.campus.AcademicActivity::class.java))
-        "sync"->dockContext.startActivity(Intent(dockContext,SettingsDetailActivity::class.java).putExtra(SettingsDetailPageExtra,SettingsPage.AutoRefreshSchedule.name))
+        "grades","sync"->onDestination(id)
     } }
     fun icon(id:String)=when(id){"settings"->R.drawable.ic_settings;"grades"->R.drawable.ic_agent_overview;"sync"->R.drawable.ic_refresh;else->R.drawable.ic_courses}
     val lightGlass = if (selected is Screen.Home) {
@@ -5381,7 +5426,7 @@ fun FloatingDock(
         contentAlignment = dockAlignment
     ) {
         if (backdrop != null) {
-            key(destinations) { CompositionLocalProvider(LocalContentColor provides dockTextColor) {
+            CompositionLocalProvider(LocalContentColor provides dockTextColor) {
                 LiquidBottomTabs(
                     selectedTabIndex = { selectedIndex },
                     onTabSelected = { index -> destinations.getOrNull(index)?.let(::choose) },
@@ -5408,12 +5453,17 @@ fun FloatingDock(
                     useOfficialGlassParameters = true
                 ) {
                     destinations.forEach { id ->
-                        LiquidBottomTab(onClick = {choose(id)}) {
-                            DockTabContent(icon(id),cn.scvtc.campus.AppExperiencePreferences.destinations.getValue(id),iconSize=23.dp)
-                        }
+                        key(id) { LiquidBottomTab(onClick = {choose(id)}) {
+                            val selectedAmount by animateFloatAsState(if (id == currentId) 1f else 0f, tween(220), label = "dock-item-$id")
+                            CompositionLocalProvider(LocalContentColor provides androidx.compose.ui.graphics.lerp(dockTextColor, MaterialTheme.colorScheme.primary, selectedAmount)) {
+                                Box(Modifier.graphicsLayer { scaleX = 1f + .06f * selectedAmount; scaleY = scaleX }) {
+                                    DockTabContent(icon(id),cn.scvtc.campus.AppExperiencePreferences.destinations.getValue(id),iconSize=23.dp)
+                                }
+                            }
+                        } }
                     }
                 }
-            } }
+            }
         } else {
             GlassPill(backdrop = null, config = config, modifier = Modifier.width(dockWidth).excludeHomeAssistantPull()) {
                 Row(modifier = Modifier.height(54.dp).padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -8404,7 +8454,7 @@ fun SettingsRootScreen(
                     SettingsNavigationRow(
                         "成绩与学分",
                         "真实成绩、学期筛选与官方毕业学分要求",
-                        onClick = { context.startActivity(android.content.Intent(context, cn.scvtc.campus.AcademicActivity::class.java)) }
+                        onClick = { com.xiaomanjun.sleepdownschedule.feature.home.RootDestinationRequests.open("grades") }
                     )
                     SettingsDivider()
                     SettingsNavigationRow("校园助手小澄","原创蓝白角色 · 标题区互动 · 显隐与缩放",onClick={companionSettings=true})

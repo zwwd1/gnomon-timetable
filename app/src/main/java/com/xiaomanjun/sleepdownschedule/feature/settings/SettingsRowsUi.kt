@@ -337,7 +337,7 @@ fun SettingsGroup(
     val shape = RoundedRectangle(if (miuixLayout) 24.dp else 30.dp)
     val darkTheme = appUsesDarkTheme(config)
     val contentColor = if (darkTheme) ComposeColor.White else ComposeColor(0xFF111111)
-    if (miuixLayout) {
+    if (miuixLayout && !com.xiaomanjun.sleepdownschedule.glass.LocalGlassAppearance.current.customized) {
         CompositionLocalProvider(LocalContentColor provides contentColor) {
             Column(
                 modifier = modifier

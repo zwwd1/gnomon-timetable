@@ -17,6 +17,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
+import com.kyant.backdrop.Backdrop
+import com.kyant.backdrop.catalog.components.LiquidBottomTabs
+import com.kyant.backdrop.catalog.components.LiquidBottomTab
+import com.xiaomanjun.sleepdownschedule.core.ui.settings.GlassMiuixSettingsTheme
+import com.xiaomanjun.sleepdownschedule.core.ui.designsystem.DialogLiquidButton
+import com.xiaomanjun.sleepdownschedule.app.ui.DockScrollPadding
+import com.xiaomanjun.sleepdownschedule.MainActivity
+import com.xiaomanjun.sleepdownschedule.feature.home.RootDestinationRequests
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.progressBarRangeInfo
@@ -38,18 +48,30 @@ import kotlinx.coroutines.withContext
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TabRow
 import top.yukonga.miuix.kmp.preference.WindowDropdownPreference
+import com.xiaomanjun.sleepdownschedule.core.ui.settings.SleepDownLiquidDropdownPreference
 import java.math.BigDecimal
 
 /** Real academic records, using SleepDown's existing theme and detail scaffold. */
 class AcademicActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            val app = application as CourseScheduleApp
+        RootDestinationRequests.open("grades")
+        startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+        finish()
+    }
+}
+
+@Composable
+fun AcademicContent(config: ScheduleConfigEntity, backdrop: Backdrop?, autoRefresh: Boolean = true) {
+    GlassMiuixSettingsTheme(config) { AcademicBody(config, backdrop, autoRefresh) }
+}
+
+@Composable
+private fun AcademicBody(config: ScheduleConfigEntity, backdrop: Backdrop?, autoRefresh: Boolean) {
+            val context = LocalContext.current
+            val app = context.applicationContext as CourseScheduleApp
             val profile by AutoRefreshScheduleStore.observe(app).collectAsState()
             val account = profile?.takeIf { it.schoolId == ScvtcNativeBridge.SCHOOL }?.username.orEmpty()
-            var config by remember { mutableStateOf(ScheduleConfigEntity(totalWeeks = 20, currentWeek = 1, notificationLeadMinutes = 10)) }
             var snapshot by remember(account) { mutableStateOf<AcademicSnapshot?>(null) }
             var tab by rememberSaveable(account) { mutableIntStateOf(0) }
             var selectedTerm by rememberSaveable(account) { mutableStateOf("all") }
@@ -58,10 +80,9 @@ class AcademicActivity : ComponentActivity() {
             var scoreFilter by rememberSaveable(account) { mutableIntStateOf(0) }
             val state by AcademicRepository.state.collectAsState()
             LaunchedEffect(account) {
-                config = app.repository.activeSnapshot().config
                 if (account.isNotBlank()) {
                     snapshot = withContext(Dispatchers.IO) { AcademicRepository.cached(app, account) }
-                    if (snapshot == null) AcademicRepository.requestRefresh(app, account)
+                    if (snapshot == null && autoRefresh) AcademicRepository.requestRefresh(app, account)
                 }
             }
             LaunchedEffect(account, state.account, state.busy, state.revision) {
@@ -86,17 +107,28 @@ class AcademicActivity : ComponentActivity() {
                     else -> matching
                 }
             }
-            CourseScheduleTheme(config = config) {
-                DetailActivityScaffold("成绩与学分", config, onBack = { finish() }, compactTopBar = true) { backdrop ->
                     LazyColumn(Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = detailContentTopPadding() + 12.dp,
-                            bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 24.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 24.dp,
+                            bottom = DockScrollPadding + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        item(key = "heading") {
+                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Text("成绩与学分", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+                                    Text(if (snapshot == null) "学校记录 · 本机离线保存" else "${snapshot!!.grades.size} 条成绩 · 本机已保存",
+                                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                if (account.isNotBlank() && autoRefresh) DialogLiquidButton(backdrop, if (state.busy) "同步中" else "刷新", {
+                                    if (!state.busy) AcademicRepository.requestRefresh(app, account)
+                                }, monochromeNeutral = true)
+                            }
+                        }
                         if (account.isBlank()) item {
                             SettingsGroup(backdrop, config) {
                                 Text("连接一次学校账号后，可查看真实成绩与学分，并离线保存记录。", Modifier.padding(16.dp))
-                                SettingsActionButton("连接学校教务", backdrop, onClick = {
-                                    startActivity(Intent(this@AcademicActivity, ScvtcLoginActivity::class.java))
+                                if (autoRefresh) SettingsActionButton("连接学校教务", backdrop, onClick = {
+                                    context.startActivity(Intent(context, ScvtcLoginActivity::class.java))
                                 }, modifier = Modifier.padding(16.dp).fillMaxWidth())
                             }
                         } else {
@@ -107,22 +139,20 @@ class AcademicActivity : ComponentActivity() {
                                             else if (snapshot == null) "尚未取得学校记录" else "本机成绩已保存，可离线查看")
                                         snapshot?.let { Text("最近成功同步：" + java.text.DateFormat.getDateTimeInstance().format(java.util.Date(it.fetchedAt)),
                                             style = MaterialTheme.typography.bodySmall) }
-                                        SettingsActionButton(if (state.busy) "正在同步，请稍候" else "刷新成绩与学分", backdrop,
-                                            onClick = { if (!state.busy) AcademicRepository.requestRefresh(app, account) }, modifier = Modifier.fillMaxWidth())
-                                        if (state.account == account && state.authRequired) SettingsActionButton("补充学校认证", backdrop, onClick = {
-                                            startActivity(Intent(this@AcademicActivity, ScvtcLoginActivity::class.java))
+                                        if (autoRefresh && state.account == account && state.authRequired) SettingsActionButton("补充学校认证", backdrop, onClick = {
+                                            context.startActivity(Intent(context, ScvtcLoginActivity::class.java))
                                         }, modifier = Modifier.fillMaxWidth())
                                     }
                                 }
                             }
-                            item { TabRow(listOf("成绩", "学分"), tab, { tab = it }) }
+                            item { AcademicSegments(listOf("成绩", "学分"), tab, backdrop) { tab = it } }
                             if (tab == 0) {
                                 item {
                                     SettingsGroup(backdrop, config) {
-                                        WindowDropdownPreference(items = terms.map { if (it == "all") "全部学期" else it },
+                                        SleepDownLiquidDropdownPreference(items = terms.map { if (it == "all") "全部学期" else it }, backdrop = backdrop, config = config,
                                             selectedIndex = terms.indexOf(selectedTerm).coerceAtLeast(0), title = "学期",
                                             onSelectedIndexChange = { selectedTerm = terms[it] })
-                                        WindowDropdownPreference(items = listOf("学校顺序", "成绩从高到低", "学分从高到低"),
+                                        SleepDownLiquidDropdownPreference(items = listOf("学校顺序", "成绩从高到低", "学分从高到低"), backdrop = backdrop, config = config,
                                             selectedIndex = sort, title = "排序", onSelectedIndexChange = { sort = it })
                                     }
                                 }
@@ -137,7 +167,7 @@ class AcademicActivity : ComponentActivity() {
                                 }
                                 item {
                                     TextField(query, { query = it }, label = "搜索课程名称或代码", modifier = Modifier.fillMaxWidth())
-                                    TabRow(listOf("全部成绩","需要留意"),scoreFilter,{scoreFilter=it},modifier=Modifier.padding(top=12.dp))
+                                    AcademicSegments(listOf("全部成绩","需要留意"),scoreFilter,backdrop,Modifier.padding(top=12.dp)) { scoreFilter=it }
                                     if(scoreFilter==1) Text("显示未通过的数值成绩与学校标注的不及格记录。",
                                         Modifier.padding(top=8.dp),style=MaterialTheme.typography.bodySmall)
                                     Text("显示 ${visibleRecords.size} / ${termRecords.size} 条 · 点卡片查看详情", Modifier.padding(top = 8.dp),
@@ -237,9 +267,19 @@ class AcademicActivity : ComponentActivity() {
                             }
                         }
                     }
-                }
-            }
-        }
+}
+
+@Composable
+private fun AcademicSegments(titles: List<String>, selected: Int, backdrop: Backdrop?, modifier: Modifier = Modifier,
+    onSelected: (Int) -> Unit) {
+    if (backdrop == null) { TabRow(titles, selected, onSelected, modifier); return }
+    LiquidBottomTabs({ selected }, onSelected, backdrop, titles.size, modifier.fillMaxWidth(),
+        containerHeight = 48.dp, indicatorHeight = 40.dp, blurRadius = 8.dp,
+        lensHeight = 8.dp, lensAmount = 12.dp, pressedContentScale = 1.04f) {
+        titles.forEachIndexed { index, title -> LiquidBottomTab(onClick = { onSelected(index) }) {
+            Text(title, style = MaterialTheme.typography.labelLarge,
+                color = if (selected == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
+        } }
     }
 }
 

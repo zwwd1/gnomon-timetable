@@ -90,6 +90,8 @@ fun LiquidButton(
     interactionEnabledAt: (size: Size, offset: Offset) -> Boolean = { _, _ -> true },
     content: @Composable RowScope.() -> Unit
 ) {
+    val appearance = com.xiaomanjun.sleepdownschedule.glass.LocalGlassAppearance.current
+    val pressAmount = if (!appearance.customized) 1f else if (appearance.style == com.xiaomanjun.sleepdownschedule.glass.GlassStyle.LIQUID) appearance.current.press else .25f
     val animationScope = rememberCoroutineScope()
     val clickInteractionSource = remember { MutableInteractionSource() }
     val pressed by clickInteractionSource.collectIsPressedAsState()
@@ -153,13 +155,20 @@ fun LiquidButton(
             lens(lensHeight.toPx(), lensAmount.toPx(), chromaticAberration = chromaticAberration)
         }
     }
-    val buttonOnDrawSurface: DrawScope.() -> Unit = remember(tint, surfaceColor) {
+    val buttonOnDrawSurface: DrawScope.() -> Unit = remember(tint, surfaceColor, appearance) {
         {
+            val semanticColor = surfaceColor.isSpecified &&
+                (kotlin.math.abs(surfaceColor.red - surfaceColor.green) + kotlin.math.abs(surfaceColor.green - surfaceColor.blue) > .25f ||
+                    surfaceColor.red + surfaceColor.green + surfaceColor.blue < .05f)
+            if (appearance.customized && semanticColor) {
+                drawRect(surfaceColor.copy(alpha = (.65f + .3f * appearance.current.opacity).coerceIn(0f,1f)))
+            } else if (!appearance.customized) {
             if (tint.isSpecified) {
                 drawRect(tint.copy(alpha = 0.18f), blendMode = BlendMode.Hue)
                 drawRect(tint.copy(alpha = 0.22f))
             }
             if (surfaceColor.isSpecified) drawRect(surfaceColor)
+            }
         }
     }
     Row(
@@ -180,7 +189,7 @@ fun LiquidButton(
 
                         val progress = interactiveHighlight.pressProgress
                         pressSnapshot?.progress = progress
-                        val expansionPx = pressExpansion.toPx()
+                        val expansionPx = pressExpansion.toPx() * pressAmount
                         val scale = lerp(1f, 1f + expansionPx / size.height, progress)
 
                         val maxOffset = size.minDimension

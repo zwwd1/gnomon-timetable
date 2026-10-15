@@ -31,6 +31,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.LayoutDirection
@@ -215,7 +216,7 @@ internal fun HomeSwitchPane(
     val direction = if (LocalLayoutDirection.current == LayoutDirection.Rtl) -1f else 1f
     val parents = LocalSwitchPages.current
     val pages = remember(parents, motion, direction) { parents + SwitchPageScope(motion, width, direction) }
-    val inputModifier = if (motion.moving || !visible) {
+    val inputModifier = if (motion.moving && visible) {
         Modifier.clearAndSetSemantics {}.pointerInput(Unit) {
             awaitPointerEventScope {
                 while (true) {
@@ -226,6 +227,10 @@ internal fun HomeSwitchPane(
     } else Modifier
     Box(
         modifier.drawWithContent { if (visible) drawContent() }
+            .layout { measurable, constraints ->
+                val child = measurable.measure(constraints)
+                layout(child.width, child.height) { if (visible) child.placeRelative(0, 0) }
+            }
             .onSizeChanged { width.intValue = it.width }
             .homeSwitchLayer(motion, secondary, pageClip).then(inputModifier),
         contentAlignment = contentAlignment

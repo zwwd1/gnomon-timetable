@@ -42,7 +42,9 @@ class ScheduleAdjustmentsActivity : ComponentActivity() {
             val state by viewModel.allSchedulesState.collectAsStateWithLifecycle()
             val storedConfig = state.allConfigs.firstOrNull { it.id == scheduleId }
             CourseScheduleTheme(config = state.config) {
-                if (storedConfig == null || !state.loaded) {
+                // loaded describes the ACTIVE timetable, including its period times. Editing
+                // another timetable or filling missing school times must not wait for it.
+                if (storedConfig == null) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                 } else {
                     val draftState = remember(state, storedConfig) {

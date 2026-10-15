@@ -20,6 +20,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -163,6 +165,9 @@ fun CourseScheduleTheme(
 ) {
     val darkTheme = appUsesDarkTheme(config)
     val view = LocalView.current
+    val appearanceStore = androidx.compose.runtime.remember(view.context) { cn.scvtc.campus.AppExperiencePreferences.get(view.context) }
+    val appearance by appearanceStore.state.collectAsState()
+    val preview by appearanceStore.glassPreview.collectAsState()
     LaunchedEffect(config.followSystemDarkMode, darkTheme, view.context) {
         // Changing launcher aliases during the settings-to-home handoff can make ColorOS/Oplus
         // remove the visible task. Record the desired appearance here; CourseScheduleApp applies
@@ -234,7 +239,9 @@ fun CourseScheduleTheme(
             )
         })
     ) {
-        Surface(modifier = Modifier.fillMaxSize(), content = content)
+        CompositionLocalProvider(com.xiaomanjun.sleepdownschedule.glass.LocalGlassAppearance provides (preview ?: appearance.glass)) {
+            Surface(modifier = Modifier.fillMaxSize(), content = content)
+        }
     }
 }
 
