@@ -1,5 +1,34 @@
 [
   {
+    "name": "Gnomon 课程表 1.2.12",
+    "tag_name": "v1.2.12",
+    "body": "# Gnomon 课程表 1.2.12\n\n• 成绩、教务接入同一主页面，切换时保留底栏、课表位置和成绩筛选，不再反复打开独立窗口。\n• 底栏增减入口时平滑调整宽度，修正拖动范围与回调；恢复默认按钮与设置内容对齐。\n• 新增液态、高斯、柔光三种玻璃。各自调节、实时预览，应用后独立保存，取消不覆盖原设置。\n• 缺失的节次时间可以逐节补填；调休页面不再等待活动课表的作息加载，回传时核对目标课表与草稿。\n• 整理 AI 服务地址、模型和 Key 的输入布局，Key 默认遮掩，保留原有本机加密保存。\n\n本轮仅修改 Gnomon，不改 Lumen。原课表、壁纸、作息、提醒与学校认证链路保留，沿用包名和原签名。\n\nRelease 构建、原签名与 21 项定向规则检查通过。手机操作、三种材质的实机效果和 Android 17 手势仍待复测。\n\n安装包：**Gnomon-Timetable-1.2.12.apk**，14.25 MiB。\n\nSHA-256：`9eb6be8a23041a6c90867ac4e27214671288070174b5711846d88e5d7ca57f67`\n\n[使用说明](https://github.com/zwwd1/gnomon-timetable/blob/v1.2.12/docs/SCVTC_USAGE.md) · [对应源码](https://github.com/zwwd1/gnomon-timetable/tree/582f533b8eba81ce936eb4a7b4bb378076840bc4)\n",
+    "html_url": "https://github.com/zwwd1/gnomon-timetable/releases/tag/v1.2.12",
+    "published_at": "2026-10-15T09:52:54Z",
+    "draft": false,
+    "prerelease": false,
+    "assets": [
+      {
+        "name": "BUILD_PROVENANCE.json",
+        "size": 1590,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.12/BUILD_PROVENANCE.json",
+        "digest": "sha256:34608a41f09bbb11fd1fd87437019a7bb0f7e940bec173b7d8f6c27a153afd41"
+      },
+      {
+        "name": "Gnomon-Timetable-1.2.12.apk",
+        "size": 14943697,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.12/Gnomon-Timetable-1.2.12.apk",
+        "digest": "sha256:9eb6be8a23041a6c90867ac4e27214671288070174b5711846d88e5d7ca57f67"
+      },
+      {
+        "name": "Gnomon-Timetable-1.2.12.apk.sha256",
+        "size": 94,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.12/Gnomon-Timetable-1.2.12.apk.sha256",
+        "digest": "sha256:1b0327d3597558cfa9d870ae17f29dfe1b32dca54b8e5034e8daeab755bcc770"
+      }
+    ]
+  },
+  {
     "name": "Gnomon 课程表 1.2.11",
     "tag_name": "v1.2.11",
     "body": "# Gnomon 课程表 1.2.11\n\n• 点按课程放大查看课名、老师和地点，长按再编辑；缩短课程卡片的展开、收起和表单过渡。\n• 刷新先校验账号、学期和覆盖范围，保留手动修改、已删除课程和其他教学周的数据。\n• 两版更新历史联网同步 GitHub 发布记录；离线仍能查看本地日志。\n• 保留原包名与签名，可直接覆盖安装。\n\nGnomon 侧重周课表、课程编辑、作息、提醒和桌面组件，安装包兼容多个架构。\n\n包含此前 1.2.10 的数据保护和同步修复。学校验证码仍需在官方认证页完成，原有离线数据保留。\n\n安装包：**Gnomon-Timetable-1.2.11.apk**，14.20 MiB。\n\nSHA-256：`89b88f763ffd311554c357fc4cdd98b91b334e257f39b7bf240b18ebac0e42ce`\n\n[使用说明](https://github.com/zwwd1/gnomon-timetable/blob/v1.2.11/docs/SCVTC_USAGE.md) · [源码](https://github.com/zwwd1/gnomon-timetable/tree/5487edb35834ba07c24c2a11aa750ee42b25e58b)\n",
