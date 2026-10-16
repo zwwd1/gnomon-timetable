@@ -52,6 +52,11 @@ object BackupPreferencesReader {
         return BackupPreferencesExport(
             preferences = BackupPreferences(
                 preferencesVersion = BackupFormatV1.PREFERENCES_VERSION,
+                presentation = cn.scvtc.campus.AppExperiencePreferences.get(context).state.value.let {
+                    BackupPresentationPreferences(it.entranceAnimation, it.dock, it.glass.encode(),
+                        it.showPeriodTimes, it.cardTint, it.detailOpacity, it.haptics, it.predictiveBack, it.materialQuality,
+                        it.showBreakDividers, it.showTeacher, it.showLocation)
+                },
                 appIcon = AppIconManager.backupPreferences(context),
                 dayAgent = DayAgentPreferences.backupPreferences(context, scheduleStableIdsByRoomId),
                 aiImport = AiImportSettingsStore.exportForBackup(context),

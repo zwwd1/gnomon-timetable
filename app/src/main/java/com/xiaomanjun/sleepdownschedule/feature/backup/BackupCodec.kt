@@ -473,8 +473,9 @@ object BackupCodec {
             schedule.periods.forEach { period ->
                 if (period.periodIndex < 0) fail("periodIndex 非法")
                 if (!periodIndexes.add(period.periodIndex)) fail("重复 periodIndex")
-                validateShortText("period startTime", period.startTime, allowBlank = false)
-                validateShortText("period endTime", period.endTime, allowBlank = false)
+                validateShortText("period startTime", period.startTime)
+                validateShortText("period endTime", period.endTime)
+                if (period.startTime.isBlank() != period.endTime.isBlank()) fail("节次起止时间必须同时填写或同时留空")
             }
             validateUniqueIds(schedule.courses.map { it.id }, BackupStableId.COURSE_PREFIX, "course")
             schedule.courses.forEach { course ->
@@ -524,8 +525,9 @@ object BackupCodec {
                     if (time.periodIndex < 0) fail("scheme time periodIndex 非法")
                     if (!schemePeriodIndexes.add(time.periodIndex)) fail("重复 scheme time periodIndex")
                     if (time.periodIndex !in periodIndexes) fail("scheme time 引用了不存在的 periodIndex")
-                    validateShortText("scheme time start", time.startTime, allowBlank = false)
-                    validateShortText("scheme time end", time.endTime, allowBlank = false)
+                    validateShortText("scheme time start", time.startTime)
+                    validateShortText("scheme time end", time.endTime)
+                    if (time.startTime.isBlank() != time.endTime.isBlank()) fail("作息起止时间必须同时填写或同时留空")
                 }
             }
             validateUniqueIds(schedule.agentDailySessions.map { it.id }, BackupStableId.SESSION_PREFIX, "agent session")
@@ -567,6 +569,13 @@ object BackupCodec {
     }
 
     private fun validatePreferences(preferences: BackupPreferences, assetIds: Set<String>) {
+        preferences.presentation?.let { p ->
+            require(p.dock.size in 1..4 && p.dock.distinct().size == p.dock.size && "settings" in p.dock &&
+                p.dock.all { it in setOf("courses", "grades", "sync", "settings") }) { "备份底栏入口无效" }
+            require(p.cardTint.isFinite() && p.cardTint in 0f..1f &&
+                p.detailOpacity.isFinite() && p.detailOpacity in .45f..1f &&
+                p.materialQuality.isFinite() && p.materialQuality in .5f..1f && p.glass.length <= 16384) { "备份外观参数无效" }
+        }
         if (preferences.preferencesVersion != BackupFormatV1.PREFERENCES_VERSION) {
             fail("未知 preferencesVersion=${preferences.preferencesVersion}")
         }

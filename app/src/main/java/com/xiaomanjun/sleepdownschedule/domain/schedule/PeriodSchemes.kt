@@ -482,6 +482,13 @@ fun encodeOverrides(value: Set<Int>): String = value.sorted().joinToString(prefi
 
 fun decodeOverrides(value: String): Set<Int> = Regex("\\d+").findAll(value).map { it.value.toInt() }.toSet()
 
+fun validateEditablePeriodTimes(times: List<PeriodSchemeTimeEntity>): String? {
+    times.firstOrNull { it.startTime.isBlank() != it.endTime.isBlank() }?.let {
+        return "第 ${it.periodIndex} 节请同时填写开始和结束时间，或同时留空"
+    }
+    return validateResolvedPeriodTimes(times.filterNot { it.startTime.isBlank() && it.endTime.isBlank() })
+}
+
 fun validateResolvedPeriodTimes(times: List<PeriodSchemeTimeEntity>): String? {
     val sorted = times.sortedBy { it.periodIndex }
     sorted.forEach { item ->

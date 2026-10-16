@@ -86,8 +86,7 @@ internal fun PeriodSchemeCreationWizard(
         }
         val conflict = validateResolvedPeriodTimes(times)
         if (conflict != null) { error = conflict; return }
-        val resized = resizeTimelineStructure(PeriodTimelineSession(config, draft), targetConfig)
-        if (resized == null) { error = "现有作息没有足够的时间容纳新增节次，请减少总节数或先调整现有作息"; return }
+        val resized = PeriodTimelineSession(targetConfig, resizePeriodStructure(config, draft, targetConfig))
         val scheme = PeriodSchemeEntity(
             id = id, scheduleId = config.id, name = name.trim(), mode = PeriodSchemeMode.MANUAL,
             classDurationMinutes = duration, breakDurationMinutes = gap,

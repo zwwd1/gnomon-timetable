@@ -87,12 +87,13 @@ data class GlassAppearance(
 
 val LocalGlassAppearance = compositionLocalOf { GlassAppearance() }
 
-internal fun BackdropEffectScope.appearanceEffects(appearance: GlassAppearance) {
+internal fun BackdropEffectScope.appearanceEffects(appearance: GlassAppearance, quality: Float = 1f) {
     val p = appearance.current
-    blur(p.blur * density)
+    blur(p.blur * density * quality)
     when (appearance.style) {
         GlassStyle.LIQUID -> if (p.lensHeight > 0f && p.lensAmount > 0f) {
-            lens(p.lensHeight * density, p.lensAmount * density, chromaticAberration = p.dispersion)
+            lens(p.lensHeight * density * quality, p.lensAmount * density * quality,
+                chromaticAberration = p.dispersion && quality >= .9f)
         }
         GlassStyle.GAUSSIAN -> Unit
         GlassStyle.SOFT -> {

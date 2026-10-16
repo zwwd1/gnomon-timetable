@@ -5,6 +5,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.foundation.ScrollState
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.xiaomanjun.sleepdownschedule.CourseEntity
+import com.xiaomanjun.sleepdownschedule.domain.schedule.WeekGridLayout
 import kotlin.math.abs
 import kotlin.math.sign
 import kotlin.math.roundToInt
@@ -28,24 +29,26 @@ data class CourseEditorWeekGrid(
     val periodIndexes: List<Int>,
     val scroll: ScrollState?,
     val scrollAtCapture: Int,
-    val rightToLeft: Boolean
+    val rightToLeft: Boolean,
+    val layout: WeekGridLayout = WeekGridLayout()
 ) {
     suspend fun reveal(course: CourseEntity, weekdays: List<Int>): Rect? {
         val column = weekdays.indexOf(course.weekday).takeIf { it >= 0 } ?: return null
         val positions = course.periods.map(periodIndexes::indexOf).filter { it >= 0 }.distinct().sorted()
         val first = positions.firstOrNull() ?: return null
-        val firstRun = positions.takeWhile { it - first == positions.indexOf(it) }.size
+        val contiguousRun = positions.takeWhile { it - first == positions.indexOf(it) }.size
+        val firstRun = layout.split(first, first + contiguousRun).first().count()
         val cellWidth = width / weekdays.size
         val physicalColumn = if (rightToLeft) weekdays.lastIndex - column else column
         val left = origin.x + physicalColumn * cellWidth + gap / 2f
         // Bring the selected period near the viewport center while preserving the grid's
         // configured header offset. scrollTo clamps against the actual measured scroll range.
         if (scroll != null && scroll.viewportSize > 0) {
-            val rowCenter = rowHeight * (first + firstRun / 2f)
+            val rowCenter = rowHeight * (layout.top(first.toFloat()) + layout.height(first, firstRun) / 2f)
             scroll.scrollTo((rowCenter - scroll.viewportSize * 0.45f).roundToInt().coerceAtLeast(0))
         }
-        val top = origin.y + rowHeight * first + gap / 2f - ((scroll?.value ?: scrollAtCapture) - scrollAtCapture)
-        return Rect(left, top, left + cellWidth - gap, top + (rowHeight * firstRun - gap).coerceAtLeast(1f))
+        val top = origin.y + rowHeight * layout.top(first.toFloat()) + gap / 2f - ((scroll?.value ?: scrollAtCapture) - scrollAtCapture)
+        return Rect(left, top, left + cellWidth - gap, top + (rowHeight * layout.height(first, firstRun) - gap).coerceAtLeast(1f))
     }
 }
 
@@ -84,13 +87,16 @@ internal fun courseEditorWeekLandingBounds(
     destination: CourseEntity,
     periodIndexes: List<Int>,
     rowHeight: Float,
-    gap: Float
+    gap: Float,
+    layout: WeekGridLayout = WeekGridLayout()
 ): Rect? {
     val start = original.periods.map(periodIndexes::indexOf).filter { it >= 0 }.minOrNull() ?: return null
     val positions = destination.periods.map(periodIndexes::indexOf).filter { it >= 0 }.sorted()
     val targetStart = positions.firstOrNull() ?: return null
     val left = source.left + (destination.weekday - original.weekday) * (source.width + gap)
-    val top = source.top + (targetStart - start) * rowHeight
-    val height = rowHeight * (positions.last() - targetStart + 1) - gap
+    val top = source.top + (layout.top(targetStart.toFloat()) - layout.top(start.toFloat())) * rowHeight
+    val firstEnd = positions.takeWhile { it - targetStart == positions.indexOf(it) }.last() + 1
+    val firstRun = layout.split(targetStart, firstEnd).first()
+    val height = rowHeight * layout.height(targetStart, firstRun.count()) - gap
     return Rect(left, top, left + source.width, top + height.coerceAtLeast(1f))
 }

@@ -217,14 +217,11 @@ fun courseEndTime(course: CourseEntity, periods: List<PeriodEntity>): LocalTime?
 }
 
 fun courseTimeLabel(course: CourseEntity, periods: List<PeriodEntity>): String {
-    course.customTimeRangeOrNull()?.let { (start, end) ->
-        return start.toString() + " - " + end.toString()
-    }
-    val first = course.periods.minOrNull()
-    val last = course.periods.maxOrNull()
-    val start = periods.firstOrNull { it.periodIndex == first }?.startTime ?: "--:--"
-    val end = periods.firstOrNull { it.periodIndex == last }?.endTime ?: "--:--"
-    return start + " - " + end
+    val format = DateTimeFormatter.ofPattern("HH:mm")
+    val start = courseStartTime(course, periods)
+    val end = courseEndTime(course, periods)
+    if (start == null || end == null || !end.isAfter(start)) return "节次时间待设置"
+    return "${start.format(format)} – ${end.format(format)}"
 }
 
 fun CourseEntity.customTimeRangeOrNull(): Pair<LocalTime, LocalTime>? {

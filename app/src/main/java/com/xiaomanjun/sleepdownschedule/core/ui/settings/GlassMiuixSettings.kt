@@ -28,6 +28,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.NonCancellable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -325,6 +330,18 @@ internal fun GlassMiuixDetailActivityScaffold(
     val compactTopBarHeight = stableStatusBarTop +
         SleepDownDesignTokens.SecondaryPage.CompactTopBarHeight
     val editorProgress = remember { androidx.compose.runtime.mutableFloatStateOf(0f) }
+    val returnProgress = remember { androidx.compose.animation.core.Animatable(0f) }
+    val predictive = cn.scvtc.campus.LocalAppExperience.current.predictiveBack
+    androidx.activity.compose.PredictiveBackHandler(enabled = predictive && editorProgress.floatValue == 0f) { events ->
+        try {
+            events.collect { returnProgress.snapTo(it.progress) }
+            onBack()
+        } finally {
+            withContext(NonCancellable) {
+                returnProgress.animateTo(0f, androidx.compose.animation.core.tween(160))
+            }
+        }
+    }
     val editorUnderlayBlur = remember(density) { platformMotionBlurRenderEffect(with(density) { 10.dp.toPx() }) }
     val dialogSceneBackdrop = rememberCenteredDialogSceneBackdrop("settings-detail-dialog-scene")
     // Reuse a host supplied by the activity transition/home overlay when present. This keeps a
@@ -344,6 +361,11 @@ internal fun GlassMiuixDetailActivityScaffold(
         Box(
             Modifier
                 .fillMaxSize()
+                .graphicsLayer {
+                    translationX = size.width * .12f * returnProgress.value
+                    scaleX = 1f - .05f * returnProgress.value
+                    scaleY = scaleX
+                }
                 .background(settingsPageBackground(pageConfig))
         ) {
             Box(

@@ -25,12 +25,13 @@ internal fun CourseExpandedCard(
     contextMessage: String?,
     textColor: Color,
     onClose: () -> Unit,
+    onTimeSettings: () -> Unit,
     onLongPress: () -> Unit
 ) {
     Column(Modifier.fillMaxSize().combinedClickable(
         onClick = {}, onLongClickLabel = "编辑课程", onLongClick = onLongPress
-    ).verticalScroll(rememberScrollState()).padding(28.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)) {
+    ).verticalScroll(rememberScrollState()).padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween) {
             Text(week?.let { "第 $it 周 · ${weekdayLabel(course.weekday)}" }
@@ -40,9 +41,13 @@ internal fun CourseExpandedCard(
         }
         Text(course.name, color = textColor, style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold)
-        Detail("老师", course.teacher?.takeIf(String::isNotBlank) ?: "未填写", textColor)
-        Detail("地点", course.location?.takeIf(String::isNotBlank) ?: "未填写", textColor)
         Detail("上课时间", courseTimeLabel(course, periods), textColor)
+        if (com.xiaomanjun.sleepdownschedule.domain.schedule.courseStartTime(course, periods) == null ||
+            com.xiaomanjun.sleepdownschedule.domain.schedule.courseEndTime(course, periods) == null)
+            TextButton(onClick = onTimeSettings) { Text("设置节次时间") }
+        Detail("上课地点", course.location?.takeIf(String::isNotBlank) ?: "未填写地点", textColor)
+        Text("授课教师 · ${course.teacher?.takeIf(String::isNotBlank) ?: "未填写"}",
+            color = textColor.copy(alpha = .85f), style = MaterialTheme.typography.bodyLarge)
         Text("上课周次 · ${compactWeekSelectionLabel(course.weeks)}",
             color = textColor.copy(alpha = .72f), style = MaterialTheme.typography.bodyMedium)
         course.note?.takeIf(String::isNotBlank)?.let {
@@ -51,8 +56,9 @@ internal fun CourseExpandedCard(
         contextMessage?.let {
             Text(it, color = textColor.copy(alpha = .72f), style = MaterialTheme.typography.bodyMedium)
         }
-        Text("长按卡片可编辑", color = textColor.copy(alpha = .6f),
-            style = MaterialTheme.typography.labelMedium)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            TextButton(onClick = onLongPress) { Text("编辑课程", color = textColor) }
+        }
     }
 }
 

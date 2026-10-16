@@ -9,19 +9,19 @@ import org.junit.Test
 
 class CourseGlassTintTest {
     @Test
-    fun noWallpaperKeepsMoreOfTheSampledBackdropVisible() {
+    fun readableTintSurvivesReducedSamplingQuality() {
         val wallpaperTint = courseGlassTintAlpha(cardAlpha = 1f, quality = 1f, hasWallpaper = true)
         val fallbackTint = courseGlassTintAlpha(cardAlpha = 1f, quality = 1f, hasWallpaper = false)
 
-        assertEquals(0.68f, wallpaperTint, 0.0001f)
-        assertEquals(0.16f, fallbackTint, 0.0001f)
-        assertTrue(fallbackTint < wallpaperTint / 2f)
+        assertTrue(wallpaperTint >= 0.8f && fallbackTint >= 0.8f)
+        assertEquals(wallpaperTint, courseGlassTintAlpha(1f, .5f, true), .0001f)
+        assertEquals(fallbackTint, courseGlassTintAlpha(1f, .5f, false), .0001f)
     }
 
     @Test
     fun noWallpaperTintStillTracksThePersonalizationSlider() {
         assertEquals(
-            0.064f,
+            0.4f,
             courseGlassTintAlpha(cardAlpha = 0.4f, quality = 1f, hasWallpaper = false),
             0.0001f
         )
@@ -34,7 +34,7 @@ class CourseGlassTintTest {
 
     @Test
     fun tintFunctionsClampOutOfRangeInputs() {
-        assertEquals(0.16f, courseGlassTintAlpha(2f, 2f, hasWallpaper = false), 0.0001f)
+        assertEquals(1f, courseGlassTintAlpha(2f, 2f, hasWallpaper = false), 0.0001f)
         assertEquals(0f, courseGlassTintAlpha(-1f, 1f, hasWallpaper = false), 0.0001f)
         assertEquals(0.18f, courseSimpleBlurTintAlpha(2f, 2f, hasWallpaper = false), 0.0001f)
     }

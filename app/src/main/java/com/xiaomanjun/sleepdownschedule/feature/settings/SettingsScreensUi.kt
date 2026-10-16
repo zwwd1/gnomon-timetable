@@ -137,7 +137,7 @@ fun GeneralSettingsScreen(
         contentBottomPadding = DockScrollPadding
     ) {
         item(key = "general-appearance") {
-            GlassPreferenceSection("外观与布局") {
+            GlassPreferenceSection("主题与外观 · 当前课表") {
                 SettingsGroup(backdrop = backdrop, config = visualConfig, modifier = Modifier.fillMaxWidth()) {
                     SettingsToggleRow(
                         title = "跟随系统",
@@ -147,14 +147,7 @@ fun GeneralSettingsScreen(
                         onCheckedChange = { applyChange(draft.copy(followSystemDarkMode = it)) }
                     )
                     SettingsDivider()
-                    SettingsToggleRow(
-                        title = "深色模式",
-                        subtitle = if (draft.followSystemDarkMode) "当前由系统外观决定。" else "手动切换应用外观。",
-                        checked = draft.darkMode,
-                        backdrop = backdrop,
-                        enabled = !draft.followSystemDarkMode,
-                        onCheckedChange = { applyChange(draft.copy(darkMode = it, followSystemDarkMode = false)) }
-                    )
+                    ThemeModeCards(draft, ::applyChange)
                     SettingsDivider()
                     SettingsNavigationRow(
                         title = "玻璃材质",
@@ -224,6 +217,23 @@ fun GeneralSettingsScreen(
                         }
                     )
                     SettingsDivider()
+                    SettingsToggleRow("显示节次时间", "默认显示编号与起止时间；压缩后仍保留，超出屏幕可滚动。",
+                        experience.showPeriodTimes, backdrop) {
+                        experiencePrefs.presentation(experience.copy(showPeriodTimes = it))
+                    }
+                    SettingsDivider()
+                    SettingsToggleRow("显示午休与晚休", "全部课表 · 按作息边界显示，不改变节次与提醒", experience.showBreakDividers, backdrop) {
+                        experiencePrefs.presentation(experience.copy(showBreakDividers = it))
+                    }
+                    SettingsDivider()
+                    SettingsToggleRow("周课表卡片显示地点", "全部课表 · 详情始终保留完整地点", experience.showLocation, backdrop) {
+                        experiencePrefs.presentation(experience.copy(showLocation = it))
+                    }
+                    SettingsDivider()
+                    SettingsToggleRow("周课表卡片显示教师", "全部课表 · 详情始终保留完整教师", experience.showTeacher, backdrop) {
+                        experiencePrefs.presentation(experience.copy(showTeacher = it))
+                    }
+                    SettingsDivider()
                     SettingsDefaultWallpaperRow(
                         selected = draft.defaultWallpaperStyle,
                         backdrop = backdrop,
@@ -233,7 +243,37 @@ fun GeneralSettingsScreen(
                 }
             }
         }
+        item(key = "general-data-sources") {
+            GlassPreferenceSection("数据与作息来源") {
+                SettingsGroup(backdrop, visualConfig) {
+                    SettingsInfoRow("学校教务", "川职统一身份认证与教务接口")
+                    SettingsDivider()
+                    SettingsInfoRow("节假日与调休", "由当前课表确认，不把公共假日自动当作停课")
+                }
+                Text("主题、首页模式和背景跟随当前课表；时间栏、休息分隔、材质质量与操作偏好适用于全部课表。",
+                    modifier = Modifier.padding(horizontal = 14.dp), style = MaterialTheme.typography.bodySmall)
+            }
+        }
         item(key="general-navigation") {
+            GlassPreferenceSection("操作偏好 · 全部课表") {
+                SettingsGroup(backdrop, visualConfig) {
+                    SleepDownLiquidDropdownPreference(items = listOf("最佳", "均衡", "性能"),
+                        selectedIndex = if (experience.materialQuality >= .9f) 0 else if (experience.materialQuality >= .7f) 1 else 2,
+                        title = "材质质量", summary = "均衡 / 性能降低模糊与折射，关闭色散；保留文字对比度、三套参数和切页动效",
+                        backdrop = backdrop, config = visualConfig, insideMargin = PaddingValues(14.dp),
+                        maxHeight = 250.dp, onExpandedChange = {}, onSelectedIndexChange = {
+                            experiencePrefs.presentation(experience.copy(materialQuality = listOf(1f, .75f, .5f)[it]))
+                        })
+                    SettingsDivider()
+                    SettingsToggleRow("预测性返回", "二级页面跟随手势，取消时回到原位", experience.predictiveBack, backdrop) {
+                        experiencePrefs.presentation(experience.copy(predictiveBack = it))
+                    }
+                    SettingsDivider()
+                    SettingsToggleRow("应用触感反馈", "点击、拖动与选择时的振动", experience.haptics, backdrop) {
+                        experiencePrefs.presentation(experience.copy(haptics = it))
+                    }
+                }
+            }
             GlassPreferenceSection("底部导航入口") {
                 SettingsGroup(backdrop=backdrop,config=visualConfig) {
                     cn.scvtc.campus.AppExperiencePreferences.destinations.forEach { (id,title) ->
@@ -262,28 +302,10 @@ fun GeneralSettingsScreen(
                     backdrop = backdrop,
                     onCheckedChange = { applyChange(draft.copy(hideFromRecents = it)) }
                 )
-                if (AppDistribution.supportsSelfUpdate) {
-                    SettingsDivider()
-                    SettingsToggleRow(
-                        title = "自动检查更新",
-                        subtitle = "每天首次打开应用时检查Gnomon 课程表 GitHub 发布的新版本。",
-                        checked = draft.autoCheckUpdates,
-                        backdrop = backdrop,
-                        onCheckedChange = { applyChange(draft.copy(autoCheckUpdates = it)) }
-                    )
-                    SettingsDivider()
-                    SettingsToggleRow(
-                        title = "接收 Beta 版更新",
-                        subtitle = if (includeBetaUpdates) "更新渠道：正式版与 Beta 版。同版本正式版发布后也会提示。"
-                            else "更新渠道：仅正式版。开启后可提前体验 Beta 版。",
-                        checked = includeBetaUpdates,
-                        backdrop = backdrop,
-                        onCheckedChange = {
-                            includeBetaUpdates = it
-                            GiteeAppUpdater.setIncludesBeta(context, it)
-                        }
-                    )
-                }
+                SettingsDivider()
+                SettingsNavigationRow("更新设置", "版本、检查、更新提醒与 Beta 选项", onClick = {
+                    context.startActivity(android.content.Intent(context, com.xiaomanjun.sleepdownschedule.SettingsDetailActivity::class.java).putExtra("settings_page", "Updates"))
+                })
                 }
             }
         }

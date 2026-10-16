@@ -5,6 +5,8 @@ import com.xiaomanjun.sleepdownschedule.core.ui.text.LocalCourseTextMotionFrozen
 import com.xiaomanjun.sleepdownschedule.feature.agent.excludeHomeAssistantPull
 
 import com.xiaomanjun.sleepdownschedule.domain.schedule.courseNeedsSupplementaryWeekRow
+import com.xiaomanjun.sleepdownschedule.domain.schedule.WeekGridLayout
+import com.xiaomanjun.sleepdownschedule.domain.schedule.weekGridLayout
 
 import com.xiaomanjun.sleepdownschedule.core.ui.designsystem.drawContinuousRoundRect
 
@@ -369,7 +371,14 @@ internal fun SinglePillWeekScheduleScreen(
     // boundless mode the rail is narrowed so the period/time header shifts left, the left
     // clearance to the grid shrinks, and the freed width flows into every course column equally.
     val boundless = style == WeekViewStyle.BOUNDLESS
-    val rowHeaderWidth = if (boundless) BoundlessWeekRowHeaderWidth else 56.dp
+    val periodSettingsContext = LocalContext.current
+    val railFontScale = LocalDensity.current.fontScale.coerceAtLeast(1f)
+    val rowHeaderWidth = maxOf(if (boundless) BoundlessWeekRowHeaderWidth else 56.dp,
+        42.dp * railFontScale)
+    val presentation = cn.scvtc.campus.LocalAppExperience.current
+    val gridLayout = remember(state.config, state.periods, state.courses, cardHeight, presentation.showBreakDividers) {
+        weekGridLayout(state.config, state.periods, state.courses, cardHeight.value, presentation.showBreakDividers)
+    }
     val today = LocalDate.now()
     val weekStart = scheduleWeekStartDate(state.config, displayWeek, today)
     val now by produceState(initialValue = LocalTime.now()) {
@@ -614,6 +623,7 @@ internal fun SinglePillWeekScheduleScreen(
     }
 
     CompositionLocalProvider(
+        LocalWeekGridLayout provides gridLayout,
         LocalWeekEditMotionState provides weekEditOverlay,
         LocalWeekPageTail provides weekTail,
         LocalHomeTextContrastFrozen provides (LocalHomeTextContrastFrozen.current || weekTail.moving),
@@ -706,24 +716,36 @@ internal fun SinglePillWeekScheduleScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(cardHeight * state.periods.size + supplementaryHeight + editControlBottomOverflow)
+                        .height(cardHeight * gridLayout.totalRows(state.periods.size) + supplementaryHeight + editControlBottomOverflow)
                         .then(if (retainEditControlOverflow || hasAdjustmentBadges) Modifier else Modifier.clipToBounds())
                 ) {
+                    gridLayout.bands.forEach { band ->
+                        Box(Modifier.fillMaxWidth().offset(y = cardHeight * gridLayout.bottom(band.beforeRow.toFloat()))
+                            .height(cardHeight * gridLayout.bandRows)
+                            .background(textColor.copy(alpha = 0.045f)), contentAlignment = Alignment.Center) {
+                            HomeReadableText(band.label, color = textColor.copy(alpha = 0.65f), fontSize = 10.sp, lineHeight = 12.sp,
+                                maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                    }
                     Column(
                         modifier = Modifier
                             .width(rowHeaderWidth)
                             .fillMaxHeight()
                             .zIndex(2f)
                     ) {
-                        // When the row is too short to render the full period-number plus
-                        // two-time-line stack without clipping, keep only the period number.
-                        val showTimeColumn =
-                            cardHeight.value >= minimumWeekTimelineRowHeightDp(density.fontScale)
-                        state.periods.forEach { period ->
+                        val showTimeColumn = cn.scvtc.campus.LocalAppExperience.current.showPeriodTimes
+                        state.periods.forEachIndexed { rowIndex, period ->
+                            if (gridLayout.bands.any { it.beforeRow == rowIndex }) Spacer(Modifier.height(cardHeight * gridLayout.bandRows))
                             Box(
                                 modifier = Modifier
                                     .height(cardHeight)
                                     .fillMaxWidth()
+                                    .clickable(onClickLabel = "编辑第 ${period.periodIndex} 节时间") {
+                                        periodSettingsContext.startActivity(android.content.Intent(periodSettingsContext,
+                                            com.xiaomanjun.sleepdownschedule.SettingsDetailActivity::class.java)
+                                            .putExtra("settings_page", "Schedule").putExtra("schedule_customize_id", state.config.id)
+                                            .putExtra("schedule_period_index", period.periodIndex))
+                                    }
                                     .homeSwitchGroup(),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -763,7 +785,8 @@ internal fun SinglePillWeekScheduleScreen(
                                     }
                                     if (showTimeColumn) {
                                         HomeReadableText(
-                                            specialBell?.takeIf { isSpecialCurrent }?.start?.toString() ?: period.startTime,
+                                            specialBell?.takeIf { isSpecialCurrent }?.start?.toString()
+                                                ?: period.startTime.takeIf { com.xiaomanjun.sleepdownschedule.domain.schedule.parseMinuteOfDay(it) != null } ?: "待设置",
                                             fontSize = 10.sp,
                                             lineHeight = 11.sp,
                                             fontWeight = FontWeight.Light,
@@ -771,7 +794,8 @@ internal fun SinglePillWeekScheduleScreen(
                                             color = textColor.copy(alpha = 0.86f)
                                         )
                                         HomeReadableText(
-                                            specialBell?.takeIf { isSpecialCurrent }?.end?.toString() ?: period.endTime,
+                                            specialBell?.takeIf { isSpecialCurrent }?.end?.toString()
+                                                ?: period.endTime.takeIf { com.xiaomanjun.sleepdownschedule.domain.schedule.parseMinuteOfDay(it) != null } ?: "未配置",
                                             fontSize = 10.sp,
                                             lineHeight = 11.sp,
                                             fontWeight = FontWeight.Light,
@@ -804,7 +828,7 @@ internal fun SinglePillWeekScheduleScreen(
                                 // The parent reserves the bottom gutter. Allow the pager's extra
                                 // top gutter to extend above it without compressing the last row.
                                 .wrapContentHeight(align = Alignment.Top, unbounded = true)
-                                .height(cardHeight * state.periods.size + supplementaryHeight + courseTopOverflow + editControlBottomOverflow),
+                                .height(cardHeight * gridLayout.totalRows(state.periods.size) + supplementaryHeight + courseTopOverflow + editControlBottomOverflow),
                             userScrollEnabled = !weekEditMode && programmaticPage < 0,
                             // Keep the pager topology stable while a home overlay opens/closes.
                             // Disposing the adjacent week at the exact frame Personalization
@@ -1008,7 +1032,7 @@ private fun WeekEditOverlayHost(
         WeekEditOverlayMode.Move -> weekCourseEditTarget(
             periodIndexes = req.periodIndexes,
             weekday = req.dayIndex + (offsetX / req.gridColumnWidthPx).roundToInt(),
-            startPeriod = req.periodIndex + (gridOffsetY / req.periodRowHeightPx).roundToInt(),
+            startPeriod = req.movedPeriod(gridOffsetY),
             span = req.currentSpan,
             weekdayCount = req.weekdayCount
         )
@@ -1016,20 +1040,22 @@ private fun WeekEditOverlayHost(
             periodIndexes = req.periodIndexes,
             weekday = req.dayIndex,
             startPeriod = req.periodIndex,
-            span = (heightPx / req.periodRowHeightPx).roundToInt().coerceIn(1, req.maxSpan),
+            span = req.spanAtHeight(heightPx),
             weekdayCount = req.weekdayCount
         )
     }
     val previewCourse = when (req.mode) {
-        WeekEditOverlayMode.Move -> req.course.copy(weekday = target.weekday, periods = target.periods)
-        WeekEditOverlayMode.Resize -> req.course.copy(periods = target.periods)
-    }
-    val conflict = !target.valid ||
+        WeekEditOverlayMode.Move -> req.movedCourse(target.weekday, target.periods.firstOrNull() ?: req.periodIndex)
+        WeekEditOverlayMode.Resize -> req.course.copy(periods = com.xiaomanjun.sleepdownschedule.domain.schedule.resizedCourseTail(
+            req.course, req.periodIndexes, req.periodIndex, req.spanAtHeight(heightPx)))
+    } ?: req.course
+    val conflict = !target.valid || (req.mode == WeekEditOverlayMode.Move &&
+        req.movedCourse(target.weekday, target.periods.firstOrNull() ?: req.periodIndex) == null) ||
         hasWeekCourseEditConflict(req.course, previewCourse, req.weekCourses, req.editWeek)
     val previewLeft = req.sourceBounds.left - host.left + (target.weekday - req.dayIndex) * req.gridColumnWidthPx
     val previewTop = req.sourceBounds.top - host.top - gridScrollCompensationY +
-        ((target.periods.firstOrNull() ?: req.periodIndex) - req.periodIndex) * req.periodRowHeightPx
-    val previewHeight = (req.periodRowHeightPx * target.periods.size.coerceAtLeast(1) - with(density) { 4.dp.toPx() }).coerceAtLeast(with(density) { 18.dp.toPx() })
+        req.offsetTo(target.periods.firstOrNull() ?: req.periodIndex)
+    val previewHeight = (req.layout.height(req.periodIndexes.indexOf(target.periods.firstOrNull() ?: req.periodIndex).coerceAtLeast(0), target.periods.size.coerceAtLeast(1)) * req.periodRowHeightPx - with(density) { 4.dp.toPx() }).coerceAtLeast(with(density) { 18.dp.toPx() })
     val animatedPreviewLeft by animateFloatAsState(
         targetValue = previewLeft,
         animationSpec = spring(dampingRatio = 0.78f, stiffness = 620f),
@@ -1142,156 +1168,7 @@ internal fun WeekCourseOverlayCardContent(course: CourseEntity, config: Schedule
         } else {
             glassForegroundColor(config)
         }
-        val compact = heightDp < 78f
-        val tiny = heightDp < 52f
-        val verticalPadding = when {
-            tiny -> 1.dp
-            compact -> 2.dp
-            else -> 2.5.dp
-        }
-        val horizontalPadding = if (widthDp < 54f) 4.dp else 5.dp
-        val tabletFontBoost = if (widthDp >= 120f) 1.18f else 1f
-        val previewFontScale = LocalPersonalizationPreview.current?.cardFontScale
-        val courseFontScale = ((previewFontScale ?: config.courseCardFontScale) * tabletFontBoost)
-            .coerceIn(0.80f, 1.35f)
-        fun scaledOverlayText(value: TextUnit): TextUnit =
-            scaledWeekText((value.value * courseFontScale).sp, density.fontScale)
-        val nameFont = scaledOverlayText(if (tiny) 8.8.sp else if (compact) 9.7.sp else 10.7.sp)
-        val nameLineHeight = scaledOverlayText(if (tiny) 8.2.sp else if (compact) 9.1.sp else 10.0.sp)
-        val locationFont = scaledOverlayText(if (tiny) 8.1.sp else if (compact) 8.7.sp else 9.5.sp)
-        val locationLineHeight = scaledOverlayText(if (tiny) 8.0.sp else if (compact) 8.6.sp else 9.3.sp)
-        val teacherFont = scaledOverlayText(8.4.sp)
-        val teacherLineHeight = scaledOverlayText(7.9.sp)
-        val contentWidthPx = with(density) { (maxWidth - horizontalPadding * 2f).coerceAtLeast(24.dp).toPx() }
-        val availableTextPx = with(density) { (maxHeight - verticalPadding * 2f).coerceAtLeast(0.dp).toPx() }
-
-        fun estimatedLines(text: String, fontSize: TextUnit): Int {
-            if (text.isBlank()) return 0
-            val averageCharPx = with(density) { fontSize.toPx() } * 1.08f
-            val charsPerLine = (contentWidthPx / averageCharPx.coerceAtLeast(1f)).toInt().coerceAtLeast(1)
-            return ceil(text.length.toFloat() / charsPerLine).toInt().coerceAtLeast(1)
-        }
-
-        val canShowTeacher = hasTeacher && heightDp >= 52f
-        val teacherPx = if (canShowTeacher) with(density) { teacherLineHeight.toPx() } else 0f
-        val usablePx = (availableTextPx - teacherPx).coerceAtLeast(0f)
-        val averageLinePx = minOf(
-            with(density) { nameLineHeight.toPx() },
-            with(density) { locationLineHeight.toPx() }
-        ).coerceAtLeast(1f)
-        val totalSlots = (usablePx / averageLinePx).toInt().coerceAtLeast(1)
-        val maxNameLines = when {
-            heightDp >= 150f -> 12
-            heightDp >= 112f -> 9
-            heightDp >= 78f -> 6
-            else -> 4
-        }
-        val wantedNameLines = estimatedLines(course.name, nameFont).coerceIn(1, maxNameLines)
-        val wantedLocationLines = if (hasLocation) {
-            estimatedLines(locationText, locationFont).coerceIn(1, if (heightDp >= 150f) 4 else if (heightDp >= 96f) 3 else 2)
-        } else {
-            0
-        }
-        val nameMinimum = 1
-        val locationMinimum = if (hasLocation && (totalSlots >= 2 || tiny)) 1 else 0
-        var remainingSlots = (totalSlots - nameMinimum - locationMinimum).coerceAtLeast(0)
-        var nameLines = nameMinimum
-        var locationLines = locationMinimum
-        var nameNeed = (wantedNameLines - nameLines).coerceAtLeast(0)
-        var locationNeed = (wantedLocationLines - locationLines).coerceAtLeast(0)
-        while (remainingSlots > 0 && (nameNeed > 0 || locationNeed > 0)) {
-            if (nameNeed >= locationNeed && nameNeed > 0) {
-                nameLines += 1
-                nameNeed -= 1
-            } else if (locationNeed > 0) {
-                locationLines += 1
-                locationNeed -= 1
-            } else {
-                nameLines += 1
-                nameNeed -= 1
-            }
-            remainingSlots -= 1
-        }
-        if (remainingSlots > 0 && nameLines < maxNameLines) {
-            val extraNameLines = minOf(remainingSlots, maxNameLines - nameLines)
-            nameLines += extraNameLines
-            remainingSlots -= extraNameLines
-        }
-        if (remainingSlots > 0 && hasLocation) {
-            locationLines += remainingSlots
-        }
-        if (tiny && hasLocation) {
-            locationLines = 1
-            nameLines = (totalSlots - locationLines).coerceAtLeast(1)
-        }
-        val renderedLocationLines = minOf(locationLines, wantedLocationLines).coerceAtLeast(0)
-        val locationReserve = if (hasLocation && renderedLocationLines > 0) {
-            with(density) { (locationLineHeight.toPx() * renderedLocationLines).toDp() }
-        } else {
-            0.dp
-        }
-        val teacherReserve = if (canShowTeacher) {
-            with(density) { teacherLineHeight.toPx().toDp() }
-        } else {
-            0.dp
-        }
-        val centerReserve = maxOf(locationReserve, teacherReserve) + 1.dp
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = horizontalPadding, vertical = verticalPadding)
-        ) {
-            if (hasLocation && locationLines > 0) {
-                CourseCardText(
-                    locationText,
-                    themeColor = themeColor,
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .fillMaxWidth(),
-                    fontSize = locationFont,
-                    lineHeight = locationLineHeight,
-                    fontWeight = FontWeight.Medium,
-                    color = textColor.copy(alpha = 0.78f),
-                    maxLines = locationLines,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center,
-                    adaptiveContrast = false
-                )
-            }
-            CourseCardText(
-                course.name,
-                themeColor = themeColor,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .fillMaxWidth()
-                    .padding(vertical = centerReserve),
-                fontSize = nameFont,
-                lineHeight = nameLineHeight,
-                fontWeight = FontWeight.SemiBold,
-                color = textColor,
-                maxLines = nameLines,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center,
-                adaptiveContrast = false
-            )
-            if (canShowTeacher) {
-                CourseCardText(
-                    course.teacher,
-                    themeColor = themeColor,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth(),
-                    fontSize = teacherFont,
-                    lineHeight = teacherLineHeight,
-                    fontWeight = FontWeight.Normal,
-                    color = textColor.copy(alpha = 0.58f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center,
-                    adaptiveContrast = false
-                )
-            }
-        }
+        WeekCourseLabel(course, config, textColor, themeColor, maxWidth, maxHeight, adaptiveContrast = false)
     }
 }
 
@@ -1726,15 +1603,18 @@ internal fun weekCustomTimeLabels(
 private fun weekCardVerticalBounds(
     segment: WeekCourseSegment,
     periods: List<PeriodEntity>,
-    cardHeight: Dp
+    cardHeight: Dp,
+    gridLayout: WeekGridLayout
 ): Pair<Float, Float> {
     val exact = exactTimeWeekPlacement(segment.course, periods)
-    val top = cardHeight.value * (exact?.topRows ?: segment.startPosition.toFloat()) +
+    val rowTop = exact?.topRows ?: segment.startPosition.toFloat()
+    val rowEnd = rowTop + (exact?.heightRows ?: segment.span.toFloat())
+    val top = cardHeight.value * gridLayout.top(rowTop) +
         if (exact == null) 2f else 0f
     val height = if (exact != null) {
-        (cardHeight.value * exact.heightRows).coerceAtLeast(1f)
+        (cardHeight.value * (gridLayout.bottom(rowEnd) - gridLayout.top(rowTop))).coerceAtLeast(1f)
     } else {
-        (cardHeight.value * segment.span - 4f).coerceAtLeast(18f)
+        (cardHeight.value * gridLayout.height(segment.startPosition, segment.span) - 4f).coerceAtLeast(18f)
     }
     return top to top + height
 }
@@ -1754,7 +1634,8 @@ private fun weekSupplementaryTailKey(dayIndex: Int, courseId: Long, index: Int):
 private fun renderedWeekSegments(
     conflictGroups: List<WeekConflictGroup>,
     conflictFocusCourseId: Long?,
-    conflictFocusCourseKey: String?
+    conflictFocusCourseKey: String?,
+    gridLayout: WeekGridLayout
 ): List<WeekRenderedSegment> = buildList {
     conflictGroups.forEachIndexed { groupIndex, group ->
         val visibleCourse = group.courses.firstOrNull { it.id == conflictFocusCourseId }
@@ -1770,7 +1651,11 @@ private fun renderedWeekSegments(
             visibleSegments
         }
         segments.forEach { segment ->
-            add(WeekRenderedSegment(groupIndex, group, segment))
+            if (segment.course.hasCustomTime()) add(WeekRenderedSegment(groupIndex, group, segment))
+            else gridLayout.split(segment.startPosition, segment.endPosition + 1).forEach { rows ->
+                add(WeekRenderedSegment(groupIndex, group, segment.copy(startPosition = rows.first, endPosition = rows.last,
+                    periods = segment.periods.drop(rows.first - segment.startPosition).take(rows.count()))))
+            }
         }
     }
 }
@@ -1830,20 +1715,24 @@ private fun WeekDayColumn(
         composedCardCount = composedCourseCardCount,
         enabled = !editMode && BuildConfig.SLEEPDOWN_LARGE_GLASS_EXPERIMENT
     )
-    val visibleCardBounds = remember(renderedSegments, periods, cardHeight) {
-        renderedSegments.map { it.segment.course.id to weekCardVerticalBounds(it.segment, periods, cardHeight) }
+    val gridLayout = LocalWeekGridLayout.current
+    val visibleCardBounds = remember(renderedSegments, periods, cardHeight, gridLayout) {
+        renderedSegments.map { it.segment.course.id to weekCardVerticalBounds(it.segment, periods, cardHeight, gridLayout) }
     }
     val timeLabelHeight = with(density) { 9.sp.toDp().value } + 2f
 
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
-            .height(cardHeight * periods.size.toFloat())
+            .height(cardHeight * gridLayout.totalRows(periods.size))
     ) {
         val measuredCardLayoutWidth = (maxWidth - 4.dp).coerceAtLeast(1.dp)
         if (emptyBackground.alpha > 0f) {
             Column(Modifier.fillMaxSize()) {
-                periods.forEach { EmptyWeekCell(cardHeight, emptyBackground) }
+                periods.forEachIndexed { row, _ ->
+                    if (gridLayout.bands.any { it.beforeRow == row }) Spacer(Modifier.height(cardHeight * gridLayout.bandRows))
+                    EmptyWeekCell(cardHeight, emptyBackground)
+                }
             }
         }
         renderedSegments.forEach { rendered ->
@@ -1865,8 +1754,10 @@ private fun WeekDayColumn(
                 )
                 .firstOrNull()
             val exactPlacement = exactTimeWeekPlacement(segment.course, periods)
-            val segmentTopRows = exactPlacement?.topRows ?: segment.startPosition.toFloat()
-            val segmentHeightRows = exactPlacement?.heightRows ?: segment.span.toFloat()
+            val logicalTop = exactPlacement?.topRows ?: segment.startPosition.toFloat()
+            val logicalEnd = logicalTop + (exactPlacement?.heightRows ?: segment.span.toFloat())
+            val segmentTopRows = gridLayout.top(logicalTop)
+            val segmentHeightRows = gridLayout.bottom(logicalEnd) - segmentTopRows
             val segmentHeight = if (exactPlacement != null) {
                 (cardHeight * segmentHeightRows).coerceAtLeast(1.dp)
             } else {
@@ -1878,7 +1769,7 @@ private fun WeekDayColumn(
                     top = cardHeight.value * segmentTopRows,
                     bottom = cardHeight.value * segmentTopRows + segmentHeight.value,
                     occupied = visibleCardBounds.filter { it.first != segment.course.id }.map { it.second },
-                    gridBottom = cardHeight.value * periods.size,
+                    gridBottom = cardHeight.value * gridLayout.totalRows(periods.size),
                     textHeight = timeLabelHeight
                 )
             }
@@ -1907,6 +1798,7 @@ private fun WeekDayColumn(
                     weekMotionOutgoing = weekMotionOutgoing,
                     dayIndex = dayIndex,
                     periodIndex = periodIndexes[segment.startPosition],
+                    resizeSegmentIsLast = segment.endPosition == segment.course.periods.map(periodIndexes::indexOf).maxOrNull(),
                     shortcutPivotX = shortcutPivotX,
                     gridColumnWidth = gridColumnWidth,
                     cardLayoutWidth = measuredCardLayoutWidth,
@@ -2026,6 +1918,7 @@ fun WeekCourseColumnsLayer(
     onCourseClick: (CourseEntity, Rect?) -> Unit
 ) {
     val density = LocalDensity.current
+    val gridLayout = LocalWeekGridLayout.current
     val flightRegistry = LocalCourseEditorFlightRegistry.current
     val courseCopy = LocalCourseCopy.current
     val copyHaptic = LocalHapticFeedback.current
@@ -2067,7 +1960,8 @@ fun WeekCourseColumnsLayer(
         periodIndexes,
         periods,
         conflictFocusCourseId,
-        conflictFocusCourseKey
+        conflictFocusCourseKey,
+        gridLayout
     ) {
         weekdays.associateWith { day ->
             renderedWeekSegments(
@@ -2077,7 +1971,8 @@ fun WeekCourseColumnsLayer(
                     periods
                 ),
                 conflictFocusCourseId = conflictFocusCourseId,
-                conflictFocusCourseKey = conflictFocusCourseKey
+                conflictFocusCourseKey = conflictFocusCourseKey,
+                gridLayout = gridLayout
             )
         }
     }
@@ -2158,7 +2053,7 @@ fun WeekCourseColumnsLayer(
                         coordinates.localToRoot(Offset.Zero), coordinates.size.width.toFloat(),
                         with(density) { cardHeight.toPx() }, with(density) { 4.dp.toPx() },
                         periodIndexes, editScrollState, editScrollState?.value ?: 0,
-                        flightLayoutDirection == androidx.compose.ui.unit.LayoutDirection.Rtl
+                        flightLayoutDirection == androidx.compose.ui.unit.LayoutDirection.Rtl, gridLayout
                     ))
                 }
             }
@@ -2285,7 +2180,7 @@ fun WeekCourseColumnsLayer(
                 origin = Offset.Zero, width = with(density) { maxWidth.toPx() },
                 rowHeight = with(density) { cardHeight.toPx() }, gap = with(density) { 4.dp.toPx() },
                 periodIndexes = periodIndexes, scroll = null, scrollAtCapture = 0,
-                rightToLeft = flightLayoutDirection == androidx.compose.ui.unit.LayoutDirection.Rtl
+                rightToLeft = flightLayoutDirection == androidx.compose.ui.unit.LayoutDirection.Rtl, layout = gridLayout
             ),
             weekdays = weekdays, periods = periods, config = config, onSelect = selectCopyPosition
         )
@@ -2328,8 +2223,18 @@ data class WeekEditOverlayRequest(
     val weekCourses: List<CourseEntity>,
     val editWeek: Int,
     val weekdayCount: Int,
-    val initialPointerPosition: Offset
-)
+    val initialPointerPosition: Offset,
+    val layout: WeekGridLayout = WeekGridLayout()
+) {
+    private val startRow get() = periodIndexes.indexOf(periodIndex).coerceAtLeast(0)
+    fun movedPeriod(deltaPx: Float): Int = periodIndexes[layout.nearestStart(layout.top(startRow.toFloat()) + deltaPx / periodRowHeightPx, periodIndexes.size)]
+    fun spanAtHeight(heightPx: Float): Int = layout.nearestSpan(startRow, heightPx / periodRowHeightPx, maxSpan)
+    fun offsetTo(period: Int): Float = (layout.top(periodIndexes.indexOf(period).coerceAtLeast(0).toFloat()) - layout.top(startRow.toFloat())) * periodRowHeightPx
+    fun heightFor(span: Int): Float = layout.height(startRow, span) * periodRowHeightPx
+    fun movedCourse(weekday: Int, target: Int): CourseEntity? =
+        com.xiaomanjun.sleepdownschedule.domain.schedule.shiftedCoursePeriods(course, periodIndexes, periodIndex, target)
+            ?.let { course.copy(weekday = weekday, periods = it) }
+}
 
 internal const val WeekEditLiftedScale = 1.12f
 private const val WeekEditProjectionSeconds = 0.015f
@@ -2685,7 +2590,7 @@ private class WeekEditOverlayController(
                     currentHeightPx = previousHeight,
                     dragDeltaYPx = delta.y,
                     periodRowHeightPx = activeRequest.periodRowHeightPx,
-                    maxSpan = activeRequest.maxSpan,
+                    maxSpan = (activeRequest.heightFor(activeRequest.maxSpan) / activeRequest.periodRowHeightPx).toInt() + 1,
                     resizePaddingPx = resizePaddingPx
                 )
                 dragPointerX += delta.x
@@ -2748,18 +2653,18 @@ private class WeekEditOverlayController(
         val target = weekCourseEditTarget(
             periodIndexes = activeRequest.periodIndexes,
             weekday = activeRequest.dayIndex + (releaseGridX / activeRequest.gridColumnWidthPx).roundToInt(),
-            startPeriod = activeRequest.periodIndex + (releaseGridY / activeRequest.periodRowHeightPx).roundToInt(),
+            startPeriod = activeRequest.movedPeriod(releaseGridY),
             span = activeRequest.currentSpan,
             weekdayCount = activeRequest.weekdayCount
         )
-        val edited = activeRequest.course.copy(weekday = target.weekday, periods = target.periods)
-        val canSave = target.valid && canMoveToWeekday(target.weekday) &&
+        val moved = activeRequest.movedCourse(target.weekday, target.periods.firstOrNull() ?: activeRequest.periodIndex)
+        val edited = moved ?: activeRequest.course
+        val canSave = moved != null && target.valid && canMoveToWeekday(target.weekday) &&
             !hasWeekCourseEditConflict(activeRequest.course, edited, activeRequest.weekCourses, activeRequest.editWeek) &&
             (edited.weekday != activeRequest.course.weekday || edited.periods != activeRequest.course.periods)
         val targetX = if (canSave) (target.weekday - activeRequest.dayIndex) * activeRequest.gridColumnWidthPx else 0f
         val targetY = if (canSave) {
-            ((target.periods.firstOrNull() ?: activeRequest.periodIndex) - activeRequest.periodIndex) *
-                activeRequest.periodRowHeightPx - scrollCompensationY
+            activeRequest.offsetTo(target.periods.firstOrNull() ?: activeRequest.periodIndex) - scrollCompensationY
         } else {
             0f
         }
@@ -2801,11 +2706,7 @@ private class WeekEditOverlayController(
     ) {
         val activeRequest = request ?: return
         gestureActive = false
-        val targetSpan = weekEditResizeTargetSpan(
-            heightPx = gestureTargetHeight,
-            periodRowHeightPx = activeRequest.periodRowHeightPx,
-            maxSpan = activeRequest.maxSpan
-        )
+        val targetSpan = activeRequest.spanAtHeight(gestureTargetHeight)
         val target = weekCourseEditTarget(
             periodIndexes = activeRequest.periodIndexes,
             weekday = activeRequest.dayIndex,
@@ -2813,12 +2714,13 @@ private class WeekEditOverlayController(
             span = targetSpan,
             weekdayCount = activeRequest.weekdayCount
         )
-        val edited = activeRequest.course.copy(periods = target.periods)
+        val edited = activeRequest.course.copy(periods = com.xiaomanjun.sleepdownschedule.domain.schedule.resizedCourseTail(
+            activeRequest.course, activeRequest.periodIndexes, activeRequest.periodIndex, targetSpan))
         val canSave = target.valid &&
             !hasWeekCourseEditConflict(activeRequest.course, edited, activeRequest.weekCourses, activeRequest.editWeek) &&
             edited.periods != activeRequest.course.periods
         val targetHeight = if (canSave) {
-            activeRequest.periodRowHeightPx * targetSpan - resizePaddingPx
+            activeRequest.heightFor(targetSpan) - resizePaddingPx
         } else {
             activeRequest.sourceBounds.height
         }
@@ -3126,6 +3028,7 @@ fun WeekCourseBlock(
     weekMotionOutgoing: Boolean = false,
     dayIndex: Int = 1,
     periodIndex: Int = 1,
+    resizeSegmentIsLast: Boolean = true,
     gridColumnWidth: Dp = 0.dp,
     cardLayoutWidth: Dp = (gridColumnWidth - 4.dp).coerceAtLeast(1.dp),
     periodRowHeight: Dp = height,
@@ -3281,6 +3184,7 @@ fun WeekCourseBlock(
     val sampledCardShape = remember(cardCorner, backdropSampleScale) {
         RoundedRectangle(cardCorner * backdropSampleScale.coerceIn(0.5f, 1f))
     }
+    val gridLayout = LocalWeekGridLayout.current
     val resizeStartIndex = periodIndexes.indexOf(periodIndex).coerceAtLeast(0)
     val resizeMaxSpan = (periodIndexes.size - resizeStartIndex).coerceAtLeast(1)
     val baseHeightPx = with(density) { height.toPx() }
@@ -3304,12 +3208,13 @@ fun WeekCourseBlock(
             weekCourses = allWeekCourses,
             editWeek = editWeek,
             weekdayCount = weekdayCount,
-            initialPointerPosition = bounds.topLeft + pointerInSource
+            initialPointerPosition = bounds.topLeft + pointerInSource,
+            layout = gridLayout
         )
     }
     val liftedVisualActive = bodyDragging || handleDragging || conflictActionResolving
     val resizeHandleInputEnabled =
-        editMode &&
+        editMode && resizeSegmentIsLast &&
             !customTimeLocked &&
             !bodyDragging &&
             !conflictActionResolving &&
@@ -3549,7 +3454,7 @@ fun WeekCourseBlock(
                         ?.takeIf { it >= 0 }
                         ?: sourcePosition
                     val underlyingHeight = (
-                        periodRowHeight * conflictUnderlyingSpan.toFloat() - 4.dp
+                        periodRowHeight * gridLayout.height(underlyingPosition, conflictUnderlyingSpan) - 4.dp
                         ).coerceAtLeast(18.dp)
                     val ownerReveal =
                         (conflictCardFlight.value / 0.14f).coerceIn(0f, 1f)
@@ -3557,8 +3462,7 @@ fun WeekCourseBlock(
                         modifier = Modifier
                             .fillMaxWidth()
                             .offset(
-                                y = periodRowHeight *
-                                    (underlyingPosition - sourcePosition).toFloat()
+                                y = periodRowHeight * (gridLayout.top(underlyingPosition.toFloat()) - gridLayout.top(sourcePosition.toFloat()))
                             )
                             .height(underlyingHeight)
                             .graphicsLayer { alpha = ownerReveal }
@@ -3594,7 +3498,7 @@ fun WeekCourseBlock(
                     .takeIf { it >= 0 }
                     ?: sourcePosition
                 val targetOffsetX = (target.weekday - dayIndex) * gridColumnWidthPx
-                val targetOffsetY = (targetPosition - sourcePosition) * periodRowHeightPx
+                val targetOffsetY = (gridLayout.top(targetPosition.toFloat()) - gridLayout.top(sourcePosition.toFloat())) * periodRowHeightPx
                 val flightArcPx = with(density) { 10.dp.toPx() }
                 val flightElevationPx = with(density) { 14.dp.toPx() }
                 Box(
@@ -3688,155 +3592,7 @@ fun WeekCourseBlock(
             // The day column already knows the measured width. Subcomposing every card again
             // made a single prefetched page spend 17–24ms in measureAndLayout on the 120Hz phone.
             Box(Modifier.fillMaxWidth().height(displayedHeight).clip(cardShape)) {
-            val density = LocalDensity.current
-            val heightDp = displayedHeight.value
-            val widthDp = cardLayoutWidth.value
-            val compact = heightDp < 78f
-            val tiny = heightDp < 52f
-            val verticalPadding = when {
-                tiny -> 1.dp
-                compact -> 2.dp
-                else -> 2.5.dp
-            }
-            val horizontalPadding = if (widthDp < 54f) 4.dp else 5.dp
-            val fontScaleCompensation = density.fontScale.coerceAtLeast(1f)
-            val tabletFontBoost = if (gridColumnWidth >= 120.dp) 1.18f else 1f
-            val previewFontScale = LocalPersonalizationPreview.current?.cardFontScale
-            val courseFontScale = ((previewFontScale ?: config.courseCardFontScale) * tabletFontBoost)
-                .coerceIn(0.80f, 1.35f)
-            fun scaledCourseWeekText(value: TextUnit): TextUnit = scaledWeekText((value.value * courseFontScale).sp, fontScaleCompensation)
-            val nameFont = scaledCourseWeekText(if (tiny) 8.8.sp else if (compact) 9.7.sp else 10.7.sp)
-            val nameLineHeight = scaledCourseWeekText(if (tiny) 8.2.sp else if (compact) 9.1.sp else 10.0.sp)
-            val locationFont = scaledCourseWeekText(if (tiny) 8.1.sp else if (compact) 8.7.sp else 9.5.sp)
-            val locationLineHeight = scaledCourseWeekText(if (tiny) 8.0.sp else if (compact) 8.6.sp else 9.3.sp)
-            val teacherFont = scaledCourseWeekText(8.4.sp)
-            val teacherLineHeight = scaledCourseWeekText(7.9.sp)
-            val contentWidthPx = with(density) { (cardLayoutWidth - horizontalPadding * 2f).coerceAtLeast(24.dp).toPx() }
-            val availableTextPx = with(density) { (displayedHeight - verticalPadding * 2f).coerceAtLeast(0.dp).toPx() }
-
-            fun estimatedLines(text: String, fontSize: TextUnit): Int {
-                if (text.isBlank()) return 0
-                val averageCharPx = with(density) { fontSize.toPx() } * 1.08f
-                val charsPerLine = (contentWidthPx / averageCharPx.coerceAtLeast(1f)).toInt().coerceAtLeast(1)
-                return ceil(text.length.toFloat() / charsPerLine).toInt().coerceAtLeast(1)
-            }
-
-            val canShowTeacher = hasTeacher && heightDp >= 52f
-            val teacherLines = if (canShowTeacher) 1 else 0
-            val teacherPx = if (teacherLines > 0) with(density) { teacherLineHeight.toPx() } else 0f
-            val usablePx = (availableTextPx - teacherPx).coerceAtLeast(0f)
-            val averageLinePx = minOf(with(density) { nameLineHeight.toPx() }, with(density) { locationLineHeight.toPx() }).coerceAtLeast(1f)
-            val totalSlots = (usablePx / averageLinePx).toInt().coerceAtLeast(1)
-            val maxNameLines = when {
-                heightDp >= 150f -> 12
-                heightDp >= 112f -> 9
-                heightDp >= 78f -> 6
-                else -> 4
-            }
-            val wantedNameLines = estimatedLines(course.name, nameFont).coerceIn(1, maxNameLines)
-            val wantedLocationLines = if (hasLocation) {
-                estimatedLines(locationText, locationFont).coerceIn(1, if (heightDp >= 150f) 4 else if (heightDp >= 96f) 3 else 2)
-            } else {
-                0
-            }
-            val nameMinimum = 1
-            val locationMinimum = if (hasLocation && (totalSlots >= 2 || tiny)) 1 else 0
-            var remainingSlots = (totalSlots - nameMinimum - locationMinimum).coerceAtLeast(0)
-            var nameLines = nameMinimum
-            var locationLines = locationMinimum
-            var nameNeed = (wantedNameLines - nameLines).coerceAtLeast(0)
-            var locationNeed = (wantedLocationLines - locationLines).coerceAtLeast(0)
-            while (remainingSlots > 0 && (nameNeed > 0 || locationNeed > 0)) {
-                if (nameNeed >= locationNeed && nameNeed > 0) {
-                    nameLines += 1
-                    nameNeed -= 1
-                } else if (locationNeed > 0) {
-                    locationLines += 1
-                    locationNeed -= 1
-                } else {
-                    nameLines += 1
-                    nameNeed -= 1
-                }
-                remainingSlots -= 1
-            }
-            if (remainingSlots > 0 && nameLines < maxNameLines) {
-                val extraNameLines = minOf(remainingSlots, maxNameLines - nameLines)
-                nameLines += extraNameLines
-                remainingSlots -= extraNameLines
-            }
-            if (remainingSlots > 0 && hasLocation) {
-                locationLines += remainingSlots
-            }
-            if (tiny && hasLocation) {
-                locationLines = 1
-                nameLines = (totalSlots - locationLines).coerceAtLeast(1)
-            }
-
-            val renderedLocationLines = minOf(locationLines, wantedLocationLines).coerceAtLeast(0)
-            val locationReserve = if (hasLocation && renderedLocationLines > 0) {
-                with(density) { (locationLineHeight.toPx() * renderedLocationLines).toDp() }
-            } else {
-                0.dp
-            }
-            val teacherReserve = if (canShowTeacher) {
-                with(density) { teacherLineHeight.toPx().toDp() }
-            } else {
-                0.dp
-            }
-            val centerReserve = maxOf(locationReserve, teacherReserve) + 1.dp
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = horizontalPadding, vertical = verticalPadding)
-            ) {
-                if (hasLocation && locationLines > 0) {
-                    CourseCardText(
-                        locationText,
-                        themeColor = themeColor,
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .fillMaxWidth(),
-                        fontSize = locationFont,
-                        lineHeight = locationLineHeight,
-                        fontWeight = FontWeight.Medium,
-                        color = courseTextColor.copy(alpha = 0.78f),
-                        maxLines = locationLines,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center
-                    )
-                }
-                CourseCardText(
-                    course.name,
-                    themeColor = themeColor,
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .fillMaxWidth()
-                        .padding(vertical = centerReserve),
-                    fontSize = nameFont,
-                    lineHeight = nameLineHeight,
-                    fontWeight = FontWeight.SemiBold,
-                    color = courseTextColor,
-                    maxLines = nameLines,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center
-                )
-                if (canShowTeacher) {
-                    CourseCardText(
-                        course.teacher,
-                        themeColor = themeColor,
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth(),
-                        fontSize = teacherFont,
-                        lineHeight = teacherLineHeight,
-                        fontWeight = FontWeight.Normal,
-                        color = courseTextColor.copy(alpha = 0.58f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
+            WeekCourseLabel(course, config, courseTextColor, themeColor, cardLayoutWidth, displayedHeight)
             }
             }
             if (!editingAllowed) {
@@ -4027,7 +3783,7 @@ fun WeekCourseBlock(
             // already provides the four drawing pixels used by this handle; promoting only the
             // final-row handle to a window Popup made it render above the app's bottom dock.
             AnimatedVisibility(
-                visible = editMode && !customTimeLocked,
+                visible = editMode && !customTimeLocked && resizeSegmentIsLast,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .offset(x = 4.dp, y = 4.dp)

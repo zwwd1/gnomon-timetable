@@ -179,6 +179,10 @@ fun Modifier.sleepDownGlassSurface(
             !descriptor.sceneKey.contains("course", ignoreCase = true)
     }
     val currentAppearance = rememberUpdatedState(appearance)
+    val courseAppearance = rememberUpdatedState(LocalGlassAppearance.current.takeIf {
+        descriptor.sceneKey.contains("course", true) && it.customized && it.style != GlassStyle.LIQUID
+    })
+    val materialQuality = rememberUpdatedState(cn.scvtc.campus.LocalAppExperience.current.materialQuality)
     val dark = androidx.compose.material3.MaterialTheme.colorScheme.background.let { it.red + it.green + it.blue < 1.5f }
     val currentDark = rememberUpdatedState(dark)
     val currentShape = rememberUpdatedState<() -> Shape>(if (appearance != null) ({ RoundedRectangle(appearance.current.corner.dp) }) else shape)
@@ -229,7 +233,12 @@ fun Modifier.sleepDownGlassSurface(
             val override = currentEffectsOverride.value
             val appearanceOverride = currentAppearance.value
             if (appearanceOverride != null) {
-                appearanceEffects(appearanceOverride)
+                appearanceEffects(appearanceOverride, materialQuality.value)
+            } else if (courseAppearance.value != null) {
+                val frame = currentMaterialFrame.value
+                frame.blur?.let { blur(it.toPx()) }
+                val custom = courseAppearance.value!!
+                if (custom.style == GlassStyle.SOFT) appearanceEffects(custom.update(custom.current.copy(blur = 0f)), materialQuality.value)
             } else if (override != null) {
                 override.invoke(this)
             } else {

@@ -18,6 +18,16 @@ object BackupPreferencesApplier {
         scheduleRoomIdsByStableId: Map<String, Int>,
         finalAssetFilesById: Map<String, File>
     ) {
+        preferences.presentation?.let { p ->
+            val store = cn.scvtc.campus.AppExperiencePreferences.get(context)
+            store.entrance(p.entrance)
+            store.dock(p.dock)
+            store.presentation(store.state.value.copy(showPeriodTimes = p.showPeriodTimes, cardTint = p.cardTint,
+                detailOpacity = p.detailOpacity, haptics = p.haptics, predictiveBack = p.predictiveBack,
+                materialQuality = p.materialQuality, showBreakDividers = p.showBreakDividers,
+                showTeacher = p.showTeacher, showLocation = p.showLocation))
+            store.saveGlass(com.xiaomanjun.sleepdownschedule.glass.GlassAppearance.decode(p.glass))
+        }
         preferences.appIcon?.let { AppIconManager.applyBackupPreferences(context, it) }
         preferences.dayAgent?.let {
             DayAgentPreferences.applyBackupPreferences(context, it, scheduleRoomIdsByStableId)

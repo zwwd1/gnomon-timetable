@@ -18,6 +18,7 @@ import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 
 object IcsScheduleCodec {
+    private val CalendarZone = ZoneId.of("Asia/Shanghai")
     private val compactDate = DateTimeFormatter.BASIC_ISO_DATE
     private val compactDateTime = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss")
     private val compactDateTimeMinutes = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmm")
@@ -30,12 +31,20 @@ object IcsScheduleCodec {
         val events = parseEvents(text)
         require(events.isNotEmpty()) { "ICS 中没有找到日历事件" }
 
-        val occurrences = events.flatMap(::expandEvent).distinctBy {
+        var expandedCount = 0
+        val expanded = events.map { event ->
+            expandEvent(event).also { occurrences ->
+                expandedCount += occurrences.size
+                require(expandedCount <= 20_000) { "展开后的日历超过 20000 个事件，请按学期拆分后导入" }
+            }
+        }
+        val ignored = expanded.count { it.isEmpty() }
+        val occurrences = expanded.flatten().distinctBy {
             listOf(it.name, it.location, it.description, it.start, it.end, it.customPeriodTimes)
         }
         require(occurrences.isNotEmpty()) { "ICS 中没有可导入的定时课程事件" }
 
-        val firstMonday = occurrences.minOf { it.start.toLocalDate() }
+        val firstMonday = (metadata.termStartDate ?: occurrences.minOf { it.start.toLocalDate() })
             .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
         val rawLastWeek = occurrences.maxOf { occurrence ->
             ChronoUnit.WEEKS.between(firstMonday, occurrence.start.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))).toInt() + 1
@@ -163,71 +172,104 @@ object IcsScheduleCodec {
                 eveningPeriodCount = counts.evening
             ),
             periods = periods,
-            courses = courses
+            courses = courses,
+            warnings = listOfNotNull(if (ignored > 0) "跳过 $ignored 个取消、全天或缺少起止时间的事件" else null,
+                if (rawLastWeek > 60) "只导入前 60 周的事件" else null)
         )
     }
 
-    fun export(
-        calendarName: String,
-        config: ScheduleConfigEntity,
-        periods: List<PeriodEntity>,
-        courses: List<CourseEntity>,
-        today: LocalDate = LocalDate.now()
-    ): String {
-        val timeZoneId = ZoneId.systemDefault().id
+    data class ExportReport(val content: String, val events: Int, val skipped: Int)
+
+    fun export(calendarName: String, config: ScheduleConfigEntity, periods: List<PeriodEntity>,
+        courses: List<CourseEntity>, today: LocalDate = LocalDate.now()): String =
+        exportReport(calendarName, config, periods, courses, today).content
+
+    fun exportReport(calendarName: String, config: ScheduleConfigEntity, periods: List<PeriodEntity>,
+        courses: List<CourseEntity>, today: LocalDate = LocalDate.now()): ExportReport {
+        val termStart = parseScheduleDate(config.termStartDate)
+            ?: throw IllegalArgumentException("请先设置学期开始日期，再导出日历")
+        val effective = config.copy(autoCurrentWeek = true)
+        val state = AppState(config = effective, courses = courses, periods = periods)
+        val firstMonday = termStart.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
         val periodsByIndex = periods.associateBy { it.periodIndex }
+        var count = 0
+        var skipped = 0
         val stamp = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'")
-            .withZone(ZoneOffset.UTC)
-            .format(Instant.now())
-        return buildString {
+            .withZone(ZoneOffset.UTC).format(Instant.now())
+        val events = buildString {
+            repeat(config.totalWeeks.coerceIn(1, 60) * 7) { offset ->
+                val date = firstMonday.plusDays(offset.toLong())
+                val teachingDate = com.xiaomanjun.sleepdownschedule.domain.schedule.teachingDateForSchedule(effective, date)
+                coursesForDate(state, date).forEach { course ->
+                    val ranges = course.customTimeRangeOrNull()?.let { (start, end) ->
+                        listOf(IcsPeriodRange(course.periods.distinct().sorted(), start, end))
+                    } ?: if (course.periods.isNotEmpty() && course.periods.all { index ->
+                        periodsByIndex[index]?.let { p ->
+                            val start = runCatching { LocalTime.parse(p.startTime) }.getOrNull()
+                            val end = runCatching { LocalTime.parse(p.endTime) }.getOrNull()
+                            start != null && end != null && end.isAfter(start)
+                        } == true
+                    }) contiguousPeriodRanges(course.periods, periodsByIndex) else emptyList()
+                    if (ranges.isEmpty()) skipped++
+                    ranges.forEachIndexed { rangeIndex, range ->
+                        val identity = if (course.id > 0) course.id.toString() else
+                            java.util.UUID.nameUUIDFromBytes(listOf(course.name, course.teacher, course.location,
+                                course.weekday, course.periods).joinToString("|").toByteArray()).toString()
+                        appendLine("BEGIN:VEVENT")
+                        appendLine("UID:gnomon-${config.id}-$identity-$date-$rangeIndex@gnomon.local")
+                        appendLine("DTSTAMP:$stamp")
+                        // UTC is unambiguous without a proprietary or incomplete VTIMEZONE definition.
+                        appendLine("DTSTART:${date.atTime(range.start).atZone(CalendarZone).withZoneSameInstant(ZoneOffset.UTC).format(compactDateTime)}Z")
+                        appendLine("DTEND:${date.atTime(range.end).atZone(CalendarZone).withZoneSameInstant(ZoneOffset.UTC).format(compactDateTime)}Z")
+                        appendLine("SUMMARY:${escapeText(course.name)}")
+                        appendLine("X-SLEEPDOWN-COURSE-ID:${course.id}")
+                        course.location?.takeIf(String::isNotBlank)?.let { appendLine("LOCATION:${escapeText(it)}") }
+                        val description = listOfNotNull(course.teacher?.takeIf(String::isNotBlank)?.let { "教师：$it" },
+                            course.note?.takeIf(String::isNotBlank)).joinToString("\n")
+                        if (description.isNotBlank()) appendLine("DESCRIPTION:${escapeText(description)}")
+                        appendLine("X-SLEEPDOWN-WEEK:${teachingDate?.let { effectiveCurrentWeek(effective, it) } ?: effectiveCurrentWeek(effective, date)}")
+                        appendLine("X-SLEEPDOWN-PERIODS:${range.indices.joinToString(",")}")
+                        course.customPeriodTimes?.let { appendLine("X-SLEEPDOWN-PERIOD-TIMES:$it") }
+                        appendLine("END:VEVENT")
+                        count++
+                    }
+                }
+            }
+        }
+        val content = buildString {
             appendLine("BEGIN:VCALENDAR")
             appendLine("VERSION:2.0")
-            appendLine("PRODID:-//SleepDown Schedule//Course Schedule//CN")
+            appendLine("PRODID:-//Gnomon Timetable//Course Schedule//CN")
             appendLine("CALSCALE:GREGORIAN")
             appendLine("METHOD:PUBLISH")
             appendLine("X-WR-CALNAME:${escapeText(calendarName)}")
+            appendLine("X-WR-TIMEZONE:${CalendarZone.id}")
             appendLine("X-SLEEPDOWN-SCHEMA:2")
             appendLine("X-SLEEPDOWN-TOTAL-WEEKS:${config.totalWeeks}")
-            config.termStartDate?.let { appendLine("X-SLEEPDOWN-TERM-START:$it") }
+            appendLine("X-SLEEPDOWN-TERM-START:$termStart")
             appendLine("X-SLEEPDOWN-PART-COUNTS:${config.morningPeriodCount},${config.noonPeriodCount},${config.afternoonPeriodCount},${config.eveningPeriodCount}")
-            periods.sortedBy { it.periodIndex }.forEach { period ->
-                appendLine("X-SLEEPDOWN-PERIOD:${period.periodIndex},${period.startTime},${period.endTime}")
+            appendLine("X-GNOMON-SKIPPED:$skipped")
+            periods.sortedBy { it.periodIndex }.forEach {
+                appendLine("X-SLEEPDOWN-PERIOD:${it.periodIndex},${it.startTime},${it.endTime}")
             }
-            courses.sortedWith(compareBy<CourseEntity> { it.weekday }.thenBy { it.name }).forEach { course ->
-                val ranges = course.customTimeRangeOrNull()?.let { (start, end) ->
-                    listOf(IcsPeriodRange(course.periods.distinct().sorted(), start, end))
-                } ?: contiguousPeriodRanges(course.periods, periodsByIndex)
-                course.weeks.distinct().sorted()
-                    .filter { it in 1..config.totalWeeks && parityMatches(course.weekParity, it) }
-                    .forEach { week ->
-                        val date = scheduleWeekStartDate(config, week, today).plusDays((course.weekday - 1).toLong())
-                        ranges.forEachIndexed { rangeIndex, range ->
-                            val start = date.atTime(range.start)
-                            val end = date.atTime(range.end)
-                            appendLine("BEGIN:VEVENT")
-                            appendLine("UID:sleepdown-${config.id}-${course.id}-$week-$rangeIndex@sleepdown.local")
-                            appendLine("DTSTAMP:$stamp")
-                            appendLine("DTSTART;TZID=$timeZoneId:${start.format(compactDateTime)}")
-                            appendLine("DTEND;TZID=$timeZoneId:${end.format(compactDateTime)}")
-                            appendLine("SUMMARY:${escapeText(course.name)}")
-                            appendLine("X-SLEEPDOWN-COURSE-ID:${course.id}")
-                            course.location?.takeIf { it.isNotBlank() }?.let { appendLine("LOCATION:${escapeText(it)}") }
-                            val description = listOfNotNull(
-                                course.teacher?.takeIf { it.isNotBlank() }?.let { "教师：$it" },
-                                course.note?.takeIf { it.isNotBlank() }
-                            ).joinToString("\\n")
-                            if (description.isNotBlank()) appendLine("DESCRIPTION:${escapeText(description)}")
-                            appendLine("X-SLEEPDOWN-WEEK:$week")
-                            appendLine("X-SLEEPDOWN-PERIODS:${range.indices.joinToString(",")}")
-                            course.customPeriodTimes?.let { appendLine("X-SLEEPDOWN-PERIOD-TIMES:$it") }
-                            appendLine("END:VEVENT")
-                        }
-                    }
-            }
+            append(events)
             appendLine("END:VCALENDAR")
-        }.replace("\r\n", "\n").replace("\n", "\r\n")
+        }
+        return ExportReport(foldCalendar(content), count, skipped)
     }
 
+    private fun foldCalendar(text: String): String = buildString {
+        text.lineSequence().filter(String::isNotEmpty).forEach { line ->
+            var bytes = 0
+            line.codePoints().toArray().forEach { code ->
+                val character = String(Character.toChars(code))
+                val size = character.toByteArray(Charsets.UTF_8).size
+                if (bytes + size > 75) { append("\r\n "); bytes = 1 }
+                append(character); bytes += size
+            }
+            append("\r\n")
+        }
+    }
     fun writeShareFile(
         context: Context,
         calendarName: String,
@@ -329,27 +371,37 @@ object IcsScheduleCodec {
     }
 
     private fun expandEvent(event: IcsEvent): List<Occurrence> {
+        if (event.properties["STATUS"]?.firstOrNull()?.value.equals("CANCELLED", true)) return emptyList()
+        require(event.properties["RECURRENCE-ID"].isNullOrEmpty()) { "包含单次重复例外，请先在日历软件中展开事件后再导入" }
         val startProperty = event.properties["DTSTART"]?.firstOrNull() ?: return emptyList()
-        val start = parseDateTime(startProperty) ?: return emptyList()
-        val end = event.properties["DTEND"]?.firstOrNull()?.let(::parseDateTime)
+        val sourceZone = propertyZone(startProperty)
+        val start = parseDateTime(startProperty, sourceZone) ?: return emptyList()
+        val end = event.properties["DTEND"]?.firstOrNull()?.let { parseDateTime(it, sourceZone) }
             ?: event.properties["DURATION"]?.firstOrNull()?.value?.let { value ->
                 runCatching { start.plus(Duration.parse(value)) }.getOrNull()
             }
-            ?: start.plusHours(1)
+            ?: return emptyList()
         if (!end.isAfter(start)) return emptyList()
+        if (end.toLocalDate() != start.toLocalDate()) return emptyList()
         val duration = Duration.between(start, end)
         val exclusions = event.properties["EXDATE"].orEmpty().flatMap { property ->
-            property.value.split(',').mapNotNull { value -> parseDateTime(property.copy(value = value)) }
+            property.value.split(',').mapNotNull { value -> parseDateTime(property.copy(value = value), sourceZone) }
         }.toSet()
         val additions = event.properties["RDATE"].orEmpty().flatMap { property ->
-            property.value.split(',').mapNotNull { value -> parseDateTime(property.copy(value = value)) }
+            property.value.split(',').mapNotNull { value -> parseDateTime(property.copy(value = value), sourceZone) }
         }
         val recurrence = event.properties["RRULE"]?.firstOrNull()?.value?.split(';')
             ?.mapNotNull { part -> part.split('=', limit = 2).takeIf { it.size == 2 }?.let { it[0].uppercase() to it[1] } }
             ?.toMap()
+        require(recurrence == null || (recurrence["FREQ"]?.uppercase() in setOf("DAILY", "WEEKLY") &&
+            recurrence.keys.all { it in setOf("FREQ", "INTERVAL", "COUNT", "UNTIL", "BYDAY", "WKST") } &&
+            (recurrence["WKST"] == null || recurrence["WKST"] == "MO"))) { "目前支持日 / 周重复；其他规则请先在日历软件展开为独立事件" }
+        recurrence?.get("COUNT")?.let { require(it.toIntOrNull() in 1..1000) { "重复次数须在 1–1000 之间" } }
+        recurrence?.get("INTERVAL")?.let { require(it.toIntOrNull() in 1..365) { "重复间隔须在 1–365 之间" } }
+        recurrence?.get("BYDAY")?.let { value -> require(value.split(',').all { it in setOf("MO", "TU", "WE", "TH", "FR", "SA", "SU") }) { "暂不支持带序号的重复星期" } }
         val starts = when (recurrence?.get("FREQ")?.uppercase()) {
-            "WEEKLY" -> expandWeekly(start, recurrence)
-            "DAILY" -> expandDaily(start, recurrence)
+            "WEEKLY" -> expandWeekly(start, recurrence, sourceZone)
+            "DAILY" -> expandDaily(start, recurrence, sourceZone)
             else -> listOf(start)
         }.plus(additions).distinct().filterNot { it in exclusions }.sorted()
         val name = unescapeText(event.properties["SUMMARY"]?.firstOrNull()?.value.orEmpty()).ifBlank { "未命名课程" }
@@ -360,14 +412,21 @@ object IcsScheduleCodec {
         val sourceCourseId = event.properties["X-SLEEPDOWN-COURSE-ID"]?.firstOrNull()?.value?.trim()?.takeIf { it.isNotBlank() }
         val customPeriodTimes = event.properties["X-SLEEPDOWN-PERIOD-TIMES"]?.firstOrNull()?.value
         return starts.take(1000).map { occurrenceStart ->
-            Occurrence(name, location, description, occurrenceStart, occurrenceStart.plus(duration), embeddedPeriods, sourceCourseId, customPeriodTimes)
+            val occurrence = Occurrence(name, location, description,
+                occurrenceStart.atZone(sourceZone).withZoneSameInstant(CalendarZone).toLocalDateTime(),
+                occurrenceStart.plus(duration).atZone(sourceZone).withZoneSameInstant(CalendarZone).toLocalDateTime(),
+                embeddedPeriods, sourceCourseId, customPeriodTimes)
+            require(occurrence.start.toLocalDate() == occurrence.end.toLocalDate()) {
+                "事件换算为北京时间后跨越零点，请在日历软件中拆分后导入"
+            }
+            occurrence
         }
     }
 
-    private fun expandWeekly(start: LocalDateTime, rule: Map<String, String>): List<LocalDateTime> {
+    private fun expandWeekly(start: LocalDateTime, rule: Map<String, String>, zone: ZoneId): List<LocalDateTime> {
         val interval = rule["INTERVAL"]?.toIntOrNull()?.coerceAtLeast(1) ?: 1
         val count = rule["COUNT"]?.toIntOrNull()?.coerceIn(1, 1000)
-        val until = rule["UNTIL"]?.let { parseRuleUntil(it, start) }
+        val until = rule["UNTIL"]?.let { parseRuleUntil(it, start, zone) }
         val weekdays = rule["BYDAY"]?.split(',')?.mapNotNull(::parseWeekday)?.distinct()?.sortedBy { it.value }
             .orEmpty().ifEmpty { listOf(start.dayOfWeek) }
         val firstWeek = start.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
@@ -387,10 +446,10 @@ object IcsScheduleCodec {
         return output
     }
 
-    private fun expandDaily(start: LocalDateTime, rule: Map<String, String>): List<LocalDateTime> {
+    private fun expandDaily(start: LocalDateTime, rule: Map<String, String>, zone: ZoneId): List<LocalDateTime> {
         val interval = rule["INTERVAL"]?.toLongOrNull()?.coerceAtLeast(1) ?: 1L
         val count = rule["COUNT"]?.toIntOrNull()?.coerceIn(1, 1000)
-        val until = rule["UNTIL"]?.let { parseRuleUntil(it, start) }
+        val until = rule["UNTIL"]?.let { parseRuleUntil(it, start, zone) }
         val weekdays = rule["BYDAY"]?.split(',')?.mapNotNull(::parseWeekday)?.toSet().orEmpty()
         val output = mutableListOf<LocalDateTime>()
         var candidate = start
@@ -404,25 +463,26 @@ object IcsScheduleCodec {
         return output
     }
 
-    private fun parseDateTime(property: IcsProperty): LocalDateTime? {
+    private fun propertyZone(property: IcsProperty): ZoneId = if (property.value.endsWith('Z', true)) ZoneOffset.UTC
+        else property.parameters["TZID"]?.let { ZoneId.of(it) } ?: CalendarZone
+
+    private fun parseDateTime(property: IcsProperty, targetZone: ZoneId = CalendarZone): LocalDateTime? {
         val value = property.value.trim()
         if (property.parameters["VALUE"].equals("DATE", ignoreCase = true) || (!value.contains('T') && value.length == 8)) return null
-        val zone = property.parameters["TZID"]
-            ?.let { runCatching { ZoneId.of(it) }.getOrNull() }
-            ?: ZoneId.systemDefault()
+        val zone = propertyZone(property)
         val utc = value.endsWith('Z', ignoreCase = true)
         val raw = if (utc) value.dropLast(1) else value
         val local = runCatching { LocalDateTime.parse(raw, compactDateTime) }
             .recoverCatching { LocalDateTime.parse(raw, compactDateTimeMinutes) }
             .getOrNull() ?: return null
-        return if (utc) local.atZone(ZoneOffset.UTC).withZoneSameInstant(zone).toLocalDateTime() else local
+        return local.atZone(zone).withZoneSameInstant(targetZone).toLocalDateTime()
     }
 
-    private fun parseRuleUntil(value: String, reference: LocalDateTime): LocalDateTime? {
+    private fun parseRuleUntil(value: String, reference: LocalDateTime, zone: ZoneId): LocalDateTime? {
         if (!value.contains('T') && value.length == 8) {
             return runCatching { LocalDate.parse(value, compactDate).atTime(LocalTime.MAX) }.getOrNull()
         }
-        return parseDateTime(IcsProperty("UNTIL", emptyMap(), value)) ?: reference
+        return parseDateTime(IcsProperty("UNTIL", mapOf("TZID" to zone.id), value), zone) ?: reference
     }
 
     private fun parseWeekday(value: String): DayOfWeek? = when (value.trim().takeLast(2).uppercase()) {

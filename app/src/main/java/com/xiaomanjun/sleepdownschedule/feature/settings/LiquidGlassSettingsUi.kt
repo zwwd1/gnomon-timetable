@@ -155,9 +155,10 @@ private fun GlassBlurEndpointIcon(
 
 @Composable
 internal fun LiquidGlassDockPreview(
-    config: ScheduleConfigEntity,
+    state: AppState,
     darkTheme: Boolean
 ) {
+    val config = state.config
     var previewScreen by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<Screen>(Screen.Home) }
     val images by com.xiaomanjun.sleepdownschedule.core.performance.rememberHomeWallpaperImages(config)
     var previewPressed by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
@@ -186,12 +187,16 @@ internal fun LiquidGlassDockPreview(
                     .fillMaxSize()
                     .glassBackdropProducer(previewBackdrop)
             ) {
-                val currentWallpaper = images.source
-                if (currentWallpaper != null) Image(currentWallpaper.asImageBitmap(), "当前壁纸", Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                val currentWallpaper = images.blurredSource ?: images.source
+                if (currentWallpaper != null) {
+                    com.xiaomanjun.sleepdownschedule.core.wallpaper.FocusCroppedWallpaper(currentWallpaper, config, Modifier.fillMaxSize())
+                    Box(Modifier.fillMaxSize().background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 1f - config.wallpaperBrightness.coerceIn(.35f, 1f))))
+                }
                 else Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
             }
             CompositionLocalProvider(LocalAdaptiveGlass provides adaptiveGlass) {
                 if (previewScreen is Screen.Grades) cn.scvtc.campus.AcademicContent(config, previewBackdrop, autoRefresh = false)
+                else if (previewScreen is Screen.Home) MiniSchedulePreview(state, previewBackdrop)
                 else Box(Modifier.fillMaxSize().padding(24.dp)) {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(if (previewScreen is Screen.Sync) "教务同步" else if (previewScreen is Screen.Config) "设置" else "Gnomon 课程表", style = MaterialTheme.typography.headlineSmall)

@@ -132,6 +132,7 @@ fun BackupRestoreSettingsScreen(
         ),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
+        item(key = "timetable-files") { TimetableFilesPanel(state, backdrop) }
         item(key = "backup-scope") {
             BackupGuideCarousel(
                 sectionTitle = "会备份什么",
@@ -166,7 +167,7 @@ fun BackupRestoreSettingsScreen(
             )
         }
         item(key = "backup-actions") {
-            GlassPreferenceSection("保存或恢复") {
+            GlassPreferenceSection("完整备份 · 文件保存与恢复") {
                 SettingsGroup(backdrop = backdrop, config = state.config, modifier = Modifier.fillMaxWidth()) {
                     SettingsActionRow(
                         title = "保存当前数据",
@@ -192,6 +193,7 @@ fun BackupRestoreSettingsScreen(
                 }
             }
         }
+        item(key = "backup-storage") { BackupStoragePanel(state, backdrop, onOpenPreview) }
         if (busyLabel != null || statusMessage != null) {
             item(key = "backup-status") {
                 BackupTaskStatusSection(

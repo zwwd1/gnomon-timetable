@@ -79,16 +79,16 @@ internal fun courseCopyBounds(
     val left = grid.origin.x + physicalColumn * width + grid.gap / 2f
     val top = grid.origin.y - ((grid.scroll?.value ?: grid.scrollAtCapture) - grid.scrollAtCapture)
     fun bounds(row: Float, count: Float) = Rect(
-        left, top + row * grid.rowHeight + grid.gap / 2f,
+        left, top + grid.layout.top(row) * grid.rowHeight + grid.gap / 2f,
         left + (width - grid.gap).coerceAtLeast(1f),
-        top + (row + count) * grid.rowHeight - grid.gap / 2f
+        top + grid.layout.bottom(row + count) * grid.rowHeight - grid.gap / 2f
     )
     if (course.hasCustomTime()) {
         val placement = exactTimeWeekPlacement(course, periods) ?: return emptyList()
         return if (placement.heightRows > 0f) listOf(Rect(
-            left, top + placement.topRows * grid.rowHeight,
+            left, top + grid.layout.top(placement.topRows) * grid.rowHeight,
             left + (width - grid.gap).coerceAtLeast(1f),
-            top + (placement.topRows + placement.heightRows) * grid.rowHeight
+            top + grid.layout.bottom(placement.topRows + placement.heightRows) * grid.rowHeight
         )) else emptyList()
     }
     val rows = course.periods.map(grid.periodIndexes::indexOf).filter { it >= 0 }.distinct().sorted()
@@ -97,7 +97,9 @@ internal fun courseCopyBounds(
     while (start < rows.size) {
         var end = start
         while (end + 1 < rows.size && rows[end + 1] == rows[end] + 1) end++
-        runs += bounds(rows[start].toFloat(), (end - start + 1).toFloat())
+        grid.layout.split(rows[start], rows[end] + 1).forEach { run ->
+            runs += bounds(run.first.toFloat(), run.count().toFloat())
+        }
         start = end + 1
     }
     return runs

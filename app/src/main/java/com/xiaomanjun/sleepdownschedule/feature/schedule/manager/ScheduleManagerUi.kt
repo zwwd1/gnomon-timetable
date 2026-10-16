@@ -236,9 +236,8 @@ fun ScheduleManagerScreen(
     val centeredConfig = configsBySchedule[centeredProfile.id]
         ?: if (centeredProfile.isActive) state.config else defaultConfig(centeredProfile.id)
     val centeredCourses = coursesBySchedule[centeredProfile.id].orEmpty()
-    val centeredPeriods = periodsBySchedule[centeredProfile.id].orEmpty().ifEmpty {
-        if (centeredProfile.isActive) state.periods else defaultPeriods(centeredProfile.id)
-    }
+    val centeredPeriods = com.xiaomanjun.sleepdownschedule.domain.schedule.periodSkeleton(centeredConfig,
+        periodsBySchedule[centeredProfile.id].orEmpty().ifEmpty { if (centeredProfile.isActive) state.periods else emptyList() })
 
     LaunchedEffect(profiles.size, activeProfileId) {
         val pendingId = pendingActivationId
@@ -376,9 +375,8 @@ fun ScheduleManagerScreen(
                     val config = configsBySchedule[profile.id]
                         ?: if (profile.isActive) state.config else defaultConfig(profile.id)
                     val courses = coursesBySchedule[profile.id].orEmpty()
-                    val periods = periodsBySchedule[profile.id].orEmpty().ifEmpty {
-                        if (profile.isActive) state.periods else defaultPeriods(profile.id)
-                    }
+                    val periods = com.xiaomanjun.sleepdownschedule.domain.schedule.periodSkeleton(config,
+                        periodsBySchedule[profile.id].orEmpty().ifEmpty { if (profile.isActive) state.periods else emptyList() })
                     ScheduleCarouselCard(
                         profile = profile,
                         config = config,
@@ -783,7 +781,7 @@ fun ScheduleHomeSnapshotPreview(
             courses = courses,
             allCourses = courses,
             config = config,
-            periods = periods.ifEmpty { defaultPeriods(config.id) },
+            periods = com.xiaomanjun.sleepdownschedule.domain.schedule.periodSkeleton(config, periods),
             loaded = true
         )
     }
@@ -908,7 +906,7 @@ fun StaticWeekSnapshotGrid(
         if (state.config.hideEmptyWeekends && !weekendHasCourse) SnapshotSchoolWeekdays else SnapshotFullWeekdays
     }
     val periods = remember(state.periods, state.config.id) {
-        state.periods.take(10).ifEmpty { defaultPeriods(state.config.id).take(10) }
+        com.xiaomanjun.sleepdownschedule.domain.schedule.periodSkeleton(state.config, state.periods).take(10)
     }
     Column(modifier = modifier.fillMaxWidth()) {
         Row(

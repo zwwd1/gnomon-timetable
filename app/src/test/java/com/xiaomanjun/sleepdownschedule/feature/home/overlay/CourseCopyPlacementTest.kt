@@ -139,8 +139,25 @@ class CourseCopyPlacementTest {
         val grid = CourseEditorWeekGrid(Offset(10f, 120f), 500f, 60f, 4f, periods.map { it.periodIndex }, null, 0, true)
         assertEquals(CourseCopyTap.Selected, courseCopyGridTap(controller, 3, grid, (1..5).toList(), periods, Offset(20f, 245f)))
         assertEquals(5, controller.target!!.course.weekday)
-        assertEquals(Rect(12f, 362f, 108f, 478f), controller.target!!.bounds.single())
-        assertEquals(CourseCopyTap.Confirmed, courseCopyGridTap(controller, 3, grid, (1..5).toList(), periods, Offset(25f, 335f)))
+        // The existing UI snaps the card's center to the tap, rather than its top-left cell.
+        assertEquals(Rect(12f, 302f, 108f, 418f), controller.target!!.bounds.single())
+        assertEquals(CourseCopyTap.Confirmed, courseCopyGridTap(controller, 3, grid, (1..5).toList(), periods, Offset(25f, 275f)))
+        assertEquals(1, writes)
+    }
+    @Test fun restBandRejectsPlacementAndLowerRtlCellsRetainCenteredConfirmation() = runBlocking {
+        var writes = 0
+        val controller = CourseCopyController(this, { null }) { _, _ -> writes++ }
+        controller.begin(request(), copiedShortcutCourse(source, 3))
+        val layout = com.xiaomanjun.sleepdownschedule.domain.schedule.WeekGridLayout(
+            listOf(com.xiaomanjun.sleepdownschedule.domain.schedule.WeekRestBand(2, "午休")), .4f)
+        val grid = CourseEditorWeekGrid(Offset(10f, 120f), 500f, 60f, 4f,
+            periods.map { it.periodIndex }, null, 0, true, layout)
+        assertEquals(CourseCopyTap.Rejected, courseCopyGridTap(controller, 3, grid, (1..5).toList(), periods, Offset(20f, 130f)))
+        assertNull(controller.target)
+        assertEquals(CourseCopyTap.Selected, courseCopyGridTap(controller, 3, grid, (1..5).toList(), periods, Offset(20f, 265f)))
+        assertEquals(listOf(4, 5), controller.target!!.course.periods)
+        assertEquals(Rect(12f, 326f, 108f, 442f), controller.target!!.bounds.single())
+        assertEquals(CourseCopyTap.Confirmed, courseCopyGridTap(controller, 3, grid, (1..5).toList(), periods, Offset(25f, 299f)))
         assertEquals(1, writes)
     }
 

@@ -832,7 +832,10 @@ fun SettingsPickerValueRow(
         MiuixArrowPreference(
             title = title,
             endActions = {
-                Text(
+                if (value.isBlank() || value.startsWith("待设置")) {
+                    DialogLiquidButton(LocalSettingsPopupBackdrop.current, "待设置", { if (enabled) onClick() },
+                        role = DialogButtonRole.Cancel, destructiveFilled = true)
+                } else Text(
                     value.ifBlank { "未设置" },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -864,7 +867,9 @@ fun SettingsPickerValueRow(
                 .weight(1f)
                 .offset(y = 1.dp)
         )
-        Text(value.ifBlank { "未设置" }, modifier = Modifier.offset(y = 1.dp).widthIn(min = 88.dp), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End, maxLines = 1)
+        if (value.isBlank() || value.startsWith("待设置")) DialogLiquidButton(LocalSettingsPopupBackdrop.current, "待设置", { if (enabled) onClick() },
+            role = DialogButtonRole.Cancel, destructiveFilled = true)
+        else Text(value, modifier = Modifier.offset(y = 1.dp).widthIn(min = 88.dp), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End, maxLines = 1)
     }
 }
 
@@ -1021,10 +1026,11 @@ fun SettingsTimePickerRow(
     config: ScheduleConfigEntity,
     enabled: Boolean = true,
     minimumMinute: Int = 0,
-    maximumMinute: Int = LastMinuteOfDay
+    maximumMinute: Int = LastMinuteOfDay,
+    initiallyOpen: Boolean = false
 ) {
     val popupBackdrop = LocalSettingsPopupBackdrop.current ?: backdrop
-    var showPicker by remember { mutableStateOf(false) }
+    var showPicker by remember { mutableStateOf(initiallyOpen && enabled) }
     val initialTime = remember(value, showPicker) {
         runCatching { ScheduleImportParser.parseTimeForUi(value) }.getOrNull()
             ?: java.time.LocalTime.of(8, 0)

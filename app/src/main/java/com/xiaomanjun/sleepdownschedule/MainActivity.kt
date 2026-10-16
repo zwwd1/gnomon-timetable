@@ -166,8 +166,11 @@ fun CourseScheduleTheme(
     val darkTheme = appUsesDarkTheme(config)
     val view = LocalView.current
     val appearanceStore = androidx.compose.runtime.remember(view.context) { cn.scvtc.campus.AppExperiencePreferences.get(view.context) }
-    val appearance by appearanceStore.state.collectAsState()
+    val savedAppearance by appearanceStore.state.collectAsState()
+    val previewPresentation by appearanceStore.presentationPreview.collectAsState()
+    val appearance = previewPresentation ?: savedAppearance
     val preview by appearanceStore.glassPreview.collectAsState()
+    androidx.compose.runtime.SideEffect { view.isHapticFeedbackEnabled = appearance.haptics }
     LaunchedEffect(config.followSystemDarkMode, darkTheme, view.context) {
         // Changing launcher aliases during the settings-to-home handoff can make ColorOS/Oplus
         // remove the visible task. Record the desired appearance here; CourseScheduleApp applies
@@ -239,7 +242,17 @@ fun CourseScheduleTheme(
             )
         })
     ) {
-        CompositionLocalProvider(com.xiaomanjun.sleepdownschedule.glass.LocalGlassAppearance provides (preview ?: appearance.glass)) {
+        val systemHaptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+        val appHaptic = androidx.compose.runtime.remember(systemHaptic, appearance.haptics) {
+            object : androidx.compose.ui.hapticfeedback.HapticFeedback {
+                override fun performHapticFeedback(hapticFeedbackType: androidx.compose.ui.hapticfeedback.HapticFeedbackType) {
+                    if (appearance.haptics) systemHaptic.performHapticFeedback(hapticFeedbackType)
+                }
+            }
+        }
+        CompositionLocalProvider(com.xiaomanjun.sleepdownschedule.glass.LocalGlassAppearance provides (preview ?: appearance.glass),
+            cn.scvtc.campus.LocalAppExperience provides appearance,
+            androidx.compose.ui.platform.LocalHapticFeedback provides appHaptic) {
             Surface(modifier = Modifier.fillMaxSize(), content = content)
         }
     }

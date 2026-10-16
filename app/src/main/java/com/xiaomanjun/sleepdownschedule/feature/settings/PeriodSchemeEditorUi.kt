@@ -149,13 +149,31 @@ internal fun PeriodSchemeEditor(
     topPadding: androidx.compose.ui.unit.Dp,
     leadingContent: @Composable () -> Unit
 ) {
-    val active = draft.schemes.firstOrNull { it.scheme.id == draft.activeSchemeId } ?: return
+    val editorContext = androidx.compose.ui.platform.LocalContext.current
+    val requestedPeriod = remember(config.id) {
+        generateSequence(editorContext) { (it as? android.content.ContextWrapper)?.baseContext }
+            .filterIsInstance<android.app.Activity>().firstOrNull()?.intent
+            ?.getIntExtra("schedule_period_index", 0)?.takeIf { it in 1..config.totalPeriodCount() }
+    }
+    var repairTargetPeriod by remember(config.id) { mutableStateOf(requestedPeriod) }
+    var showSchemes by remember(config.id) { mutableStateOf(requestedPeriod != null) }
+    var inspectedSchemeId by remember(config.id) { mutableStateOf<Long?>(null) }
+    var showCounts by remember { mutableStateOf(false) }
+    val actualActive = draft.schemes.firstOrNull { it.scheme.id == draft.activeSchemeId }
+    val active = draft.schemes.firstOrNull { it.scheme.id == inspectedSchemeId } ?: actualActive ?: draft.schemes.firstOrNull()
+    if (active == null) {
+        PeriodSchemeRecovery(state, backdrop, config, topPadding, leadingContent, onDraftChange)
+        return
+    }
     val popupBackdrop = LocalSettingsPopupBackdrop.current ?: backdrop
     val chromeProgress = LocalSettingsEditorProgress.current
     var session by remember(config.id) { mutableStateOf<PeriodTimelineSession?>(null) }
     var initialSession by remember(config.id) { mutableStateOf<PeriodTimelineSession?>(null) }
+    var editReturnActiveId by remember(config.id) { mutableStateOf(draft.activeSchemeId) }
     var showChoice by remember { mutableStateOf(false) }
-    var repairingTimes by remember(config.id) { mutableStateOf(false) }
+    var showCopy by remember { mutableStateOf(false) }
+    var copyNotice by remember { mutableStateOf<String?>(null) }
+    var repairingTimes by remember(config.id) { mutableStateOf(requestedPeriod != null) }
     var showWizard by remember { mutableStateOf(false) }
     var showDeleteScheme by remember { mutableStateOf(false) }
     var showExitConfirmation by remember { mutableStateOf(false) }
@@ -177,6 +195,9 @@ internal fun PeriodSchemeEditor(
     val motion = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
     val normalScroll = rememberScrollState()
+    val schemesScroll = rememberScrollState()
+    val schemeDetailScroll = rememberScrollState()
+    LaunchedEffect(inspectedSchemeId) { schemeDetailScroll.scrollTo(0) }
     var actionSource by remember { mutableStateOf(Rect.Zero) }
     var frozenActionSource by remember { mutableStateOf(Rect.Zero) }
     val density = LocalDensity.current
@@ -189,7 +210,7 @@ internal fun PeriodSchemeEditor(
         drawRect(pageColor)
         drawContent()
     }
-    SideEffect { chromeProgress?.floatValue = if (repairingTimes) 1f else timelineSceneProgress(motion.value, closing) }
+    SideEffect { chromeProgress?.floatValue = if (repairingTimes || showSchemes || showCounts) 1f else timelineSceneProgress(motion.value, closing) }
     DisposableEffect(chromeProgress) { onDispose { chromeProgress?.floatValue = 0f } }
 
     fun enter(value: PeriodTimelineSession) {
@@ -198,7 +219,8 @@ internal fun PeriodSchemeEditor(
             repairingTimes = true
             return
         }
-        initialSession = PeriodTimelineSession(config, draft)
+        initialSession = value
+        editReturnActiveId = draft.activeSchemeId
         frozenActionSource = actionSource
         localError = null
         editorLaidOut = false
@@ -232,17 +254,17 @@ internal fun PeriodSchemeEditor(
         val current = session ?: return
         if (commit) {
             val error = current.draft.schemes.firstNotNullOfOrNull {
-                validateResolvedPeriodTimes(resolveSchemeTimes(current.config, it))
+                validateEditablePeriodTimes(resolveSchemeTimes(current.config, it))
             }
             if (error != null) { localError = error; return }
         }
         closing = true
         scope.launch {
-            motion.animateTo(0f, tween(260, easing = LinearEasing))
+            motion.animateTo(0f, tween(180, easing = LinearEasing))
             if (commit) {
                 onCountsChange(current.config.morningPeriodCount, current.config.noonPeriodCount,
                     current.config.afternoonPeriodCount, current.config.eveningPeriodCount)
-                onDraftChange(current.draft)
+                onDraftChange(current.draft.copy(activeSchemeId = editReturnActiveId))
             }
             session = null
             initialSession = null
@@ -262,8 +284,11 @@ internal fun PeriodSchemeEditor(
     LaunchedEffect(session != null, editorLaidOut) {
         if (session != null && editorLaidOut) {
             withFrameNanos { }
-            motion.animateTo(1f, tween(360, easing = LinearEasing))
+            motion.animateTo(1f, tween(220, easing = LinearEasing))
         }
+    }
+    BackHandler(enabled = showSchemes && session == null && !repairingTimes) {
+        if (inspectedSchemeId != null) inspectedSchemeId = null else showSchemes = false
     }
     BackHandler(enabled = session != null) { requestExit() }
     LaunchedEffect(motion.value == 1f, requestedBlock) {
@@ -278,7 +303,7 @@ internal fun PeriodSchemeEditor(
             Modifier.fillMaxSize()
                 .layout { measurable, constraints ->
                     val child = measurable.measure(constraints)
-                    layout(child.width, child.height) { if (!repairingTimes && (session == null || motion.value < 1f)) child.placeRelative(0, 0) }
+                    layout(child.width, child.height) { if (!repairingTimes && !showCounts && (session == null || motion.value < 1f)) child.placeRelative(0, 0) }
                 }
                 .graphicsLayer {
                     val p = timelineSceneProgress(motion.value, closing)
@@ -289,72 +314,113 @@ internal fun PeriodSchemeEditor(
                     renderEffect = if (motion.value > 0f && motion.value < 1f) sunkenBlur else null
                 }
                 .then(if (session != null) Modifier.clearAndSetSemantics { } else Modifier)
-                .verticalScroll(normalScroll, enabled = session == null)
-                .padding(start = 16.dp, end = 16.dp, top = topPadding + 12.dp, bottom = navBottom + 32.dp),
+                .verticalScroll(if (!showSchemes) normalScroll else if (inspectedSchemeId == null) schemesScroll else schemeDetailScroll,
+                    enabled = session == null)
+                .padding(start = 16.dp, end = 16.dp, top = if (showSchemes) headerTop + 12.dp else topPadding + 12.dp, bottom = navBottom + 32.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            leadingContent()
-            GlassPreferenceSection("作息安排") {
-                SettingsGroup(backdrop, state.config, Modifier.fillMaxWidth()) {
-                    SleepDownLiquidDropdownPreference(
-                        items = draft.schemes.map { it.scheme.name },
-                        selectedIndex = draft.schemes.indexOf(active).coerceAtLeast(0),
-                        title = "当前作息", backdrop = backdrop, config = state.config,
-                        insideMargin = PaddingValues(horizontal = 14.dp, vertical = 12.dp),
-                        maxHeight = 318.dp, onExpandedChange = {},
-                        onSelectedIndexChange = { index ->
-                            draft.schemes.getOrNull(index)?.let { onDraftChange(draft.copy(activeSchemeId = it.scheme.id)) }
-                        }
-                    )
-                    SettingsDivider()
-                    SettingsTextFieldRow("作息名称", active.scheme.name, { name ->
-                        onDraftChange(draft.copy(schemes = draft.schemes.map {
-                            if (it == active) it.copy(scheme = it.scheme.copy(name = name)) else it
-                        }))
-                    })
-                    if (draft.schemes.size > 1) Row(Modifier.fillMaxWidth().padding(14.dp)) {
-                        DialogLiquidButton(backdrop, "删除作息", { showDeleteScheme = true }, monochromeNeutral = true)
+            if (!showSchemes) {
+                leadingContent()
+                GlassPreferenceSection("作息与时间") {
+                    SettingsGroup(backdrop, state.config) {
+                        val known = actualActive?.let { editablePeriodTimes(config, it).count { time ->
+                            parseMinuteOfDay(time.startTime) != null && parseMinuteOfDay(time.endTime) != null
+                        } } ?: 0
+                        SettingsNavigationRow("课表节次与时间",
+                            "上午 ${config.morningPeriodCount} · 中午 ${config.noonPeriodCount} · 下午 ${config.afternoonPeriodCount} · 晚上 ${config.eveningPeriodCount}\n" +
+                                "${actualActive?.scheme?.name ?: "尚未关联作息"} · 已配置 $known/${config.totalPeriodCount()} 节",
+                            onClick = { showSchemes = true; inspectedSchemeId = null })
                     }
                 }
-            }
-            Column(Modifier.fillMaxWidth()) {
+            } else {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    GlassPreferenceCategory("详细节次", modifier = Modifier.weight(1f))
-                    DialogLiquidButton(backdrop, "编辑", { showChoice = true }, role = DialogButtonRole.Confirm,
-                        modifier = Modifier.onGloballyPositioned { if (session == null) actionSource = it.timelineBoundsInRoot() }
-                            .graphicsLayer { alpha = if (editorLaidOut) 0f else 1f })
+                    DialogLiquidButton(backdrop, "返回", {
+                        if (inspectedSchemeId != null) inspectedSchemeId = null else showSchemes = false
+                    }, monochromeNeutral = true)
+                    Text(if (inspectedSchemeId == null) "课表节次与时间" else "编辑作息",
+                        Modifier.weight(1f).padding(start = 12.dp), style = MaterialTheme.typography.titleLarge)
                 }
-                SettingsGroup(backdrop, state.config, Modifier.fillMaxWidth()) {
-                    val lessons = summary.filterNot { it.isBreak }
-                    lessons.forEachIndexed { position, block ->
-                        key(block.key) {
-                            if (position > 0) {
-                                val previous = lessons[position - 1]
-                                val gap = summary.firstOrNull { it.isBreak && it.period == previous.period }
-                                Box(Modifier.fillMaxWidth()) {
-                                    when {
-                                        previous.part != block.part -> PeriodTimelineSeparator("${block.part.timelineLabel()}时段", TimelineCourseColor)
-                                        gap != null && gap.minutes != active.scheme.breakDurationMinutes ->
-                                            PeriodTimelineSeparator(if (gap.minutes == 0) "连课" else "课间 · ${gap.minutes}分钟", TimelineBreakColor)
-                                        else -> SettingsDivider()
-                                    }
+                if (inspectedSchemeId == null) {
+                    GlassPreferenceSection("节次骨架 · 当前课表") {
+                        SettingsGroup(backdrop, state.config) {
+                            SettingsNavigationRow("节次数量",
+                                "上午 ${config.morningPeriodCount} · 中午 ${config.noonPeriodCount} · 下午 ${config.afternoonPeriodCount} · 晚上 ${config.eveningPeriodCount}",
+                                onClick = { showCounts = true })
+                        }
+                    }
+                    GlassPreferenceSection("作息方案") {
+                        SettingsGroup(backdrop, state.config) {
+                            draft.schemes.forEachIndexed { index, item ->
+                                if (index > 0) SettingsDivider()
+                                SettingsNavigationRow(item.scheme.name,
+                                    if (item.scheme.id == draft.activeSchemeId) "生效中 · 始终生效 · 点此编辑" else "未启用 · 点此编辑",
+                                    onClick = { inspectedSchemeId = item.scheme.id })
+                            }
+                        }
+                        if (actualActive == null) Text("当前作息关联已失效，请打开一套现有作息并设为当前。已有时间保留。",
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                    }
+                    SettingsGroup(backdrop, state.config) {
+                        SettingsNavigationRow("添加作息", "同一套节次，增加一套时间", onClick = { showWizard = true })
+                        SettingsDivider()
+                        SettingsNavigationRow("从其他课表复制", if (state.schedules.any { it.id != config.id })
+                            "复制来源当前作息，确认后加入草稿" else "没有其他课表可复制",
+                            onClick = { showCopy = true })
+                    }
+                    copyNotice?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+                } else {
+                    SettingsGroup(backdrop, state.config) {
+                        SettingsTextFieldRow("作息名称", active.scheme.name, { name ->
+                            onDraftChange(draft.copy(schemes = draft.schemes.map {
+                                if (it.scheme.id == active.scheme.id) it.copy(scheme = it.scheme.copy(name = name)) else it
+                            }))
+                        })
+                        SettingsDivider()
+                        SettingsInfoRow("生效方式", "手动选择 · 始终生效")
+                        if (active.scheme.id != draft.activeSchemeId) {
+                            SettingsNavigationRow("设为当前作息", "保存详细设置后采用这套时间；其他方案保留",
+                                onClick = { onDraftChange(draft.copy(activeSchemeId = active.scheme.id)) })
+                        }
+                    }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        DialogLiquidButton(backdrop, "逐节编辑", { repairTargetPeriod = null; repairingTimes = true })
+                        DialogLiquidButton(backdrop, "时间轴与课间", {
+                            enter(PeriodTimelineSession(config, draft.copy(activeSchemeId = active.scheme.id))
+                                .updateActive(active.materializeForTimeline(config)))
+                        }, monochromeNeutral = true)
+                    }
+                    SettingsGroup(backdrop, state.config) {
+                        PeriodDayPart.entries.forEach { part ->
+                            val rows = editablePeriodTimes(config, active).filter { it.periodIndex in config.periodRange(part) }
+                            if (rows.isNotEmpty()) {
+                                PeriodTimelineSeparator(part.timelineLabel(), TimelineCourseColor)
+                                rows.forEach { time ->
+                                    val block = summary.firstOrNull { !it.isBreak && it.period == time.periodIndex }
+                                    SettingsPickerValueRow("第 ${time.periodIndex} 节",
+                                        if (block != null) "${timelineMinuteText(block.start)} – ${timelineMinuteText(block.end)}" else "待设置 · 点此补全",
+                                        onClick = { repairTargetPeriod = time.periodIndex; repairingTimes = true })
+                                    SettingsDivider()
                                 }
                             }
-                            SettingsPickerValueRow(block.title, "${timelineMinuteText(block.start)} - ${timelineMinuteText(block.end)}",
-                                onClick = {
-                                    enter(PeriodTimelineSession(config, draft).updateActive(active.materializeForTimeline(config)))
-                                    requestedBlock = block
-                                })
                         }
                     }
+                    if (draft.schemes.size > 1) DialogLiquidButton(backdrop, "删除这套作息",
+                        { showDeleteScheme = true }, role = DialogButtonRole.Cancel, destructiveFilled = true)
+                    Text("返回会保留草稿；在课表详细设置点完成后，统一保存课程映射、作息与调休。", style = MaterialTheme.typography.bodySmall)
                 }
             }
         }
+        if (showCounts) PeriodCountsEditor(config, popupBackdrop, onCancel = { showCounts = false }, onDone = { target ->
+            val resized = resizePeriodStructure(config, draft, target)
+            onCountsChange(target.morningPeriodCount, target.noonPeriodCount, target.afternoonPeriodCount, target.eveningPeriodCount)
+            onDraftChange(resized)
+            showCounts = false
+        })
         if (repairingTimes) IncompletePeriodTimesEditor(config, active, popupBackdrop,
             onCancel = { repairingTimes = false }, onDone = { updated ->
                 onDraftChange(draft.copy(schemes = draft.schemes.map { if (it.scheme.id == active.scheme.id) updated else it }))
                 repairingTimes = false
-            })
+            }, initialPeriodIndex = repairTargetPeriod)
         session?.let { edit ->
             // Keep the sinking underlay from receiving editor touches.
             Box(Modifier.fillMaxSize().clickable(interactionSource = null, indication = null) {})
@@ -515,13 +581,40 @@ internal fun PeriodSchemeEditor(
             }),
             LiquidAlertAction("新建作息", LiquidAlertActionStyle.Secondary, onClick = { showChoice = false; showWizard = true })
         ), popupBackdrop, state.config, { showChoice = false })
-    if (showWizard) PeriodSchemeCreationWizard(config, draft, popupBackdrop, state.config,
+    if (showWizard) PeriodSchemeCreationWizard(config, draft.copy(activeSchemeId = active.scheme.id), popupBackdrop, state.config,
         onDismiss = { showWizard = false }, onCreated = { showWizard = false; enter(it) })
+    if (showCopy) {
+        val candidates = state.schedules.filter { it.id != config.id }
+        val context = androidx.compose.ui.platform.LocalContext.current
+        LiquidAlertDialog("从其他课表复制", if (candidates.isEmpty()) "没有其他课表可复制。先在课表管理中添加课表。" else "复制对方当前作息；保留本课表的课程和其他方案。节次数量必须一致。",
+            candidates.map { source -> LiquidAlertAction(source.name, LiquidAlertActionStyle.Secondary) {
+                showCopy = false
+                scope.launch {
+                    runCatching {
+                        val app = context.applicationContext as com.xiaomanjun.sleepdownschedule.CourseScheduleApp
+                        val sourceDraft = com.xiaomanjun.sleepdownschedule.data.repository.ScheduleRepository(app.database).loadPeriodSchemes(source.id)
+                        val sourceActive = sourceDraft.schemes.first { it.scheme.id == sourceDraft.activeSchemeId }
+                        require(sourceActive.times.map { it.periodIndex }.sorted() == (1..config.totalPeriodCount()).toList()) { "两张课表的节次数量不同，请先调整节数后再复制" }
+                        val id = minOf(-1L, (draft.schemes.minOfOrNull { it.scheme.id } ?: 0L) - 1L)
+                        sourceActive.copy(scheme = sourceActive.scheme.copy(id = id, scheduleId = config.id,
+                            name = "${source.name} · ${sourceActive.scheme.name}", isActive = false, mode = PeriodSchemeMode.MANUAL),
+                            times = sourceActive.times.map { it.copy(schemeId = id) },
+                            specialBreaks = emptyMap(), overriddenPeriods = emptySet())
+                    }.onSuccess { copied ->
+                        onDraftChange(draft.copy(schemes = draft.schemes + copied))
+                        copyNotice = "已加入作息草稿，保存详细设置后生效"
+                    }.onFailure { copyNotice = it.message ?: "作息复制失败" }
+                }
+            } } + LiquidAlertAction("取消", LiquidAlertActionStyle.Secondary) { showCopy = false },
+            popupBackdrop, state.config, { showCopy = false })
+    }
     if (showDeleteScheme) LiquidAlertDialog("删除作息", "删除“${active.scheme.name}”？其他作息会保留。",
         listOf(LiquidAlertAction("取消", LiquidAlertActionStyle.Secondary, onClick = { showDeleteScheme = false }),
             LiquidAlertAction("删除", LiquidAlertActionStyle.Destructive, onClick = {
                 val remaining = draft.schemes.filterNot { it.scheme.id == active.scheme.id }
-                if (remaining.isNotEmpty()) onDraftChange(draft.copy(schemes = remaining, activeSchemeId = remaining.first().scheme.id))
+                if (remaining.isNotEmpty()) onDraftChange(draft.copy(schemes = remaining,
+                    activeSchemeId = if (draft.activeSchemeId == active.scheme.id) remaining.first().scheme.id else draft.activeSchemeId))
+                inspectedSchemeId = null
                 showDeleteScheme = false
             })), popupBackdrop, state.config, { showDeleteScheme = false })
     deletingBlock?.let { block ->

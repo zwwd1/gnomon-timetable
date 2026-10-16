@@ -25,9 +25,8 @@ internal const val MaximumWeekCardHeightScale = 1.45f
 
 /*
  * The expanded week rail renders one 15sp period number plus two 11sp time lines. Its
- * current-period badge adds 1dp above and below the number. When a short window cannot fit that
- * complete stack, rendering switches to the compact number-only contract instead of clipping or
- * shrinking the text.
+ * current-period badge adds 1dp above and below the number. With time labels enabled, compressed
+ * rows stop at this readable minimum and the existing vertical scroll handles short windows.
  */
 private const val WeekTimelinePeriodLineHeightSp = 15f
 private const val WeekTimelineTimeLineHeightSp = 11f

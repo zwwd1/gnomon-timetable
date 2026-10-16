@@ -340,12 +340,19 @@ data class BackupWidgetAppearance(
 @Serializable
 data class BackupPreferences(
     val preferencesVersion: Int,
+    val presentation: BackupPresentationPreferences? = null,
     val appIcon: BackupAppIconPreferences? = null,
     val dayAgent: BackupDayAgentPreferences? = null,
     val aiImport: BackupAiImportPreferences? = null,
     val aiImportHistoryRetentionDays: Int = BackupFormatV1.DEFAULT_AI_IMPORT_HISTORY_RETENTION_DAYS,
     val aiImportHistory: List<BackupAiImportHistoryEntry> = emptyList()
 )
+
+@Serializable
+data class BackupPresentationPreferences(val entrance: Boolean, val dock: List<String>, val glass: String,
+    val showPeriodTimes: Boolean = true, val cardTint: Float = .55f, val detailOpacity: Float = .88f,
+    val haptics: Boolean = true, val predictiveBack: Boolean = true, val materialQuality: Float = 1f,
+    val showBreakDividers: Boolean = true, val showTeacher: Boolean = true, val showLocation: Boolean = true)
 
 @Serializable
 data class BackupAppIconPreferences(

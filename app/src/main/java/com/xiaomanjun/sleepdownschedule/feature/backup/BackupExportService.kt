@@ -17,6 +17,20 @@ class BackupExportService(
     private val appContext = context.applicationContext
     private val sourceReader = BackupAssetSourceReader(appContext)
 
+    suspend fun exportTimetable(scheduleId: Int): String = withContext(Dispatchers.IO) {
+        val all = BackupRoomSnapshotReader(database).read()
+        val selected = all.schedules.singleOrNull { it.id == scheduleId } ?: error("课表不存在")
+        val schemes = all.periodSchemes.filter { it.scheduleId == scheduleId }
+        val snapshot = BackupRoomSnapshot(schedules = listOf(selected),
+            configs = all.configs.filter { it.id == scheduleId }.map { it.copy(wallpaperUri = null) },
+            periods = all.periods.filter { it.scheduleId == scheduleId },
+            courses = all.courses.filter { it.scheduleId == scheduleId }, periodSchemes = schemes,
+            periodSchemeTimes = all.periodSchemeTimes.filter { time -> schemes.any { it.id == time.schemeId } })
+        val archive = BackupExportMapper.toArchive(defaultMetadata(), snapshot,
+            BackupPreferences(BackupFormatV1.PREFERENCES_VERSION), emptyList())
+        TimetableJsonCodec.encode(TimetableJsonDocument(metadata = archive.metadata, schedule = archive.data.schedules.single()))
+    }
+
     suspend fun export(metadata: BackupSourceMetadata = defaultMetadata()): BackupArchive =
         withContext(Dispatchers.IO) {
             val snapshot = BackupRoomSnapshotReader(database).read()

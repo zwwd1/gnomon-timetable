@@ -296,6 +296,7 @@ internal fun CourseEditorContainerOverlayHost(
     onPhaseChange: (CourseEditorOverlayPhase) -> Unit = {}
 ) {
     var renderedRequest by remember { mutableStateOf<CourseEditorOverlayRequest?>(null) }
+    val editorContext = androidx.compose.ui.platform.LocalContext.current
     var copySaving by remember(request) { mutableStateOf(false) }
     var rootSize by remember { mutableStateOf(IntSize.Zero) }
     var editorContentMounted by remember { mutableStateOf(false) }
@@ -433,7 +434,10 @@ internal fun CourseEditorContainerOverlayHost(
     }
 
     val density = LocalDensity.current
-    val targetRect = remember(rootSize, density, adaptiveMetrics) {
+    val detailMeasurer = androidx.compose.ui.text.rememberTextMeasurer()
+    val type = androidx.compose.material3.MaterialTheme.typography
+    val detailMode = shownRequest.previewOnly && !previewEditing
+    val targetRect = remember(rootSize, density, adaptiveMetrics, detailMode, shownRequest, type) {
         with(density) {
             if (rootSize.width <= 0 || rootSize.height <= 0) {
                 Rect.Zero
@@ -441,15 +445,19 @@ internal fun CourseEditorContainerOverlayHost(
                 val content = adaptiveMetrics.contentRectPx(rootSize, density.density)
                 val minWidth = minOf(600.dp.toPx(), content.width)
                 val maxWidth = minOf(680.dp.toPx(), content.width).coerceAtLeast(minWidth)
-                val maxHeight = minOf(content.height * 0.82f, 640.dp.toPx()).coerceAtLeast(
+                val editorHeight = minOf(content.height * 0.82f, 640.dp.toPx()).coerceAtLeast(
                     minOf(content.height, 420.dp.toPx())
                 )
+                val maxHeight = if (detailMode) courseDetailHeight(shownRequest, state.periods, maxWidth,
+                    editorHeight, density, type, detailMeasurer) else editorHeight
                 val left = content.left + (content.width - maxWidth) / 2f
                 val top = content.top + (content.height - maxHeight) / 2f
                 Rect(left, top, left + maxWidth, top + maxHeight)
             } else {
                 val maxWidth = minOf(rootSize.width * 0.92f, 600.dp.toPx())
-                val maxHeight = minOf(rootSize.height * 0.82f, 600.dp.toPx())
+                val editorHeight = minOf(rootSize.height * 0.82f, 600.dp.toPx())
+                val maxHeight = if (detailMode) courseDetailHeight(shownRequest, state.periods, maxWidth,
+                    editorHeight, density, type, detailMeasurer) else editorHeight
                 val left = (rootSize.width - maxWidth) / 2f
                 val top = (rootSize.height - maxHeight) / 2f
                 Rect(left, top, left + maxWidth, top + maxHeight)
@@ -687,6 +695,12 @@ internal fun CourseEditorContainerOverlayHost(
                             contextMessage = shownRequest.contextMessage,
                             textColor = textColor,
                             onClose = dismissEditor,
+                            onTimeSettings = {
+                                val context = editorContext
+                                context.startActivity(android.content.Intent(context, com.xiaomanjun.sleepdownschedule.SettingsDetailActivity::class.java)
+                                    .putExtra("settings_page", "Schedule").putExtra("schedule_customize_id", state.config.id)
+                                    .putExtra("schedule_period_index", request.course.periods.firstOrNull() ?: 1))
+                            },
                             onLongPress = { previewEditing = true }
                         )
                     } else CourseEditorFormLayer(
@@ -841,6 +855,8 @@ private fun CourseEditorAnimatedContainer(
     morphAllocation: GlassMorphAllocation? = null,
     content: @Composable () -> Unit
 ) {
+    val presentation = cn.scvtc.campus.LocalAppExperience.current
+    val detailConfig = config.copy(cardAlpha = presentation.detailOpacity)
     val finalDialogBlur = 22f
     val currentProgress = rememberUpdatedState(progressProvider)
     val editorBlur by remember(config.courseCardBlur) {
@@ -851,7 +867,7 @@ private fun CourseEditorAnimatedContainer(
     }
     CourseGlassCard(
         backdrop = backdrop,
-        config = config,
+        config = detailConfig,
         course = course,
         modifier = modifier.graphicsLayer { this.alpha = alpha },
         shape = shape,
@@ -922,154 +938,7 @@ private fun CourseEditorWeekSourceContent(
         else if (config.courseCardGlassEnabled) readableOn(cardColor)
         else glassForegroundColor(config)
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        val density = LocalDensity.current
-        val heightDp = maxHeight.value
-        val widthDp = maxWidth.value
-        val compact = heightDp < 78f
-        val tiny = heightDp < 52f
-        val verticalPadding = when {
-            tiny -> 1.dp
-            compact -> 2.dp
-            else -> 2.5.dp
-        }
-        val horizontalPadding = if (widthDp < 54f) 4.dp else 5.dp
-        val fontScaleCompensation = density.fontScale.coerceAtLeast(1f)
-        val tabletFontBoost = if (maxWidth >= 120.dp) 1.18f else 1f
-        val previewFontScale = LocalPersonalizationPreview.current?.cardFontScale
-        val courseFontScale = ((previewFontScale ?: config.courseCardFontScale) * tabletFontBoost)
-            .coerceIn(0.80f, 1.35f)
-        fun scaledCourseWeekText(value: TextUnit): TextUnit {
-            return (value.value * courseFontScale / fontScaleCompensation.coerceAtLeast(1f)).sp
-        }
-        val nameFont = scaledCourseWeekText(if (tiny) 8.8.sp else if (compact) 9.7.sp else 10.7.sp)
-        val nameLineHeight = scaledCourseWeekText(if (tiny) 8.2.sp else if (compact) 9.1.sp else 10.0.sp)
-        val locationFont = scaledCourseWeekText(if (tiny) 8.1.sp else if (compact) 8.7.sp else 9.5.sp)
-        val locationLineHeight = scaledCourseWeekText(if (tiny) 8.0.sp else if (compact) 8.6.sp else 9.3.sp)
-        val teacherFont = scaledCourseWeekText(8.4.sp)
-        val teacherLineHeight = scaledCourseWeekText(7.9.sp)
-        val contentWidthPx = with(density) { (maxWidth - horizontalPadding * 2f).coerceAtLeast(24.dp).toPx() }
-        val availableTextPx = with(density) { (maxHeight - verticalPadding * 2f).coerceAtLeast(0.dp).toPx() }
-
-        fun estimatedLines(text: String, fontSize: TextUnit): Int {
-            if (text.isBlank()) return 0
-            val averageCharPx = with(density) { fontSize.toPx() } * 1.08f
-            val charsPerLine = (contentWidthPx / averageCharPx.coerceAtLeast(1f)).toInt().coerceAtLeast(1)
-            return ceil(text.length.toFloat() / charsPerLine).toInt().coerceAtLeast(1)
-        }
-
-        val canShowTeacher = hasTeacher && heightDp >= 52f
-        val teacherLines = if (canShowTeacher) 1 else 0
-        val teacherPx = if (teacherLines > 0) with(density) { teacherLineHeight.toPx() } else 0f
-        val usablePx = (availableTextPx - teacherPx).coerceAtLeast(0f)
-        val averageLinePx = minOf(with(density) { nameLineHeight.toPx() }, with(density) { locationLineHeight.toPx() }).coerceAtLeast(1f)
-        val totalSlots = (usablePx / averageLinePx).toInt().coerceAtLeast(1)
-        val maxNameLines = when {
-            heightDp >= 150f -> 12
-            heightDp >= 112f -> 9
-            heightDp >= 78f -> 6
-            else -> 4
-        }
-        val wantedNameLines = estimatedLines(course.name, nameFont).coerceIn(1, maxNameLines)
-        val wantedLocationLines = if (hasLocation) {
-            estimatedLines(locationText, locationFont).coerceIn(1, if (heightDp >= 150f) 4 else if (heightDp >= 96f) 3 else 2)
-        } else {
-            0
-        }
-        val nameMinimum = 1
-        val locationMinimum = if (hasLocation && (totalSlots >= 2 || tiny)) 1 else 0
-        var remainingSlots = (totalSlots - nameMinimum - locationMinimum).coerceAtLeast(0)
-        var nameLines = nameMinimum
-        var locationLines = locationMinimum
-        var nameNeed = (wantedNameLines - nameLines).coerceAtLeast(0)
-        var locationNeed = (wantedLocationLines - locationLines).coerceAtLeast(0)
-        while (remainingSlots > 0 && (nameNeed > 0 || locationNeed > 0)) {
-            if (nameNeed >= locationNeed && nameNeed > 0) {
-                nameLines += 1
-                nameNeed -= 1
-            } else if (locationNeed > 0) {
-                locationLines += 1
-                locationNeed -= 1
-            } else {
-                nameLines += 1
-                nameNeed -= 1
-            }
-            remainingSlots -= 1
-        }
-        if (remainingSlots > 0 && nameLines < maxNameLines) {
-            val extraNameLines = minOf(remainingSlots, maxNameLines - nameLines)
-            nameLines += extraNameLines
-            remainingSlots -= extraNameLines
-        }
-        if (remainingSlots > 0 && hasLocation) {
-            locationLines += remainingSlots
-        }
-        if (tiny && hasLocation) {
-            locationLines = 1
-            nameLines = (totalSlots - locationLines).coerceAtLeast(1)
-        }
-
-        val renderedLocationLines = minOf(locationLines, wantedLocationLines).coerceAtLeast(0)
-        val locationReserve = if (hasLocation && renderedLocationLines > 0) {
-            with(density) { (locationLineHeight.toPx() * renderedLocationLines).toDp() }
-        } else {
-            0.dp
-        }
-        val teacherReserve = if (canShowTeacher) {
-            with(density) { teacherLineHeight.toPx().toDp() }
-        } else {
-            0.dp
-        }
-        val centerReserve = maxOf(locationReserve, teacherReserve) + 1.dp
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = horizontalPadding, vertical = verticalPadding)
-        ) {
-            if (hasLocation && locationLines > 0) {
-                Text(
-                    locationText,
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .fillMaxWidth(),
-                    fontSize = locationFont,
-                    lineHeight = locationLineHeight,
-                    fontWeight = FontWeight.Medium,
-                    color = textColor.copy(alpha = 0.78f),
-                    maxLines = locationLines,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center
-                )
-            }
-            Text(
-                course.name,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .fillMaxWidth()
-                    .padding(vertical = centerReserve),
-                fontSize = nameFont,
-                lineHeight = nameLineHeight,
-                fontWeight = FontWeight.SemiBold,
-                color = textColor,
-                maxLines = nameLines,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center
-            )
-            if (canShowTeacher) {
-                Text(
-                    course.teacher,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth(),
-                    fontSize = teacherFont,
-                    lineHeight = teacherLineHeight,
-                    fontWeight = FontWeight.Normal,
-                    color = textColor.copy(alpha = 0.58f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
+        com.xiaomanjun.sleepdownschedule.feature.home.week.WeekCourseLabel(course, config, textColor, null, maxWidth, maxHeight, adaptiveContrast = false)
     }
 }
 

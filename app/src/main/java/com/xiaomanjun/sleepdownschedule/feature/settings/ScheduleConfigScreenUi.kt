@@ -247,12 +247,7 @@ fun ScheduleConfigScreen(
                 .distinctBy { it.periodIndex }
                 .sortedBy { it.periodIndex }
             require(nextPeriods.isNotEmpty()) { "至少需要保留 1 个节次" }
-            nextPeriods.forEach {
-                val start = ScheduleImportParser.parseTimeForUi(it.startTime)
-                val end = ScheduleImportParser.parseTimeForUi(it.endTime)
-                require(start < end) { "第" + it.periodIndex + "节结束时间必须晚于开始时间" }
-            }
-            validateResolvedPeriodTimes(
+            com.xiaomanjun.sleepdownschedule.domain.schedule.validateEditablePeriodTimes(
                 nextPeriods.map { PeriodSchemeTimeEntity(0, it.periodIndex, it.startTime, it.endTime) }
             )?.let { throw IllegalArgumentException(it) }
             // Keep the stored manual week as a fallback. The visible automatic week
@@ -307,7 +302,7 @@ fun ScheduleConfigScreen(
                 currentSchemes.schemes.forEach { item ->
                     val previous = lastSavedSchemeDraft?.schemes
                         ?.firstOrNull { it.scheme.id == item.scheme.id }
-                    validateResolvedPeriodTimes(
+                    com.xiaomanjun.sleepdownschedule.domain.schedule.validateEditablePeriodTimes(
                         resolveSchemeTimesForSave(nextConfig, item, lastSavedConfig, previous)
                     )?.let {
                         throw IllegalArgumentException("${item.scheme.name}：$it")

@@ -9,6 +9,42 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class IcsScheduleCodecTest {
+    @Test fun calendarUsesActualMakeupDateAndSkipsUnknownClock() {
+        val config = defaultConfig().copy(totalWeeks = 3, autoCurrentWeek = true, termStartDate = "2026-09-07",
+            scheduleAdjustmentsJson = com.xiaomanjun.sleepdownschedule.domain.schedule.encodeScheduleAdjustments(listOf(
+                com.xiaomanjun.sleepdownschedule.domain.schedule.ScheduleAdjustment("2026-09-07"),
+                com.xiaomanjun.sleepdownschedule.domain.schedule.ScheduleAdjustment("2026-09-12", "2026-09-07"))))
+        val course = CourseEntity(1, "补课", null, "A101", 1, listOf(1), listOf(1), WeekParity.ALL, null)
+        val report = IcsScheduleCodec.exportReport("调休", config, listOf(PeriodEntity(1, "08:00", "08:45")), listOf(course))
+        assertEquals(1, report.events)
+        assertTrue(report.content.contains("DTSTART:20260912T000000Z"))
+        assertTrue(!report.content.contains("DTSTART:20260907"))
+        val empty = IcsScheduleCodec.exportReport("缺失时间", config, listOf(PeriodEntity(1, "", "")), listOf(course))
+        assertEquals(0, empty.events)
+        assertEquals(1, empty.skipped)
+    }
+
+    @Test fun recurringForeignZoneConvertsEachOccurrenceAcrossDst() {
+        val text = """
+            BEGIN:VCALENDAR
+            VERSION:2.0
+            BEGIN:VEVENT
+            DTSTART;TZID=America/New_York:20261026T080000
+            DTEND;TZID=America/New_York:20261026T090000
+            RRULE:FREQ=WEEKLY;COUNT=2
+            SUMMARY:DST课程
+            END:VEVENT
+            END:VCALENDAR
+        """.trimIndent()
+        val draft = IcsScheduleCodec.parse(text.toByteArray(), defaultConfig()).getOrThrow()
+        assertEquals(setOf("20:00", "21:00"), draft.periods.map { it.startTime }.toSet())
+        assertEquals(listOf(1, 2), draft.courses.flatMap { it.weeks }.sorted())
+    }
+
+    @Test fun unsupportedRecurrenceIsRejectedInsteadOfImportingOnlyFirstEvent() {
+        val text = "BEGIN:VCALENDAR\nBEGIN:VEVENT\nDTSTART:20260907T080000\nDTEND:20260907T090000\nRRULE:FREQ=MONTHLY;COUNT=3\nSUMMARY:test\nEND:VEVENT\nEND:VCALENDAR"
+        assertTrue(IcsScheduleCodec.parse(text.toByteArray(), defaultConfig()).isFailure)
+    }
     @Test
     fun parseWeeklyEventCreatesWeeksAndPeriods() {
         val ics = """
@@ -81,7 +117,7 @@ class IcsScheduleCodecTest {
     }
 
     @Test
-    fun exportUsesCurrentSystemTimeZone() {
+    fun exportKeepsSchoolClockWhenDeviceUsesAnotherTimeZone() {
         val previous = TimeZone.getDefault()
         try {
             TimeZone.setDefault(TimeZone.getTimeZone("Europe/London"))
@@ -105,8 +141,8 @@ class IcsScheduleCodecTest {
                 today = LocalDate.of(2026, 9, 7)
             )
 
-            assertTrue(exported.contains("DTSTART;TZID=Europe/London:"))
-            assertTrue(exported.contains("DTEND;TZID=Europe/London:"))
+            assertTrue(exported.contains("DTSTART:20260907T000000Z"))
+            assertTrue(exported.contains("DTEND:20260907T004500Z"))
         } finally {
             TimeZone.setDefault(previous)
         }

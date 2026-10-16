@@ -100,6 +100,8 @@ object GiteeAppUpdater {
     val downloadState: StateFlow<UpdateDownloadState> = _downloadState.asStateFlow()
 
     fun includesBeta(context: Context): Boolean = preferences(context).getBoolean(IncludeBetaKey, false)
+    fun remindersEnabled(context: Context): Boolean = preferences(context).getBoolean("reminders", true)
+    fun setRemindersEnabled(context: Context, enabled: Boolean) { preferences(context).edit { putBoolean("reminders", enabled) } }
 
     fun setIncludesBeta(context: Context, enabled: Boolean) {
         preferences(context).edit {

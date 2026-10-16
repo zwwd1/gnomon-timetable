@@ -482,8 +482,9 @@ fun courseCardTonalPreview(seed: Long): List<Long> {
 }
 
 internal fun courseGlassTintAlpha(cardAlpha: Float, quality: Float, hasWallpaper: Boolean): Float {
-    val maximum = if (hasWallpaper) 0.68f else 0.16f
-    return (cardAlpha.coerceIn(0f, 1f) * maximum * quality)
+    val maximum = if (hasWallpaper) 0.92f else 1f
+    // Sampling quality controls optical cost, never the contrast of readable content.
+    return (cardAlpha.coerceIn(0f, 1f) * maximum)
         .coerceIn(0f, maximum)
 }
 
@@ -1069,7 +1070,10 @@ fun CourseGlassCard(
     val quality = LocalGlassQuality.current
     val clickInteractionSource = remember { MutableInteractionSource() }
     var pressed by remember { mutableStateOf(false) }
-    val baseColor = if (muted) MutedCourseLightColor else courseCardBaseColor(config, course)
+    val courseColor = if (muted) MutedCourseLightColor else courseCardBaseColor(config, course)
+    val presentation = cn.scvtc.campus.LocalAppExperience.current
+    val neutral = if (appUsesDarkTheme(config)) Color(0xFF252B36) else Color(0xFFF4F7FC)
+    val baseColor = androidx.compose.ui.graphics.lerp(neutral, courseColor, presentation.cardTint)
     val hasWallpaper = config.hasAnyWallpaper()
     val tokens = GlassTokens.courseCard(blurOverride ?: config.courseCardBlur)
     val lightGlass = glassUsesLightStyle(config)
@@ -1107,7 +1111,7 @@ fun CourseGlassCard(
     }
     val liveCardAlpha = (previewState?.cardAlpha ?: config.cardAlpha).coerceIn(0f, 1f)
     val textSurfaceAlpha = when {
-        useGlass -> courseGlassTintAlpha(if (outlineLightEnabled) 0.75f else liveCardAlpha, quality, hasWallpaper) *
+        useGlass -> courseGlassTintAlpha(liveCardAlpha, quality, hasWallpaper) *
             courseCardBrightnessAttenuation(config.wallpaperBrightness, outlineLightEnabled)
         simpleBlurBackdrop != null -> courseSimpleBlurTintAlpha(liveCardAlpha, quality, hasWallpaper)
         !config.courseCardGlassEnabled && !config.courseCardGaussianBlurEnabled ->
@@ -1167,7 +1171,7 @@ fun CourseGlassCard(
             config.wallpaperBrightness,
             outlineLightEnabled
         )
-        val tintStrength = if (outlineLightEnabled) 0.75f else liveAlpha
+        val tintStrength = liveAlpha
         val tintAlpha = courseGlassTintAlpha(tintStrength, quality, hasWallpaper) *
             brightnessAttenuation
         val tint = baseColor.copy(alpha = tintAlpha)

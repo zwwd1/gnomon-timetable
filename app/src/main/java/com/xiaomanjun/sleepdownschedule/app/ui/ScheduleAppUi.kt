@@ -409,7 +409,8 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 private fun performButtonHaptic(view: android.view.View) {
-    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+    if (cn.scvtc.campus.AppExperiencePreferences.get(view.context).state.value.haptics)
+        view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
 }
 
 private fun android.view.Window.setStatusBarDarkIcons(darkIcons: Boolean) {
@@ -449,7 +450,7 @@ internal fun HomeStartMode.toHomeMode(): HomeMode = when (this) {
     HomeStartMode.WEEK -> HomeMode.Week
 }
 enum class SettingsSection { Schedule, Notifications }
-enum class SettingsPage { Root, General, LiquidGlass, Widgets, AiImport, DayAgent, Schedule, AutoRefreshSchedule, Notifications, ScheduleManager, BackupRestore, BackupPreview, About, Changelog, Donate, PrivacyPolicy }
+enum class SettingsPage { Root, General, LiquidGlass, Widgets, AiImport, DayAgent, Schedule, AutoRefreshSchedule, Notifications, ScheduleManager, BackupRestore, BackupPreview, About, Changelog, Donate, PrivacyPolicy, Updates }
 
 /** Matches the navigation motion used by the bundled Miuix system-style navigator. */
 private class MiuixSettingsNavigationEasing(
@@ -511,7 +512,7 @@ private const val EduAdapterExtra = "edu_adapter"
 
 private fun SettingsPage.title(): String = when (this) {
     SettingsPage.Root -> "设置"
-    SettingsPage.General -> "通用设置"
+    SettingsPage.General -> "应用偏好设置"
     SettingsPage.LiquidGlass -> "玻璃材质"
     SettingsPage.Widgets -> "小组件设置"
     SettingsPage.AiImport -> "AI 设置"
@@ -520,7 +521,8 @@ private fun SettingsPage.title(): String = when (this) {
     SettingsPage.AutoRefreshSchedule -> "自动刷新课表"
     SettingsPage.Notifications -> "通知设置"
     SettingsPage.ScheduleManager -> "课表设置"
-    SettingsPage.BackupRestore -> "备份与恢复"
+    SettingsPage.BackupRestore -> "数据管理"
+    SettingsPage.Updates -> "更新设置"
     SettingsPage.BackupPreview -> "恢复预览"
     SettingsPage.About -> "关于应用"
     SettingsPage.Changelog -> "关于应用"
@@ -1081,7 +1083,9 @@ fun CourseScheduleAppUi(
             )
         )
     }
-    val weekCardHeight = adaptiveWeekCardHeight * weekCardHeightScale
+    val showPeriodTimes = cn.scvtc.campus.LocalAppExperience.current.showPeriodTimes
+    val weekCardHeight = (adaptiveWeekCardHeight * weekCardHeightScale).coerceAtLeast(
+        if (showPeriodTimes) minimumWeekTimelineRowHeightDp(density.fontScale) else 0f)
     val context = LocalContext.current
     val startupEntrance=rememberStartupEntrance(state.loaded)
     val dayViewMode = remember(screen, state.config.defaultHomeMode, context) {
@@ -1307,7 +1311,7 @@ fun CourseScheduleAppUi(
         GiteeAppUpdater.markDailyCheckStarted(context)
         GiteeAppUpdater.checkForUpdate(context, currentVersionName).onSuccess { result ->
             GiteeAppUpdater.recordCheckResult(context, result)
-            if (result is GiteeUpdateCheckResult.UpdateAvailable) {
+            if (result is GiteeUpdateCheckResult.UpdateAvailable && GiteeAppUpdater.remindersEnabled(context)) {
                 automaticUpdateDialog = SettingsUpdateDialog.Available(result.release)
             }
         }
@@ -1405,7 +1409,7 @@ fun CourseScheduleAppUi(
             showManagedFreeAiOffer = true
         }
     }
-    val glassQuality = animatedGlassQuality(startupPhase)
+    val glassQuality = animatedGlassQuality(startupPhase) * cn.scvtc.campus.LocalAppExperience.current.materialQuality
     val adaptiveGlassState = rememberFallbackAdaptiveGlassState(visualState.config)
     val homeAnchoredKindLabel = when (homeAnchoredMorphState.renderedKind) {
         HomeAnchoredOverlayKind.Add -> "AddMenu"
@@ -2661,7 +2665,7 @@ fun CourseScheduleAppUi(
                             today = todayDate,
                             textColor = homeForegroundColor(visualState.config),
                             backdrop = chromeBackdrop,
-                            rowHeaderWidth = BoundlessWeekRowHeaderWidth,
+                            rowHeaderWidth = maxOf(BoundlessWeekRowHeaderWidth, 42.dp * density.fontScale.coerceAtLeast(1f)),
                             weekGridEndPadding = if (homeAdaptiveMetrics.isLargeScreen) {
                                 0.dp
                             } else {
@@ -3001,7 +3005,8 @@ fun CourseScheduleAppUi(
             onShare = { scheduleId, shareType ->
                 val profile = allSchedulesState.schedules.firstOrNull { it.id == scheduleId }
                 val config = allSchedulesState.allConfigs.firstOrNull { it.id == scheduleId } ?: defaultConfig(scheduleId)
-                val periods = allSchedulesState.allPeriods.filter { it.scheduleId == scheduleId }.ifEmpty { defaultPeriods(scheduleId) }
+                val periods = com.xiaomanjun.sleepdownschedule.domain.schedule.periodSkeleton(config,
+                    allSchedulesState.allPeriods.filter { it.scheduleId == scheduleId })
                 val courses = allSchedulesState.allCourses.filter { it.scheduleId == scheduleId }
                 val scheduleName = profile?.name ?: "课表"
                 when (shareType) {
@@ -3595,8 +3600,8 @@ fun CourseScheduleAppUi(
                     autoCurrentWeek = draft.autoCurrentWeek,
                     hideEmptyWeekends = draft.hideEmptyWeekends
                 )
-                val periods = latest.allPeriods.filter { it.scheduleId == draft.scheduleId }
-                    .ifEmpty { defaultPeriods(draft.scheduleId) }
+                val periods = com.xiaomanjun.sleepdownschedule.domain.schedule.periodSkeleton(datedConfig,
+                    latest.allPeriods.filter { it.scheduleId == draft.scheduleId })
                 viewModel.saveConfigForSchedule(
                     draft.scheduleId,
                     // The automatic display week is derived at runtime. Persist the
@@ -3747,7 +3752,10 @@ fun CourseScheduleAppUi(
                                         source, sourceRequest.course, destination,
                                         state.periods.map { it.periodIndex },
                                         with(density) { weekCardHeight.dp.toPx() },
-                                        with(density) { 4.dp.toPx() }
+                                        with(density) { 4.dp.toPx() },
+                                        sourceRequest.sourceGrid?.layout ?: com.xiaomanjun.sleepdownschedule.domain.schedule.weekGridLayout(
+                                            state.config, state.periods, state.courses, weekCardHeight,
+                                            cn.scvtc.campus.AppExperiencePreferences.get(context).state.value.showBreakDividers)
                                     )
                                 }
                             if (courseEditorRequest === sourceRequest) {
@@ -4914,7 +4922,7 @@ internal fun AppTopBar(
                 Text(
                     when (settingsPage) {
                         SettingsPage.Root -> "设置"
-                        SettingsPage.General -> "通用设置"
+                        SettingsPage.General -> "应用偏好设置"
                         SettingsPage.LiquidGlass -> "玻璃材质"
                         SettingsPage.Widgets -> "小组件设置"
                         SettingsPage.AiImport -> "AI 设置"
@@ -4923,7 +4931,8 @@ internal fun AppTopBar(
                         SettingsPage.AutoRefreshSchedule -> "自动刷新课表"
                         SettingsPage.Notifications -> "通知设置"
                         SettingsPage.ScheduleManager -> "课表设置"
-                        SettingsPage.BackupRestore -> "备份与恢复"
+                        SettingsPage.BackupRestore -> "数据管理"
+                        SettingsPage.Updates -> "更新设置"
                         SettingsPage.BackupPreview -> "恢复预览"
                         SettingsPage.About -> "关于应用"
                         SettingsPage.Changelog -> "关于应用"
@@ -7131,8 +7140,7 @@ open class SettingsDetailActivityHost : ComponentActivity() {
                 }
                 val scheduleEditReady = customizeScheduleId == null ||
                     (
-                        state.allConfigs.any { it.id == customizeScheduleId } &&
-                            state.allPeriods.any { it.scheduleId == customizeScheduleId }
+                        state.allConfigs.any { it.id == customizeScheduleId }
                     )
                 val editEntrySnapshot = remember(customizeScheduleId, useEntrySnapshot) {
                     customizeScheduleId
@@ -7218,6 +7226,7 @@ open class SettingsDetailActivityHost : ComponentActivity() {
                                 )
                             }
                         )
+                        SettingsPage.Updates -> UpdateSettingsScreen(state, backdrop, viewModel::saveGeneralSettings)
                         SettingsPage.LiquidGlass -> LiquidGlassSettingsScreen(
                             state = state,
                             backdrop = backdrop,
@@ -7418,8 +7427,10 @@ private fun scheduleConfigStateForEdit(state: AppState, scheduleId: Int): AppSta
     val targetConfig = state.allConfigs.firstOrNull { it.id == scheduleId }
         ?: state.config.takeIf { it.id == scheduleId }
         ?: defaultConfig(scheduleId)
-    val targetPeriods = state.allPeriods.filter { it.scheduleId == scheduleId }
-        .ifEmpty { state.periods.takeIf { targetConfig.id == state.config.id } ?: defaultPeriods(scheduleId) }
+    val targetPeriods = com.xiaomanjun.sleepdownschedule.domain.schedule.periodSkeleton(targetConfig,
+        state.allPeriods.filter { it.scheduleId == scheduleId }.ifEmpty {
+            state.periods.takeIf { targetConfig.id == state.config.id }.orEmpty()
+        })
     return state.copy(config = targetConfig.copy(id = scheduleId), periods = targetPeriods)
 }
 
@@ -8179,6 +8190,7 @@ private fun SettingsPageContent(
             exitCommitRequest = exitCommitRequest,
             onExitCommitFinished = onExitCommitFinished
         )
+        SettingsPage.Updates -> UpdateSettingsScreen(state, backdrop, onUpdateGeneralConfig)
         SettingsPage.LiquidGlass -> LiquidGlassSettingsScreen(
             state = state,
             backdrop = backdrop,
@@ -8423,7 +8435,7 @@ fun SettingsRootScreen(
             GlassPreferenceSection("应用", modifier = Modifier.homeSwitchGroup()) {
                 SettingsGroup(backdrop = backdrop, config = state.config, modifier = Modifier.fillMaxWidth()) {
                     SettingsNavigationRow(
-                        "通用设置",
+                        "应用偏好设置",
                         "深色模式与系统外观",
                         selected = selectedPage == SettingsPage.General,
                         onClick = { onPageChange(SettingsPage.General) }
@@ -8491,8 +8503,8 @@ fun SettingsRootScreen(
             GlassPreferenceSection("其他", modifier = Modifier.homeSwitchGroup()) {
                 SettingsGroup(backdrop = backdrop, config = state.config, modifier = Modifier.fillMaxWidth()) {
                     SettingsNavigationRow(
-                        "备份与恢复",
-                        "保存课表和设置，或从备份恢复",
+                        "数据管理",
+                        "导入、导出、本地历史与 WebDAV 备份",
                         selected = selectedPage == SettingsPage.BackupRestore,
                         onClick = { onPageChange(SettingsPage.BackupRestore) }
                     )
