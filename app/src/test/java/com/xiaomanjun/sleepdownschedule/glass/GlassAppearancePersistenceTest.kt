@@ -9,6 +9,23 @@ class GlassAppearancePersistenceTest {
         assertFalse(GlassAppearance.decode("").customized)
     }
 
+    @Test fun selectingAndResettingLiquidKeepTheOriginalComponentMaterials() {
+        val selected = GlassAppearance().copy(customized = true)
+        assertFalse(selected.usesMaterialOverride)
+        val edited = selected.update(selected.current.copy(blur = 18f))
+        assertTrue(edited.usesMaterialOverride)
+        assertFalse(GlassAppearance.decode(edited.update(GlassParameters.defaults(GlassStyle.LIQUID)).encode()).usesMaterialOverride)
+    }
+
+    @Test fun gaussianAndSoftActivateWithoutChangingLiquidParameters() {
+        val original = GlassAppearance()
+        GlassStyle.entries.filter { it != GlassStyle.LIQUID }.forEach { style ->
+            val selected = original.copy(style = style, customized = true)
+            assertTrue(selected.usesMaterialOverride)
+            assertEquals(original.current, selected.presets.getValue(GlassStyle.LIQUID))
+        }
+    }
+
     @Test fun threePresetsSurviveStorageAndThemeDoesNotOwnTheChoice() {
         val liquid = GlassAppearance().update(GlassParameters(blur = 3f, lensAmount = 0f))
         val gaussian = liquid.copy(style = GlassStyle.GAUSSIAN).update(GlassParameters.defaults(GlassStyle.GAUSSIAN).copy(blur = 41f))

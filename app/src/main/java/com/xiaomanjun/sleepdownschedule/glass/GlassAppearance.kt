@@ -48,6 +48,10 @@ data class GlassAppearance(
     val presets: Map<GlassStyle, GlassParameters> = GlassStyle.entries.associateWith(GlassParameters::defaults)
 ) {
     val current get() = presets.getValue(style)
+    // Selecting or restoring Liquid must use the original per-component renderer.
+    // The old customized flag alone made an unchanged selection replace every control.
+    val usesMaterialOverride get() = customized &&
+        (style != GlassStyle.LIQUID || current != GlassParameters.defaults(GlassStyle.LIQUID))
     fun update(value: GlassParameters) = copy(customized = true, presets = presets + (style to value.normalized()))
 
     fun encode(): String = JSONObject().apply {

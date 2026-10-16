@@ -4,7 +4,17 @@ import android.content.Context
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-data class AppExperience(val entranceAnimation:Boolean=true,val dock:List<String> = listOf("courses","settings"),
+val DefaultDockDestinations = listOf("grades", "courses", "settings")
+
+internal fun restoredDockDestinations(saved: String?, schema: Int): List<String> {
+    val ids = saved?.split(',')?.filter { it in AppExperiencePreferences.destinations }?.distinct()
+        ?.takeIf { "settings" in it } ?: return DefaultDockDestinations
+    // Migrate the two previously shipped defaults once, while retaining custom choices.
+    return if (schema < 2 && (ids == listOf("courses", "settings") ||
+        ids == listOf("courses", "grades", "sync", "settings"))) DefaultDockDestinations else ids
+}
+
+data class AppExperience(val entranceAnimation:Boolean=true,val dock:List<String> = DefaultDockDestinations,
     val showPeriodTimes:Boolean=true, val cardTint:Float=.55f, val detailOpacity:Float=.88f,
     val haptics:Boolean=true, val predictiveBack:Boolean=true, val materialQuality:Float=1f,
     val showBreakDividers:Boolean=true, val showTeacher:Boolean=true, val showLocation:Boolean=true,
@@ -29,8 +39,7 @@ class AppExperiencePreferences private constructor(context:Context) {
         mutablePreview.value=null
     }
     private fun read()=AppExperience(prefs.getBoolean("entrance",true),
-        prefs.getString("dock",null)?.split(',')?.filter { it in destinations }?.distinct()
-            ?.takeIf { "settings" in it } ?: listOf("courses","settings"),
+        restoredDockDestinations(prefs.getString("dock",null), prefs.getInt("dock-schema", 0)),
         showPeriodTimes=prefs.getBoolean("period-times",true),
         cardTint=prefs.getFloat("card-tint",.55f).coerceIn(0f,1f),
         detailOpacity=prefs.getFloat("detail-opacity",.88f).coerceIn(.45f,1f),
@@ -55,11 +64,11 @@ class AppExperiencePreferences private constructor(context:Context) {
     }
     fun dock(ids:List<String>) {
         require(ids.size in 1..4 && ids.distinct().size==ids.size && "settings" in ids && ids.all { it in destinations })
-        check(prefs.edit().putString("dock",ids.joinToString(",")).commit())
+        check(prefs.edit().putString("dock",ids.joinToString(",")).putInt("dock-schema",2).commit())
         mutable.value=read()
     }
     companion object {
-        val destinations=linkedMapOf("courses" to "课程","grades" to "成绩","sync" to "教务","settings" to "设置")
+        val destinations=linkedMapOf("grades" to "成绩查询","courses" to "课表","settings" to "个人中心","sync" to "教务同步")
         @Volatile private var instance:AppExperiencePreferences?=null
         fun get(context:Context):AppExperiencePreferences=instance?:synchronized(this) {
             instance?:AppExperiencePreferences(context).also { instance=it }

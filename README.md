@@ -6,7 +6,7 @@
 
 我不会实时维护这个应用。学校哪天换了登录方式或接口，它可能就失效了；到时不一定能及时修。源码在这里，有兴趣就 fork 一份，自行 vibe coding，按自己的需要改。
 
-[下载 APK](https://github.com/zwwd1/gnomon-timetable/releases/latest) · [反馈问题](https://github.com/zwwd1/gnomon-timetable/issues) · [更新记录](release-notes/v1.2.13.md)
+[下载 APK](https://github.com/zwwd1/gnomon-timetable/releases/latest) · [反馈问题](https://github.com/zwwd1/gnomon-timetable/issues) · [更新记录](release-notes/v1.2.14.md)
 
 ## 看图上手
 
@@ -25,7 +25,7 @@
 
 液态、高斯、柔光三种材质分别记住参数，壁纸、效果和布局可以先预览再应用。内置背景采用留白设计，也能换成自己的照片。启动入场动画、触感、时间栏、休息分隔和底栏入口可以自行调整。AI 助手需要配置自己的模型服务，课程授权默认关闭。
 
-1.2.13 理顺了作息的查看与编辑入口，补上时间栏和午休、晚休分隔。数据管理支持 JSON / ICS 预览与导出、本机备份历史和手动 WebDAV 备份；[入口与使用范围](docs/GNOMON_1.2.13.md)写清了各自保存什么。
+默认底栏为成绩查询、课表、个人中心。应用偏好、更新、关于、导入和导出都能在个人中心直接找到；项目网页在应用内浏览。JSON / ICS 预览与导出、本机备份历史和手动 WebDAV 备份保留；[入口与使用范围](docs/GNOMON_1.2.14.md)写清了操作位置。
 
 [使用方法](docs/SCVTC_USAGE.md)
 

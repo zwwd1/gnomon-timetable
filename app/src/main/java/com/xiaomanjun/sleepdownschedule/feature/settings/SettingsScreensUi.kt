@@ -277,14 +277,14 @@ fun GeneralSettingsScreen(
             GlassPreferenceSection("底部导航入口") {
                 SettingsGroup(backdrop=backdrop,config=visualConfig) {
                     cn.scvtc.campus.AppExperiencePreferences.destinations.forEach { (id,title) ->
-                        if(id=="settings") Text("设置 · 固定保留",Modifier.padding(16.dp))
+                        if(id=="settings") Text("个人中心 · 固定保留",Modifier.padding(16.dp))
                         else SettingsToggleRow(title=title,subtitle="在底栏显示此入口",checked=id in experience.dock,
                             backdrop=backdrop,onCheckedChange={enabled ->
                                 experiencePrefs.dock(if(enabled)experience.dock.filter{it!="settings"}+id+"settings" else experience.dock.filter{it!=id})
                             })
                     }
                     Row(Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp, top = 4.dp, bottom = 16.dp)) {
-                        SettingsActionButton("恢复默认底栏",backdrop,onClick={experiencePrefs.dock(listOf("courses","settings"))})
+                        SettingsActionButton("恢复默认三栏",backdrop,onClick={experiencePrefs.dock(cn.scvtc.campus.DefaultDockDestinations)})
                     }
                 }
             }

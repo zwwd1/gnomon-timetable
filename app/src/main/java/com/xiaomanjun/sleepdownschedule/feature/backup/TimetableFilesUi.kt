@@ -14,13 +14,22 @@ import com.xiaomanjun.sleepdownschedule.*
 import com.xiaomanjun.sleepdownschedule.feature.importing.IcsScheduleCodec
 import com.xiaomanjun.sleepdownschedule.feature.settings.*
 import com.xiaomanjun.sleepdownschedule.core.ui.designsystem.*
+import com.xiaomanjun.sleepdownschedule.app.ui.*
 import com.xiaomanjun.sleepdownschedule.core.ui.settings.SleepDownLiquidDropdownPreference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-internal fun TimetableFilesPanel(state: AppState, backdrop: Backdrop?) {
+internal fun TimetableFilesScreen(state: AppState, backdrop: Backdrop?, importing: Boolean) {
+    androidx.compose.foundation.lazy.LazyColumn(Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp, detailContentTopPadding(), 16.dp, DockScrollPadding)) {
+        item { TimetableFilesPanel(state, backdrop, showImport = importing, showExport = !importing) }
+    }
+}
+
+@Composable
+internal fun TimetableFilesPanel(state: AppState, backdrop: Backdrop?, showImport: Boolean = true, showExport: Boolean = true) {
     val context = LocalContext.current
     val app = context.applicationContext as CourseScheduleApp
     val scope = rememberCoroutineScope()
@@ -74,14 +83,14 @@ internal fun TimetableFilesPanel(state: AppState, backdrop: Backdrop?) {
         if (uri != null) task { icsPreview = withContext(Dispatchers.IO) { IcsScheduleCodec.parse(read(uri), state.config).getOrThrow() } }
     }
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        GlassPreferenceSection("导入") {
+        if (showImport) GlassPreferenceSection("选择文件 · 先预览再新增") {
             SettingsGroup(backdrop, state.config) {
                 SettingsNavigationRow("JSON 课表", "检查课程、作息、调休后新增课表", onClick = { if (!busy) openJson.launch(arrayOf("*/*")) })
                 SettingsDivider()
                 SettingsNavigationRow("ICS 日历", "本机解析定时事件与日 / 周重复规则", onClick = { if (!busy) openIcs.launch(arrayOf("*/*")) })
             }
         }
-        GlassPreferenceSection("导出所选课表") {
+        if (showExport) GlassPreferenceSection("导出所选课表") {
             SettingsGroup(backdrop, state.config) {
                 SleepDownLiquidDropdownPreference(items = profiles.map { it.name },
                     selectedIndex = profiles.indexOf(selected).coerceAtLeast(0), title = "课表",

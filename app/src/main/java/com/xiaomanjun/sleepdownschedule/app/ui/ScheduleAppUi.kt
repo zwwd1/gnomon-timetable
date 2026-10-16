@@ -82,8 +82,6 @@ import android.view.WindowInsetsController
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
-import androidx.browser.customtabs.CustomTabsClient
-import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.ActivityCompat
 import androidx.core.view.WindowCompat
 import androidx.core.content.FileProvider
@@ -450,7 +448,7 @@ internal fun HomeStartMode.toHomeMode(): HomeMode = when (this) {
     HomeStartMode.WEEK -> HomeMode.Week
 }
 enum class SettingsSection { Schedule, Notifications }
-enum class SettingsPage { Root, General, LiquidGlass, Widgets, AiImport, DayAgent, Schedule, AutoRefreshSchedule, Notifications, ScheduleManager, BackupRestore, BackupPreview, About, Changelog, Donate, PrivacyPolicy, Updates }
+enum class SettingsPage { Root, General, LiquidGlass, Widgets, AiImport, DayAgent, Schedule, AutoRefreshSchedule, Notifications, ScheduleManager, BackupRestore, BackupPreview, About, Changelog, Donate, PrivacyPolicy, Updates, TimetableImport, TimetableExport, ProjectWeb }
 
 /** Matches the navigation motion used by the bundled Miuix system-style navigator. */
 private class MiuixSettingsNavigationEasing(
@@ -511,7 +509,7 @@ private const val BackupPreviewUriExtra = "backup_preview_uri"
 private const val EduAdapterExtra = "edu_adapter"
 
 private fun SettingsPage.title(): String = when (this) {
-    SettingsPage.Root -> "设置"
+    SettingsPage.Root -> "个人中心"
     SettingsPage.General -> "应用偏好设置"
     SettingsPage.LiquidGlass -> "玻璃材质"
     SettingsPage.Widgets -> "小组件设置"
@@ -522,6 +520,9 @@ private fun SettingsPage.title(): String = when (this) {
     SettingsPage.Notifications -> "通知设置"
     SettingsPage.ScheduleManager -> "课表设置"
     SettingsPage.BackupRestore -> "数据管理"
+    SettingsPage.TimetableImport -> "课表导入"
+    SettingsPage.TimetableExport -> "课表导出"
+    SettingsPage.ProjectWeb -> "项目页面"
     SettingsPage.Updates -> "更新设置"
     SettingsPage.BackupPreview -> "恢复预览"
     SettingsPage.About -> "关于应用"
@@ -3864,7 +3865,7 @@ fun CourseScheduleAppUi(
             actions = listOf(
                 LiquidAlertAction("查看正文", LiquidAlertActionStyle.Secondary) {
                     runCatching {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, agreement.url.toUri()))
+                        context.openInAppProjectPage(agreement.url)
                     }
                 },
                 LiquidAlertAction("同意", LiquidAlertActionStyle.Primary) {
@@ -4345,7 +4346,7 @@ fun CourseScheduleAppUi(
             },
             onDownload = ::downloadAutomaticUpdate,
             onOpenRelease = { release ->
-                context.startActivity(Intent(Intent.ACTION_VIEW, release.releaseUrl.toUri()))
+                context.openInAppProjectPage(release.releaseUrl)
             },
             onOpenBackup = {
                 automaticUpdateDialog = null
@@ -4921,7 +4922,7 @@ internal fun AppTopBar(
             ) {
                 Text(
                     when (settingsPage) {
-                        SettingsPage.Root -> "设置"
+                        SettingsPage.Root -> "个人中心"
                         SettingsPage.General -> "应用偏好设置"
                         SettingsPage.LiquidGlass -> "玻璃材质"
                         SettingsPage.Widgets -> "小组件设置"
@@ -4932,6 +4933,9 @@ internal fun AppTopBar(
                         SettingsPage.Notifications -> "通知设置"
                         SettingsPage.ScheduleManager -> "课表设置"
                         SettingsPage.BackupRestore -> "数据管理"
+                        SettingsPage.TimetableImport -> "课表导入"
+                        SettingsPage.TimetableExport -> "课表导出"
+                        SettingsPage.ProjectWeb -> "项目页面"
                         SettingsPage.Updates -> "更新设置"
                         SettingsPage.BackupPreview -> "恢复预览"
                         SettingsPage.About -> "关于应用"
@@ -5373,13 +5377,13 @@ fun FloatingDock(
         else experience.dock.filter { it != "settings" } + currentId + "settings"
     }
     val selectedIndex=destinations.indexOf(currentId).coerceAtLeast(0)
-    val dockWidth by androidx.compose.animation.core.animateDpAsState((70*destinations.size).dp, tween(280), label="dock-width")
+    val dockWidth by androidx.compose.animation.core.animateDpAsState((82*destinations.size).dp, tween(200), label="dock-width")
     fun choose(id:String) { when(id) {
         "courses"->onHome()
         "settings"->onConfig()
         "grades","sync"->onDestination(id)
     } }
-    fun icon(id:String)=when(id){"settings"->R.drawable.ic_settings;"grades"->R.drawable.ic_agent_overview;"sync"->R.drawable.ic_refresh;else->R.drawable.ic_courses}
+    fun icon(id:String)=when(id){"settings"->R.drawable.ic_person_center;"grades"->R.drawable.ic_agent_overview;"sync"->R.drawable.ic_refresh;else->R.drawable.ic_kejian_calendar}
     val lightGlass = if (selected is Screen.Home) {
         adaptiveGlass.lightGlass
     } else {
@@ -7227,6 +7231,9 @@ open class SettingsDetailActivityHost : ComponentActivity() {
                             }
                         )
                         SettingsPage.Updates -> UpdateSettingsScreen(state, backdrop, viewModel::saveGeneralSettings)
+                        SettingsPage.TimetableImport -> TimetableFilesScreen(state, backdrop, importing = true)
+                        SettingsPage.TimetableExport -> TimetableFilesScreen(state, backdrop, importing = false)
+                        SettingsPage.ProjectWeb -> com.xiaomanjun.sleepdownschedule.feature.settings.ProjectWebScreen()
                         SettingsPage.LiquidGlass -> LiquidGlassSettingsScreen(
                             state = state,
                             backdrop = backdrop,
@@ -8191,6 +8198,9 @@ private fun SettingsPageContent(
             onExitCommitFinished = onExitCommitFinished
         )
         SettingsPage.Updates -> UpdateSettingsScreen(state, backdrop, onUpdateGeneralConfig)
+        SettingsPage.TimetableImport -> TimetableFilesScreen(pageState, backdrop, importing = true)
+        SettingsPage.TimetableExport -> TimetableFilesScreen(pageState, backdrop, importing = false)
+        SettingsPage.ProjectWeb -> com.xiaomanjun.sleepdownschedule.feature.settings.ProjectWebScreen()
         SettingsPage.LiquidGlass -> LiquidGlassSettingsScreen(
             state = state,
             backdrop = backdrop,
@@ -8287,17 +8297,8 @@ fun SettingsRootScreen(
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
     val darkTheme = appUsesDarkTheme(state.config)
-    val customTabsPackage = remember(context) { context.resolveSleepDownCustomTabsPackage() }
-    val customTabWidthPx = with(density) {
-        (configuration.screenWidthDp.dp * 0.68f).roundToPx()
-    }
     fun openExternalPage(url: String) {
-        context.openSleepDownCustomTab(
-            url = url,
-            providerPackage = customTabsPackage,
-            initialWidthPx = customTabWidthPx,
-            darkTheme = darkTheme
-        )
+        context.openInAppProjectPage(url)
     }
     val versionName = remember {
         runCatching {
@@ -8367,7 +8368,7 @@ fun SettingsRootScreen(
         }
     }
     GlassMiuixRootSettingsScaffold(
-        title = "设置",
+        title = "个人中心",
         config = state.config
     ) { innerPadding ->
         LazyColumn(
@@ -8500,21 +8501,29 @@ fun SettingsRootScreen(
             }
         }
         item {
-            GlassPreferenceSection("其他", modifier = Modifier.homeSwitchGroup()) {
+            GlassPreferenceSection("数据管理", modifier = Modifier.homeSwitchGroup()) {
                 SettingsGroup(backdrop = backdrop, config = state.config, modifier = Modifier.fillMaxWidth()) {
+                    SettingsNavigationRow("课表导入", "选择 JSON 或 ICS 文件，先预览再新增", onClick = { onPageChange(SettingsPage.TimetableImport) })
+                    SettingsDivider()
+                    SettingsNavigationRow("课表导出", "选择课表，保存 JSON 或 ICS 文件", onClick = { onPageChange(SettingsPage.TimetableExport) })
+                    SettingsDivider()
                     SettingsNavigationRow(
-                        "数据管理",
-                        "导入、导出、本地历史与 WebDAV 备份",
+                        "课表备份与恢复",
+                        "完整备份、本机历史与 WebDAV",
                         selected = selectedPage == SettingsPage.BackupRestore,
                         onClick = { onPageChange(SettingsPage.BackupRestore) }
                     )
+                }
+            }
+        }
+        item {
+            GlassPreferenceSection("应用与支持", modifier = Modifier.homeSwitchGroup()) {
+                SettingsGroup(backdrop, state.config) {
+                    SettingsNavigationRow("更新设置", "当前版本、检查更新、下载与提醒", selected = selectedPage == SettingsPage.Updates,
+                        onClick = { onPageChange(SettingsPage.Updates) })
                     SettingsDivider()
-                    SettingsNavigationRow(
-                        "捐赠支持",
-                        "如果它帮到了你，可以请作者喝杯奶茶",
-                        selected = selectedPage == SettingsPage.Donate,
-                        onClick = { onPageChange(SettingsPage.Donate) }
-                    )
+                    SettingsNavigationRow("关于应用", "版本历程、项目介绍、致谢与支持", selected = selectedPage == SettingsPage.About,
+                        onClick = { onPageChange(SettingsPage.About) })
                 }
             }
         }
@@ -8550,7 +8559,7 @@ fun SettingsRootScreen(
     )
 }
 
-private sealed interface SettingsUpdateDialog {
+internal sealed interface SettingsUpdateDialog {
     data object Checking : SettingsUpdateDialog
     data class Available(val release: GiteeReleaseInfo) : SettingsUpdateDialog
     data class UpToDate(val latestTag: String) : SettingsUpdateDialog
@@ -8561,7 +8570,7 @@ private sealed interface SettingsUpdateDialog {
 }
 
 @Composable
-private fun SettingsUpdateDialogHost(
+internal fun SettingsUpdateDialogHost(
     dialog: SettingsUpdateDialog?,
     backdrop: Backdrop?,
     config: ScheduleConfigEntity,
@@ -8838,7 +8847,7 @@ fun AboutSettingsScreen(state: AppState, backdrop: Backdrop?) {
     }
     fun openProjectPage(url: String) {
         runCatching {
-            context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+            context.openInAppProjectPage(url)
         }.onFailure {
             Toast.makeText(context, "暂时无法打开这个页面", Toast.LENGTH_SHORT).show()
         }
@@ -9293,10 +9302,6 @@ fun ChangelogSettingsScreen(
             }
         }
     }
-    val customTabsPackage = remember(context) { context.resolveSleepDownCustomTabsPackage() }
-    val customTabWidthPx = with(density) {
-        (configuration.screenWidthDp.dp * 0.68f).roundToPx()
-    }
     val versionName = remember(context) {
         runCatching {
             context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.0"
@@ -9340,12 +9345,7 @@ fun ChangelogSettingsScreen(
         )
     }
     fun openProjectPage(url: String) {
-        context.openSleepDownCustomTab(
-            url = url,
-            providerPackage = customTabsPackage,
-            initialWidthPx = customTabWidthPx,
-            darkTheme = darkTheme
-        )
+        context.openInAppProjectPage(url)
     }
 
     Box(
@@ -9537,55 +9537,6 @@ fun ChangelogSettingsScreen(
                     }
                 }
             }
-        }
-    }
-}
-
-private fun Context.resolveSleepDownCustomTabsPackage(): String? {
-    return CustomTabsClient.getPackageName(
-        this,
-        listOf("com.microsoft.emmx"),
-        true
-    ) ?: CustomTabsClient.getPackageName(this, emptyList())
-}
-
-// AndroidX Browser's rounded-corners parameter uses the decoration IntDef by mistake;
-// ACTIVITY_SIDE_SHEET_ROUNDED_CORNERS_POSITION_TOP is the documented constant.
-@android.annotation.SuppressLint("WrongConstant")
-private fun Context.openSleepDownCustomTab(
-    url: String,
-    providerPackage: String?,
-    initialWidthPx: Int,
-    darkTheme: Boolean
-) {
-    val chromeColor = if (darkTheme) android.graphics.Color.BLACK else android.graphics.Color.WHITE
-    runCatching {
-        val customTab = CustomTabsIntent.Builder()
-            .setShowTitle(true)
-            .setShareState(CustomTabsIntent.SHARE_STATE_OFF)
-            .setColorScheme(
-                if (darkTheme) CustomTabsIntent.COLOR_SCHEME_DARK else CustomTabsIntent.COLOR_SCHEME_LIGHT
-            )
-            .setToolbarColor(chromeColor)
-            .setNavigationBarColor(chromeColor)
-            .setInitialActivityWidthPx(initialWidthPx)
-            .setActivitySideSheetBreakpointDp(600)
-            .setActivitySideSheetPosition(CustomTabsIntent.ACTIVITY_SIDE_SHEET_POSITION_END)
-            .setActivitySideSheetDecorationType(CustomTabsIntent.ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DIVIDER)
-            .setActivitySideSheetRoundedCornersPosition(CustomTabsIntent.ACTIVITY_SIDE_SHEET_ROUNDED_CORNERS_POSITION_TOP)
-            .setActivitySideSheetMaximizationEnabled(false)
-            // AndroidX Browser accepts toolbar radii in the inclusive 0..16 dp range.
-            .setToolbarCornerRadiusDp(16)
-            .setCloseButtonPosition(CustomTabsIntent.CLOSE_BUTTON_POSITION_START)
-            .setBackgroundInteractionEnabled(false)
-            .build()
-            .also { intent -> providerPackage?.let(intent.intent::setPackage) }
-        customTab.launchUrl(this, url.toUri())
-    }.onFailure {
-        runCatching {
-            startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
-        }.onFailure {
-            Toast.makeText(this, "未找到可打开此链接的浏览器", Toast.LENGTH_SHORT).show()
         }
     }
 }

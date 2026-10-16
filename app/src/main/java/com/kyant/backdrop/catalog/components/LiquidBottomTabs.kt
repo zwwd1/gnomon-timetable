@@ -105,7 +105,7 @@ fun LiquidBottomTabs(
     content: @Composable RowScope.() -> Unit
 ) {
     val appearance = com.xiaomanjun.sleepdownschedule.glass.LocalGlassAppearance.current
-    val pressAmount = if (appearance.customized && appearance.style == com.xiaomanjun.sleepdownschedule.glass.GlassStyle.LIQUID) appearance.current.press else if (appearance.customized) .25f else 1f
+    val pressAmount = if (appearance.usesMaterialOverride && appearance.style == com.xiaomanjun.sleepdownschedule.glass.GlassStyle.LIQUID) appearance.current.press else if (appearance.usesMaterialOverride) .25f else 1f
     val isLightTheme = isLightThemeOverride ?: !isSystemInDarkTheme()
     // Theme ownership can change when a dock moves between wallpaper-adaptive Home and the app
     // themed settings page. Keep one Kyant surface alive and crossfade its material after the tab
@@ -280,7 +280,7 @@ fun LiquidBottomTabs(
         androidx.compose.runtime.SideEffect {
             dampedDragAnimation.valueRange = 0f..(tabsCount - 1).coerceAtLeast(1).toFloat()
             dampedDragAnimation.pressedScale = 1f + (78f / 56f - 1f) * pressAmount
-            dampedDragAnimation.responseFactor = if (appearance.customized) appearance.current.response else 1f
+            dampedDragAnimation.responseFactor = if (appearance.usesMaterialOverride) appearance.current.response else 1f
         }
         LaunchedEffect(selectedTabIndex(), tabsCount) {
             val index = selectedTabIndex().fastCoerceIn(0, tabsCount - 1)
@@ -352,7 +352,7 @@ fun LiquidBottomTabs(
             content = content
         )
 
-        if (movingAccentContent && !appearance.customized) {
+        if (movingAccentContent) {
             CompositionLocalProvider(
                 LocalLiquidBottomTabScale provides {
                     lerp(1f, pressedContentScale, dampedDragAnimation.pressProgress)
@@ -416,15 +416,15 @@ fun LiquidBottomTabs(
                 .then(interactiveHighlight.gestureModifier)
                 .then(dampedDragAnimation.modifier)
                 .sleepDownGlassSurface(
-                    // Custom Gaussian/soft presets must never blur the label replay layer.
-                    backdrop = if (appearance.customized) backdrop else rememberGlassCombinedBackdrop(backdrop, tabsBackdrop),
+                    // Replay the selected icon/text for every style. Only the container is blurred.
+                    backdrop = rememberGlassCombinedBackdrop(backdrop, tabsBackdrop),
                     descriptor = indicatorDescriptor,
                     material = indicatorMaterial,
                     shape = { Capsule() },
                     effectFrame = GlassEffectFrame(blur = null),
                     effectsOverride = {
                         val progress = dampedDragAnimation.pressProgress
-                        lens(
+                        if (appearance.style == com.xiaomanjun.sleepdownschedule.glass.GlassStyle.LIQUID) lens(
                             selectedLensHeight.toPx() * progress,
                             selectedLensAmount.toPx() * progress,
                             chromaticAberration = if (useOfficialGlassParameters) true else chromaticAberrationEnabled

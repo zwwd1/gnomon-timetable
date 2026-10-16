@@ -14,8 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
-import com.kyant.shapes.RoundedRectangle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -174,18 +172,20 @@ fun Modifier.sleepDownGlassSurface(
     }
 
     val appearance = LocalGlassAppearance.current.takeIf {
-        it.customized && material.role in setOf(GlassMaterialRole.Control, GlassMaterialRole.Pill,
-            GlassMaterialRole.Dialog, GlassMaterialRole.Popup, GlassMaterialRole.Editor) &&
-            !descriptor.sceneKey.contains("course", ignoreCase = true)
+        it.usesMaterialOverride && (material.role in setOf(GlassMaterialRole.Control, GlassMaterialRole.Pill,
+            GlassMaterialRole.Dialog, GlassMaterialRole.Popup, GlassMaterialRole.Editor, GlassMaterialRole.CourseCard) ||
+            (material.role == GlassMaterialRole.SimpleBlur && descriptor.sceneKey.contains("course", true) &&
+                it.style != GlassStyle.LIQUID)) &&
+            descriptor.sceneKey !in setOf("liquid-slider-thumb", "liquid-toggle-thumb",
+                "liquid-bottom-tabs-indicator", "liquid-bottom-tabs-moving-accent")
     }
     val currentAppearance = rememberUpdatedState(appearance)
-    val courseAppearance = rememberUpdatedState(LocalGlassAppearance.current.takeIf {
-        descriptor.sceneKey.contains("course", true) && it.customized && it.style != GlassStyle.LIQUID
-    })
     val materialQuality = rememberUpdatedState(cn.scvtc.campus.LocalAppExperience.current.materialQuality)
     val dark = androidx.compose.material3.MaterialTheme.colorScheme.background.let { it.red + it.green + it.blue < 1.5f }
     val currentDark = rememberUpdatedState(dark)
-    val currentShape = rememberUpdatedState<() -> Shape>(if (appearance != null) ({ RoundedRectangle(appearance.current.corner.dp) }) else shape)
+    // Capsules, circular thumbs and morphing course corners belong to the component,
+    // never to a global material preset.
+    val currentShape = rememberUpdatedState(shape)
     val resolvedShape = remember { derivedGlassShape(currentShape) }
     val currentFrame = rememberUpdatedState(effectFrame)
     val currentMaterialFrame = rememberUpdatedState(effectFrame.materialEffectsOnly())
@@ -234,11 +234,6 @@ fun Modifier.sleepDownGlassSurface(
             val appearanceOverride = currentAppearance.value
             if (appearanceOverride != null) {
                 appearanceEffects(appearanceOverride, materialQuality.value)
-            } else if (courseAppearance.value != null) {
-                val frame = currentMaterialFrame.value
-                frame.blur?.let { blur(it.toPx()) }
-                val custom = courseAppearance.value!!
-                if (custom.style == GlassStyle.SOFT) appearanceEffects(custom.update(custom.current.copy(blur = 0f)), materialQuality.value)
             } else if (override != null) {
                 override.invoke(this)
             } else {
@@ -267,7 +262,7 @@ fun Modifier.sleepDownGlassSurface(
         }
     }
 
-    val hasHighlight = appearance != null || effectFrame.highlight != null || highlightOverride != null
+    val hasHighlight = effectFrame.highlight != null || highlightOverride != null
     val stableHighlight: (() -> Highlight?)? = remember(hasHighlight) {
         if (!hasHighlight) {
             null
@@ -289,7 +284,7 @@ fun Modifier.sleepDownGlassSurface(
             }
         }
     }
-    val hasShadow = appearance != null || effectFrame.shadowAlpha != null || shadowOverride != null
+    val hasShadow = effectFrame.shadowAlpha != null || shadowOverride != null
     val stableShadow: (() -> Shadow?)? = remember(hasShadow) {
         if (!hasShadow) {
             null
@@ -368,25 +363,20 @@ fun Modifier.sleepDownGlassSurface(
             if (custom == null) currentOnDrawSurface.value?.invoke(this) else {
                 val p = custom.current
                 val base = if (currentDark.value) Color(0xFF171A20) else Color(0xFFF7F9FC)
-                drawRect(base.copy(alpha = p.opacity))
-                drawRect(Color(0xFF7CA8CB).copy(alpha = p.tint * .35f))
-                if (custom.style == GlassStyle.SOFT) drawRect(base.copy(alpha = p.blend))
-                if (descriptor.sceneKey == "liquid-bottom-tabs-indicator") drawRect(Color(0xFF389AFF).copy(alpha = .16f))
-                // Buttons retain semantic blue/red fills and readable white labels.
-                if (descriptor.sceneKey == "liquid-button") currentOnDrawSurface.value?.invoke(this)
+                // Keep course colors, selected states and semantic button fills intact.
+                // The veil changes the sampled material, not the foreground or geometry.
+                if (descriptor.sceneKey != "liquid-button") {
+                    drawRect(base.copy(alpha = p.opacity))
+                    drawRect(Color(0xFF7CA8CB).copy(alpha = p.tint * .20f))
+                    if (custom.style == GlassStyle.SOFT) drawRect(base.copy(alpha = p.blend))
+                }
+                currentOnDrawSurface.value?.invoke(this)
             }
         })
     }
-    val stableOnDrawFront: (DrawScope.() -> Unit)? = remember(onDrawFront != null, appearance != null) {
-        if (onDrawFront == null && appearance == null) null else ({
+    val stableOnDrawFront: (DrawScope.() -> Unit)? = remember(onDrawFront != null) {
+        if (onDrawFront == null) null else ({
             currentOnDrawFront.value?.invoke(this)
-            currentAppearance.value?.current?.let { p ->
-                val width = p.stroke.dp.toPx()
-                if (width > 0f) drawRoundRect(Color.White.copy(alpha = p.highlight),
-                    topLeft = androidx.compose.ui.geometry.Offset(width / 2, width / 2),
-                    size = androidx.compose.ui.geometry.Size((size.width - width).coerceAtLeast(0f), (size.height - width).coerceAtLeast(0f)),
-                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(p.corner.dp.toPx()), style = Stroke(width))
-            }
         })
     }
     val effectStructure = GlassEffectStructure(

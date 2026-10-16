@@ -89,7 +89,7 @@ internal fun GlassAppearanceEditor(state: AppState, backdrop: Backdrop?) {
         }
         item {
             Text("实时预览", style = MaterialTheme.typography.titleMedium)
-            Text("预览使用本机课程、作息与壁纸；这里与实际卡片、底栏和弹层共用组件。",
+            Text("使用本机课表和壁纸。默认液态沿用原版玻璃；高斯更朦胧，柔光更柔和。按钮和滑块保持原来的形状。",
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text("壁纸、卡片尺寸与字大小：当前课表。材质、着色、详情透明度及显示开关：全部课表。",
                 style = MaterialTheme.typography.bodySmall)
@@ -137,9 +137,7 @@ internal fun GlassAppearanceEditor(state: AppState, backdrop: Backdrop?) {
                 GlassValue("模糊半径", draft.current.blur, 0f..64f, "dp", backdrop) { update(draft.current.copy(blur = it)) }
                 GlassValue("材质不透明度", draft.current.opacity, 0f..1f, "%", backdrop) { update(draft.current.copy(opacity = it)) }
                 GlassValue("着色", draft.current.tint, 0f..1f, "%", backdrop) { update(draft.current.copy(tint = it)) }
-                GlassValue("圆角", draft.current.corner, 12f..40f, "dp", backdrop) { update(draft.current.copy(corner = it)) }
                 GlassValue("边缘高光", draft.current.highlight, 0f..1f, "%", backdrop) { update(draft.current.copy(highlight = it)) }
-                GlassValue("描边宽度", draft.current.stroke, 0f..2f, "dp", backdrop) { update(draft.current.copy(stroke = it)) }
                 GlassValue("阴影半径", draft.current.shadow, 0f..24f, "dp", backdrop) { update(draft.current.copy(shadow = it)) }
             }
         }
@@ -167,7 +165,8 @@ internal fun GlassAppearanceEditor(state: AppState, backdrop: Backdrop?) {
         item {
             SettingsGroup(backdrop, state.config) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    SettingsActionButton("恢复当前样式默认值", backdrop, onClick = { update(GlassParameters.defaults(draft.style)) })
+                    SettingsActionButton(if (draft.style == GlassStyle.LIQUID) "恢复原版液态玻璃" else "恢复当前材质默认值", backdrop,
+                        onClick = { update(GlassParameters.defaults(draft.style)) })
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         SettingsActionButton("取消预览", backdrop, onClick = ::cancelPreview, modifier = Modifier.weight(1f))
                         SettingsActionButton("应用", backdrop, onClick = ::apply, modifier = Modifier.weight(1f))

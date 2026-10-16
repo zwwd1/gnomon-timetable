@@ -91,7 +91,7 @@ fun LiquidButton(
     content: @Composable RowScope.() -> Unit
 ) {
     val appearance = com.xiaomanjun.sleepdownschedule.glass.LocalGlassAppearance.current
-    val pressAmount = if (!appearance.customized) 1f else if (appearance.style == com.xiaomanjun.sleepdownschedule.glass.GlassStyle.LIQUID) appearance.current.press else .25f
+    val pressAmount = if (!appearance.usesMaterialOverride) 1f else if (appearance.style == com.xiaomanjun.sleepdownschedule.glass.GlassStyle.LIQUID) appearance.current.press else .25f
     val animationScope = rememberCoroutineScope()
     val clickInteractionSource = remember { MutableInteractionSource() }
     val pressed by clickInteractionSource.collectIsPressedAsState()
@@ -160,9 +160,9 @@ fun LiquidButton(
             val semanticColor = surfaceColor.isSpecified &&
                 (kotlin.math.abs(surfaceColor.red - surfaceColor.green) + kotlin.math.abs(surfaceColor.green - surfaceColor.blue) > .25f ||
                     surfaceColor.red + surfaceColor.green + surfaceColor.blue < .05f)
-            if (appearance.customized && semanticColor) {
+            if (appearance.usesMaterialOverride && semanticColor) {
                 drawRect(surfaceColor.copy(alpha = (.65f + .3f * appearance.current.opacity).coerceIn(0f,1f)))
-            } else if (!appearance.customized) {
+            } else {
             if (tint.isSpecified) {
                 drawRect(tint.copy(alpha = 0.18f), blendMode = BlendMode.Hue)
                 drawRect(tint.copy(alpha = 0.22f))
