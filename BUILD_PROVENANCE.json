@@ -1,14 +1,14 @@
 {
-  "version": "1.2.13",
-  "sourceCommit": "c7a3e3e612c1874e3f775015d3bbb1de439b242d",
+  "version": "1.2.14",
+  "sourceCommit": "48cb226884d101ba5c119ef170e8f02b6b1d6496",
   "sourceRepository": "zwwd1/gnomon-timetable",
   "artifact": {
-    "file": "Gnomon-Timetable-1.2.13.apk",
+    "file": "Gnomon-Timetable-1.2.14.apk",
     "packageName": "cn.scvtc.campus.preview",
-    "versionCode": 26,
+    "versionCode": 27,
     "certificateSha256": "5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3",
-    "size": 15075245,
-    "sha256": "f7f4ba27222a3e6dfd460305caf46cd03a772f4a114388f3e434626571fb98d9",
+    "size": 15093429,
+    "sha256": "bd276ec95b6be187bd21461fce1d7f4c2c7446a3f765976fd5fde041f5bbddf7",
     "abi": "universal"
   },
   "releaseBuild": "passed",
@@ -31,32 +31,22 @@
     "appName": true,
     "nativeLibrariesPreserved": true
   },
-  "localBuildInputsSha256": "6a31c8bff2637b0d90e6e8d3136fe0f95aaa425a32ea7b7779b56f9dd2b999ef",
+  "localBuildInputsSha256": "ff31ba32ef23490a135bd0c8e1f247f23b30b2aa3ae9e29b1cdf6b606ae69ecd",
   "sourceGitMatch": {
     "contentDifferent": 0,
-    "lineEndingsOnly": 1478
+    "lineEndingsOnly": 1475
   },
-  "mappingId": "ad4b10196a4080638034118c4837ec5493dfdb24c71e8b7227736dc2d9f3f5da",
-  "targetedTests": {
-    "passed": 75,
-    "suites": {
-      "PeriodTimeReliabilityTest": 3,
-      "PeriodStructureTest": 2,
-      "PeriodCourseMappingTest": 3,
-      "WeekGridLayoutTest": 7,
-      "TimetableJsonTest": 3,
-      "WebDavBackupTest": 3,
-      "IcsScheduleCodecTest": 7,
-      "EditablePeriodTimesTest": 2,
-      "ScheduleAdjustmentsTest": 16,
-      "CourseCopyPlacementTest": 13,
-      "CourseEditorFlightGeometryTest": 10,
-      "CourseGlassTintTest": 3,
-      "GlassAppearancePersistenceTest": 3
-    }
-  },
+  "mappingId": "373d995889794293a7e3f3800a3f3cd922d3ff85c95070807e1e569387a1393a",
   "deviceTests": {
-    "final1213": "not_run_phone_not_connected",
+    "device": "Redmi K40 / Android 13 / API 33",
+    "date": "2026-10-17",
+    "artifactSha256": "bd276ec95b6be187bd21461fce1d7f4c2c7446a3f765976fd5fde041f5bbddf7",
+    "coverInstall": "passed",
+    "summary": "最终包覆盖安装后正常启动并自动同步，原课表保留。候选阶段已在同设备验证记住的密码原生登录成功、am force-stop 后重新进入自动同步成功、点按课程放大及长按进入编辑并取消。修正版检查默认三栏、深色课程文字、三种材质预览、完整材质及启动暂降效果开关；原生更新检查成功读取 GitHub，无需外部浏览器。8 项定向规则检查通过。",
+    "limits": "没有清除用户数据，因此不把首次安装邀请标成设备通过；自然会话到期、Android 17、新手机与外部 WebDAV 未验收。材质预览使用当前无壁纸课表，不能据此证明所有壁纸的光学和对比度表现。系统动画临时设为 1 倍以便测试，结束恢复原值 0。",
+    "newCrash": false,
+    "naturalSessionExpiry": "not_run",
+    "freshInstall": "not_run_preserve_user_data",
     "externalWebDAV": "not_run"
   },
   "additionalArtifacts": []
