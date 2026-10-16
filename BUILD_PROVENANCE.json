@@ -1,14 +1,14 @@
 {
-  "version": "1.2.12",
-  "sourceCommit": "582f533b8eba81ce936eb4a7b4bb378076840bc4",
+  "version": "1.2.13",
+  "sourceCommit": "c7a3e3e612c1874e3f775015d3bbb1de439b242d",
   "sourceRepository": "zwwd1/gnomon-timetable",
   "artifact": {
-    "file": "Gnomon-Timetable-1.2.12.apk",
+    "file": "Gnomon-Timetable-1.2.13.apk",
     "packageName": "cn.scvtc.campus.preview",
-    "versionCode": 25,
+    "versionCode": 26,
     "certificateSha256": "5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3",
-    "size": 14943697,
-    "sha256": "9eb6be8a23041a6c90867ac4e27214671288070174b5711846d88e5d7ca57f67",
+    "size": 15075245,
+    "sha256": "f7f4ba27222a3e6dfd460305caf46cd03a772f4a114388f3e434626571fb98d9",
     "abi": "universal"
   },
   "releaseBuild": "passed",
@@ -31,22 +31,33 @@
     "appName": true,
     "nativeLibrariesPreserved": true
   },
-  "localBuildInputsSha256": "e89bd36837fff04d8e63942fd333bcbe4bc1b04b92ce3e66bbcd9f3f204cfa8a",
+  "localBuildInputsSha256": "6a31c8bff2637b0d90e6e8d3136fe0f95aaa425a32ea7b7779b56f9dd2b999ef",
   "sourceGitMatch": {
     "contentDifferent": 0,
-    "lineEndingsOnly": 1498
+    "lineEndingsOnly": 1478
   },
-  "mappingId": "0883fbb45145e2f572d8f191a7f1449657942ee3471ab892783473d187184fc0",
+  "mappingId": "ad4b10196a4080638034118c4837ec5493dfdb24c71e8b7227736dc2d9f3f5da",
   "targetedTests": {
-    "passed": 21,
+    "passed": 75,
     "suites": {
+      "PeriodTimeReliabilityTest": 3,
+      "PeriodStructureTest": 2,
+      "PeriodCourseMappingTest": 3,
+      "WeekGridLayoutTest": 7,
+      "TimetableJsonTest": 3,
+      "WebDavBackupTest": 3,
+      "IcsScheduleCodecTest": 7,
       "EditablePeriodTimesTest": 2,
       "ScheduleAdjustmentsTest": 16,
+      "CourseCopyPlacementTest": 13,
+      "CourseEditorFlightGeometryTest": 10,
+      "CourseGlassTintTest": 3,
       "GlassAppearancePersistenceTest": 3
     }
   },
   "deviceTests": {
-    "final1212": "not_run_phone_not_connected"
+    "final1213": "not_run_phone_not_connected",
+    "externalWebDAV": "not_run"
   },
   "additionalArtifacts": []
 }
