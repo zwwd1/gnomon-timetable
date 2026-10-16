@@ -18,7 +18,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.kyant.backdrop.Backdrop
 import com.xiaomanjun.sleepdownschedule.R
-import com.xiaomanjun.sleepdownschedule.core.ui.settings.GnomonLiquidDropdownPreference
+import com.xiaomanjun.sleepdownschedule.core.ui.settings.SleepDownLiquidDropdownPreference
 import com.xiaomanjun.sleepdownschedule.feature.settings.GlassPreferenceSection
 import com.xiaomanjun.sleepdownschedule.feature.settings.SettingsActionRow
 import com.xiaomanjun.sleepdownschedule.feature.settings.SettingsDivider
@@ -40,7 +40,7 @@ internal fun ExperimentalNotificationSettingsRow(
     onSelected: (ExperimentalNotificationMode) -> Unit
 ) {
     val modes = remember { ExperimentalNotificationModes.available() }
-    GnomonLiquidDropdownPreference(
+    SleepDownLiquidDropdownPreference(
         items = modes.map { it.label },
         selectedIndex = modes.indexOf(selected).coerceAtLeast(0),
         title = "通知样式",
@@ -172,7 +172,7 @@ internal fun XiaomiSuperIslandSettingsSection(config: ScheduleConfigEntity, back
     GlassPreferenceSection("超级岛显示") {
         SettingsGroup(backdrop, config, Modifier.fillMaxWidth()) {
             val textChoices = listOf("课程名称", "上课地点", "倒计时")
-            GnomonLiquidDropdownPreference(
+            SleepDownLiquidDropdownPreference(
                 items = textChoices,
                 selectedIndex = options.left,
                 title = "超级岛左侧",
@@ -186,7 +186,7 @@ internal fun XiaomiSuperIslandSettingsSection(config: ScheduleConfigEntity, back
                 }
             )
             SettingsDivider()
-            GnomonLiquidDropdownPreference(
+            SleepDownLiquidDropdownPreference(
                 items = textChoices,
                 selectedIndex = options.right,
                 title = "超级岛右侧",
@@ -200,7 +200,7 @@ internal fun XiaomiSuperIslandSettingsSection(config: ScheduleConfigEntity, back
                 }
             )
             SettingsDivider()
-            GnomonLiquidDropdownPreference(
+            SleepDownLiquidDropdownPreference(
                 items = listOf("课程名称", "上课地点"),
                 selectedIndex = options.aod,
                 title = "息屏显示",

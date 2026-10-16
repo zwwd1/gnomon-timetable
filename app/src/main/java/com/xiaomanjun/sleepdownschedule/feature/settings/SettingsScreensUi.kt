@@ -83,6 +83,17 @@ fun GeneralSettingsScreen(
     val topPadding = detailContentTopPadding()
     val experiencePrefs=remember(context){cn.scvtc.campus.AppExperiencePreferences.get(context)}
     val experience by experiencePrefs.state.collectAsStateWithLifecycle()
+    var systemAnimationsEnabled by remember { mutableStateOf(android.animation.ValueAnimator.areAnimatorsEnabled()) }
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                systemAnimationsEnabled = android.animation.ValueAnimator.areAnimatorsEnabled()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
     var draft by remember(state.config.id) { mutableStateOf(state.config) }
     var hasLocalEdits by remember(state.config.id) { mutableStateOf(false) }
     var dayViewMode by remember(context, state.config.id) {
@@ -298,6 +309,12 @@ fun GeneralSettingsScreen(
                 SettingsGroup(backdrop = backdrop, config = visualConfig, modifier = Modifier.fillMaxWidth()) {
                 SettingsToggleRow(title="启动入场动画",subtitle="短暂淡入首屏；关闭后直接显示。遵循系统动画设置。",checked=experience.entranceAnimation,
                     backdrop=backdrop,onCheckedChange=experiencePrefs::entrance)
+                SettingsDivider()
+                SettingsNavigationRow("系统动画", if (systemAnimationsEnabled) "系统动画已开启；应用保留完整过渡。" else "系统动画已关闭，过渡会直接完成。可在系统设置将“动画时长缩放”调至 1 倍。",
+                    onClick = {
+                        runCatching { context.startActivity(android.content.Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)) }
+                            .onFailure { android.widget.Toast.makeText(context, "请在系统设置中搜索动画或开发者选项", android.widget.Toast.LENGTH_LONG).show() }
+                    })
                 SettingsDivider()
                 SettingsToggleRow(
                     title = "隐藏后台卡片",
