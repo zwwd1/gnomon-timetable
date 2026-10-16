@@ -1,5 +1,34 @@
 [
   {
+    "name": "Gnomon 课程表 1.2.14",
+    "tag_name": "v1.2.14",
+    "body": "# Gnomon 课程表 1.2.14\n\n把常用入口摆出来，修正材质与底栏，并补上实机发现的首屏图标问题。\n\n• 默认底栏调整为“成绩查询、课表、个人中心”，仍可自行增减入口。升级时只迁移旧的默认组合，保留手动配置。\n• 个人中心直接提供应用偏好设置、更新设置、关于应用、课表导入、课表导出和备份恢复，不再藏在同一个数据管理入口里。\n• 默认液态与恢复默认值沿用原版组件的玻璃效果；高斯、柔光保留各自的采样效果。材质不再统一改写按钮、滑块、开关和底栏的形状。\n• 修复材质切换后底栏选中项图标与文字消失、滑块拇指过透的问题，保留课程配色和按钮状态。\n• 项目介绍、反馈和版本页面改为应用内浏览，取消优先打开 Edge。更新设置支持在应用内检查、下载，再由系统确认安装。\n• 修复实机发现的首屏图标加载闪退；课表入口使用独立矢量图标。\n• 材质质量可选完整、均衡或低负载，启动时的临时降质也可单独关闭；保留入场动画开关。\n• 清理恢复、分享、勿扰和权限说明中的旧名称，移除已停用的上游免费 AI 选项；原作者署名与许可保留在关于页面。\n• 修正深色彩色课程卡按旧底色判断文字明暗的问题；退出按钮随同步页滚动，不再用固定渐变遮住重新登录。\n\n沿用原包名与原签名，可保留数据覆盖安装。\n\n在 Redmi K40 / Android 13 上覆盖安装并复测：启动、原生记住密码登录、进程重启后的自动同步、课程放大与长按编辑正常，原课表保留。三种材质预览与动效选项已检查。自然会话到期、Android 17 和外部 WebDAV 尚未完成本版实测，范围详见验证记录。\n\n安装包：**Gnomon-Timetable-1.2.14.apk**，14.39 MiB。\n\n[图文使用说明](https://github.com/zwwd1/gnomon-timetable/blob/main/docs/SCVTC_USAGE.md) · [对应源码](https://github.com/zwwd1/gnomon-timetable/tree/48cb226884d101ba5c119ef170e8f02b6b1d6496)\n",
+    "html_url": "https://github.com/zwwd1/gnomon-timetable/releases/tag/v1.2.14",
+    "published_at": "2026-10-16T19:59:16Z",
+    "draft": false,
+    "prerelease": false,
+    "assets": [
+      {
+        "name": "BUILD_PROVENANCE.json",
+        "size": 2510,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.14/BUILD_PROVENANCE.json",
+        "digest": "sha256:39022615a748b074f127f5a06f2e7ba6703146b27a8475166ba46107133038ad"
+      },
+      {
+        "name": "Gnomon-Timetable-1.2.14.apk",
+        "size": 15093429,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.14/Gnomon-Timetable-1.2.14.apk",
+        "digest": "sha256:bd276ec95b6be187bd21461fce1d7f4c2c7446a3f765976fd5fde041f5bbddf7"
+      },
+      {
+        "name": "Gnomon-Timetable-1.2.14.apk.sha256",
+        "size": 94,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.14/Gnomon-Timetable-1.2.14.apk.sha256",
+        "digest": "sha256:eaf45700d153b5eda31a9f6736dc3c6958f92b3015fd2d811c1078bd17106756"
+      }
+    ]
+  },
+  {
     "name": "Gnomon 课程表 1.2.13",
     "tag_name": "v1.2.13",
     "body": "# Gnomon 课程表 1.2.13\n\n这次先把作息设置的路理顺，再补课表上的时间和休息分隔。新增的数据操作也都接到了文件和备份流程里。\n\n• 理顺课表详细设置：节次数量、作息列表、逐节编辑、时间轴、添加与复制各有入口，查看和启用作息分开。\n• 缺时间的节次照常列出，可以逐节填写；调整节数时保留已知时间，不替用户编一套学校作息。\n• 周课表默认显示节次起止时间，增加按实际分段计算的午休、晚休分隔，保留午间教学；移动、复制和详情回落同步使用新的位置。\n• 课程卡突出课名、地点和教师，详情随内容收拢；可分别选择液态、高斯、柔光及材质质量。壁纸、效果与布局预览可取消或应用。\n• 数据管理增加 JSON / ICS 导入预览、所选课表导出、本机备份历史及手动 WebDAV 上传、浏览和恢复。日历按北京时间与实际调休日期处理，缺少时间的安排会说明跳过数量。\n• 应用偏好补上时间栏、休息分隔、教师地点显隐、预测性返回、触感和质量选项，并说明作用范围。更新设置集中显示版本、检查与提醒选项。\n\n沿用原包名与原签名，支持覆盖安装。本轮只更新 Gnomon，Lumen 保持原版本。\n\n手机未连接，尚未实测这份新包的触摸、旋转、键盘、返回手势与流畅度。WebDAV 已做本地协议检查，尚未对用户实际服务器联调；学校登录和自然到期恢复也没有在本轮重新实机验收。\n\n[本版入口与使用范围](../docs/GNOMON_1.2.13.md)\n\n安装包：**Gnomon-Timetable-1.2.13.apk**，14.38 MiB。\n\nSHA-256：`f7f4ba27222a3e6dfd460305caf46cd03a772f4a114388f3e434626571fb98d9`\n\n[使用说明](https://github.com/zwwd1/gnomon-timetable/blob/v1.2.13/docs/SCVTC_USAGE.md) · [对应源码](https://github.com/zwwd1/gnomon-timetable/tree/c7a3e3e612c1874e3f775015d3bbb1de439b242d)\n",
