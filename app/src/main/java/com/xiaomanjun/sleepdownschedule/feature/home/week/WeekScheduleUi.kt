@@ -1164,7 +1164,7 @@ internal fun WeekCourseOverlayCardContent(course: CourseEntity, config: Schedule
         val hasLocation = locationText.isNotBlank()
         val hasTeacher = !course.teacher.isNullOrBlank()
         val textColor = if (config.courseCardGlassEnabled && courseCardUsesAssignments(config)) {
-            readableOn(courseCardBaseColor(config, course))
+            readableOn(courseCardPresentationColor(config, courseCardBaseColor(config, course)))
         } else {
             glassForegroundColor(config)
         }
@@ -3075,7 +3075,7 @@ fun WeekCourseBlock(
         courseCardBaseColor(config, course)
     } else null
     val courseTextColor =
-        if (config.courseCardGlassEnabled && courseCardUsesAssignments(config)) readableOn(resolvedCardColor)
+        if (config.courseCardGlassEnabled && courseCardUsesAssignments(config)) readableOn(courseCardPresentationColor(config, resolvedCardColor))
         else glassForegroundColor(config)
     val density = LocalDensity.current
     val tailDirection = if (weekMotionOutgoing) -weekMotionDirection else weekMotionDirection

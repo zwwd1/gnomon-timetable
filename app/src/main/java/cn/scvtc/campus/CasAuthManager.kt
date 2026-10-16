@@ -199,6 +199,9 @@ class CasAuthManager(private val context:Context,private val api:JwxtApi) {
                 }
                 @Suppress("UNREACHABLE_CODE") error("身份未核验")
             }
+        } catch(e:JwxtAuthenticationRequired) {
+            android.util.Log.i("ScvtcAuthStage", "Authentication requires attention: " + e.stage.name)
+            throw e
         } catch(e:TimeoutCancellationException) {
             currentCoroutineContext().ensureActive()
             login.failedNetwork(account)

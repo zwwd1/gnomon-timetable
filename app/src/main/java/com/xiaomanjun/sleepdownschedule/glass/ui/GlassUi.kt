@@ -456,6 +456,12 @@ fun courseCardBaseColor(config: ScheduleConfigEntity, course: CourseEntity? = nu
     return Color(palette[(stableKey.hashCode() and Int.MAX_VALUE) % palette.size].toInt())
 }
 
+@Composable
+fun courseCardPresentationColor(config: ScheduleConfigEntity, color: Color): Color {
+    val neutral = if (appUsesDarkTheme(config)) Color(0xFF252B36) else Color(0xFFF4F7FC)
+    return androidx.compose.ui.graphics.lerp(neutral, color, cn.scvtc.campus.LocalAppExperience.current.cardTint)
+}
+
 internal fun courseCardColorOverrideForMode(
     config: ScheduleConfigEntity,
     course: CourseEntity?
@@ -1072,8 +1078,7 @@ fun CourseGlassCard(
     var pressed by remember { mutableStateOf(false) }
     val courseColor = if (muted) MutedCourseLightColor else courseCardBaseColor(config, course)
     val presentation = cn.scvtc.campus.LocalAppExperience.current
-    val neutral = if (appUsesDarkTheme(config)) Color(0xFF252B36) else Color(0xFFF4F7FC)
-    val baseColor = androidx.compose.ui.graphics.lerp(neutral, courseColor, presentation.cardTint)
+    val baseColor = courseCardPresentationColor(config, courseColor)
     val hasWallpaper = config.hasAnyWallpaper()
     val tokens = GlassTokens.courseCard(blurOverride ?: config.courseCardBlur)
     val lightGlass = glassUsesLightStyle(config)

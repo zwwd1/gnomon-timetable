@@ -374,20 +374,16 @@ private fun AutoRefreshDashboardContent(
                     }
                 }
             }
+            item(key = "disconnect") {
+                Column(Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
+                    SettingsActionButton(
+                        "退出登录", backdrop, destructive = true,
+                        onClick = { if (!refreshing) showLogout = true },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
         }
-        Box(
-            Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(168.dp)
-                .background(Brush.verticalGradient(listOf(
-                    pageColor.copy(alpha = 0f), pageColor.copy(alpha = 0.36f),
-                    pageColor.copy(alpha = 0.70f), pageColor.copy(alpha = 0.94f)
-                )))
-        )
-        SettingsActionButton(
-            "退出登录", contentBackdrop, glowing = true, destructive = true,
-            onClick = { if (!refreshing) showLogout = true },
-            modifier = Modifier.align(Alignment.BottomCenter).imePadding().navigationBarsPadding()
-                .padding(start = 16.dp, end = 16.dp, bottom = 18.dp).fillMaxWidth()
-        )
     }
     cropUri?.let { uri ->
         AutoRefreshAvatarCropDialog(
