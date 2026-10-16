@@ -258,7 +258,7 @@ fun BackupRestorePreviewScreen(
         }.onFailure { error ->
             showFailure(
                 title = "无法读取这份备份",
-                guidance = "它可能不是 SleepDown 备份、文件不完整，或来自暂不支持的版本；你现有的数据没有变化",
+                guidance = "它可能不是兼容的课表备份、文件不完整，或来自暂不支持的版本；你现有的数据没有变化",
                 error = error
             )
         }
@@ -289,7 +289,7 @@ fun BackupRestorePreviewScreen(
             }.onFailure { error ->
                 showFailure(
                     title = "恢复没有完成",
-                    guidance = "请重新打开 SleepDown 查看结果；如果恢复已经开始，应用会自动继续处理未完成的步骤",
+                    guidance = "请重新打开 Gnomon 查看结果；如果恢复已经开始，应用会自动继续处理未完成的步骤",
                     error = error
                 )
             }
@@ -433,7 +433,7 @@ private fun BackupPreviewContent(
         BackupGuidePage(
             R.drawable.ic_material_restore,
             "备份来源",
-            "来自 SleepDown ${report.sourceAppVersionName}，保存于 ${formatBackupCreatedAt(report.createdAt)}。",
+            "来自课表应用 ${report.sourceAppVersionName}，保存于 ${formatBackupCreatedAt(report.createdAt)}。",
             tint = Color(0xFF4F8EE8)
         ),
         BackupGuidePage(
@@ -612,7 +612,7 @@ private fun formatBackupCreatedAt(value: String): String = runCatching {
 }.getOrDefault(value)
 
 private fun defaultBackupFileName(): String =
-    "SleepDown-Backup-${SimpleDateFormat("yyyyMMdd-HHmm", Locale.US).format(Date())}.sleepdown"
+    "Gnomon-Backup-${SimpleDateFormat("yyyyMMdd-HHmm", Locale.US).format(Date())}.sleepdown"
 
 private fun backupAssetPurposeLabel(purpose: String): String = when (purpose) {
     BackupAssetPurpose.SCHEDULE_WALLPAPER -> "课表壁纸"

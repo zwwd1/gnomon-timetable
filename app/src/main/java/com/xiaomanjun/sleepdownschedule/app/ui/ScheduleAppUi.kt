@@ -1410,7 +1410,8 @@ fun CourseScheduleAppUi(
             showManagedFreeAiOffer = true
         }
     }
-    val glassQuality = animatedGlassQuality(startupPhase) * cn.scvtc.campus.LocalAppExperience.current.materialQuality
+    val presentation = cn.scvtc.campus.LocalAppExperience.current
+    val glassQuality = (if (presentation.adaptiveStartupGlass) animatedGlassQuality(startupPhase) else 1f) * presentation.materialQuality
     val adaptiveGlassState = rememberFallbackAdaptiveGlassState(visualState.config)
     val homeAnchoredKindLabel = when (homeAnchoredMorphState.renderedKind) {
         HomeAnchoredOverlayKind.Add -> "AddMenu"
@@ -5383,7 +5384,7 @@ fun FloatingDock(
         "settings"->onConfig()
         "grades","sync"->onDestination(id)
     } }
-    fun icon(id:String)=when(id){"settings"->R.drawable.ic_person_center;"grades"->R.drawable.ic_agent_overview;"sync"->R.drawable.ic_refresh;else->R.drawable.ic_kejian_calendar}
+    fun icon(id:String)=when(id){"settings"->R.drawable.ic_person_center;"grades"->R.drawable.ic_agent_overview;"sync"->R.drawable.ic_refresh;else->R.drawable.ic_timetable_dock}
     val lightGlass = if (selected is Screen.Home) {
         adaptiveGlass.lightGlass
     } else {
@@ -9417,7 +9418,9 @@ fun ChangelogSettingsScreen(
             item(key = "about-project") {
                 AboutGlassPanel(darkTheme = darkTheme, modifier = Modifier.fillMaxWidth()) {
                     SettingsValueRow("项目维护", "zwwd1")
-                    SettingsInfoRow("致谢项目", "SleepDown课程表、Miuix 与 Backdrop。原项目许可和版权声明保留于仓库，Gnomon 课程表由 zwwd1 维护。")
+                    SettingsInfoRow("项目来源", "本项目基于 SleepDown课程表 修改；原作者：xiaomanjun233。Gnomon 是由 zwwd1 维护的非官方修改版，主要加入川职教务登录、课表同步、成绩查询和本机备份。")
+                    SettingsNavigationRow("原项目", "github.com/xiaomanjun233/SleepDown-Schedule",
+                        onClick = { openProjectPage("https://github.com/xiaomanjun233/SleepDown-Schedule") })
                     SettingsNavigationRow("Gnomon 课程表开源项目", "github.com/zwwd1/gnomon-timetable", onClick = { openProjectPage("https://github.com/zwwd1/gnomon-timetable") })
                     SettingsDivider()
                     Row(

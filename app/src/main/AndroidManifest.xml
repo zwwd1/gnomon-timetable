@@ -49,7 +49,7 @@
             </intent-filter>
             <meta-data
                 android:name="android.service.zen.automatic.ruleType"
-                android:value="SleepDown 课程勿扰" />
+                android:value="Gnomon 课程勿扰" />
             <meta-data
                 android:name="android.service.zen.automatic.ruleInstanceLimit"
                 android:value="1" />

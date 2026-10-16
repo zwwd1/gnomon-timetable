@@ -18,7 +18,8 @@ data class AppExperience(val entranceAnimation:Boolean=true,val dock:List<String
     val showPeriodTimes:Boolean=true, val cardTint:Float=.55f, val detailOpacity:Float=.88f,
     val haptics:Boolean=true, val predictiveBack:Boolean=true, val materialQuality:Float=1f,
     val showBreakDividers:Boolean=true, val showTeacher:Boolean=true, val showLocation:Boolean=true,
-    val glass: com.xiaomanjun.sleepdownschedule.glass.GlassAppearance = com.xiaomanjun.sleepdownschedule.glass.GlassAppearance())
+    val glass: com.xiaomanjun.sleepdownschedule.glass.GlassAppearance = com.xiaomanjun.sleepdownschedule.glass.GlassAppearance(),
+    val adaptiveStartupGlass:Boolean=true)
 
 val LocalAppExperience = androidx.compose.runtime.compositionLocalOf { AppExperience() }
 
@@ -47,7 +48,8 @@ class AppExperiencePreferences private constructor(context:Context) {
         materialQuality=prefs.getFloat("material-quality",1f).coerceIn(.5f,1f),
         showBreakDividers=prefs.getBoolean("break-dividers",true), showTeacher=prefs.getBoolean("show-teacher",true),
         showLocation=prefs.getBoolean("show-location",true),
-        glass=com.xiaomanjun.sleepdownschedule.glass.GlassAppearance.decode(prefs.getString("glass-v1",null)))
+        glass=com.xiaomanjun.sleepdownschedule.glass.GlassAppearance.decode(prefs.getString("glass-v1",null)),
+        adaptiveStartupGlass=prefs.getBoolean("adaptive-startup-glass",true))
     fun presentation(value:AppExperience) {
         check(prefs.edit().putBoolean("period-times",value.showPeriodTimes)
             .putFloat("card-tint",value.cardTint.coerceIn(0f,1f))
@@ -55,7 +57,8 @@ class AppExperiencePreferences private constructor(context:Context) {
             .putBoolean("haptics",value.haptics).putBoolean("predictive-back",value.predictiveBack)
             .putFloat("material-quality",value.materialQuality.coerceIn(.5f,1f))
             .putBoolean("break-dividers",value.showBreakDividers).putBoolean("show-teacher",value.showTeacher)
-            .putBoolean("show-location",value.showLocation).commit())
+            .putBoolean("show-location",value.showLocation)
+            .putBoolean("adaptive-startup-glass",value.adaptiveStartupGlass).commit())
         mutable.value=read()
     }
     fun entrance(enabled:Boolean) {

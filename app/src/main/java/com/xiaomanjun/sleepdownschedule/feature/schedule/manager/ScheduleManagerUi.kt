@@ -563,7 +563,7 @@ fun ScheduleManagerScreen(
     if (showShareOptions) {
         LiquidAlertDialog(
             title = "分享课表",
-            message = "选择分享 SleepDown 课表口令，或导出可被日历应用识别的 ICS 文件。随后可在系统分享器中选择发送或保存。",
+            message = "选择分享 Gnomon 课表口令，或导出可被日历应用识别的 ICS 文件。随后可在系统分享器中选择发送或保存。",
             actions = listOf(
                 LiquidAlertAction("分享课表口令", LiquidAlertActionStyle.Primary) {
                     showShareOptions = false
@@ -602,7 +602,7 @@ fun ScheduleManagerScreen(
 internal fun shareScheduleToken(context: Context, scheduleName: String, token: String) {
     val intent = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
-        putExtra(Intent.EXTRA_SUBJECT, "$scheduleName - SleepDown 课表口令")
+        putExtra(Intent.EXTRA_SUBJECT, "$scheduleName - Gnomon 课表口令")
         putExtra(Intent.EXTRA_TEXT, token)
     }
     context.startActivity(Intent.createChooser(intent, "分享课表口令"))
@@ -612,7 +612,7 @@ internal fun shareScheduleIcs(context: Context, scheduleName: String, file: java
     val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
     val intent = Intent(Intent.ACTION_SEND).apply {
         type = "text/calendar"
-        putExtra(Intent.EXTRA_SUBJECT, "$scheduleName - SleepDown 课表")
+        putExtra(Intent.EXTRA_SUBJECT, "$scheduleName - Gnomon 课表")
         putExtra(Intent.EXTRA_STREAM, uri)
         clipData = ClipData.newRawUri("Gnomon 课程表 ICS 课表", uri)
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)

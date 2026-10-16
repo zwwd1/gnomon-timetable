@@ -859,7 +859,7 @@ private fun AiManualImportDialogContent(
                     DialogCapsuleField(
                         value = jsonText,
                         onValueChange = onJsonTextChange,
-                        placeholder = "粘贴 SleepDown / WakeUp / 星链口令或 AI 返回内容",
+                        placeholder = "粘贴课表口令（兼容 SleepDown / WakeUp / 星链）或 AI 返回内容",
                         config = state.config,
                         minLines = 5,
                         cornerRadius = 16.dp,

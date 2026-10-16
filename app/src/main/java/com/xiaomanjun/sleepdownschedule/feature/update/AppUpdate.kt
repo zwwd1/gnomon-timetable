@@ -601,7 +601,7 @@ class UpdateDownloadForegroundService : Service() {
             .applyAppNotificationIcon(this)
             .setContentTitle(if (packageKind == DownloadPackageKind.CourseComponent) "课程组件下载完成" else "更新下载完成")
             .setContentText(if (packageKind == DownloadPackageKind.CourseComponent)
-                "返回 SleepDown 查看组件检查结果" else "点击安装 $name")
+                "返回 Gnomon 查看组件检查结果" else "点击安装 $name")
             .setContentIntent(install)
             .setOngoing(packageKind != DownloadPackageKind.CourseComponent)
             .setAutoCancel(packageKind == DownloadPackageKind.CourseComponent)

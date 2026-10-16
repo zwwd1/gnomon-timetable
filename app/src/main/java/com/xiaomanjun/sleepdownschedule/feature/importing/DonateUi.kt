@@ -54,7 +54,7 @@ fun DonateSettingsScreen(
         }
         item {
             SettingsGroup(backdrop = backdrop, config = state.config, modifier = Modifier.fillMaxWidth()) {
-                SettingsInfoRow("使用方式", "点按查看完整原图，或保存后在微信扫一扫中从相册识别。致谢 SleepDown-Schedule 与 Miuix；完整版权与许可见项目说明。")
+                SettingsInfoRow("使用方式", "点按查看完整原图，或保存后在微信扫一扫中从相册识别。项目来源与许可见“关于应用”。")
             }
         }
     }

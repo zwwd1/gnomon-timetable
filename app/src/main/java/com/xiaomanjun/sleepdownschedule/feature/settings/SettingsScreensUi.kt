@@ -257,13 +257,17 @@ fun GeneralSettingsScreen(
         item(key="general-navigation") {
             GlassPreferenceSection("操作偏好 · 全部课表") {
                 SettingsGroup(backdrop, visualConfig) {
-                    SleepDownLiquidDropdownPreference(items = listOf("最佳", "均衡", "性能"),
+                    SleepDownLiquidDropdownPreference(items = listOf("完整", "均衡", "低负载"),
                         selectedIndex = if (experience.materialQuality >= .9f) 0 else if (experience.materialQuality >= .7f) 1 else 2,
-                        title = "材质质量", summary = "均衡 / 性能降低模糊与折射，关闭色散；保留文字对比度、三套参数和切页动效",
+                        title = "材质质量", summary = "完整保留模糊、折射与色散；均衡和低负载降低光学开销。由你选择，不按机型锁定。",
                         backdrop = backdrop, config = visualConfig, insideMargin = PaddingValues(14.dp),
                         maxHeight = 250.dp, onExpandedChange = {}, onSelectedIndexChange = {
                             experiencePrefs.presentation(experience.copy(materialQuality = listOf(1f, .75f, .5f)[it]))
                         })
+                    SettingsDivider()
+                    SettingsToggleRow("启动时暂降材质质量", "开启可减轻首屏开销，稳定后恢复所选质量；关闭则从第一帧保持所选效果。", experience.adaptiveStartupGlass, backdrop) {
+                        experiencePrefs.presentation(experience.copy(adaptiveStartupGlass = it))
+                    }
                     SettingsDivider()
                     SettingsToggleRow("预测性返回", "二级页面跟随手势，取消时回到原位", experience.predictiveBack, backdrop) {
                         experiencePrefs.presentation(experience.copy(predictiveBack = it))
