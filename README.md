@@ -54,7 +54,7 @@
 - **看不到动画时**：系统“动画时长缩放”设为 0 时，应用会遵循。偏好里提供系统状态与设置入口。
 - **文件留在手上**：JSON / ICS 导入导出、本机备份历史、手动 WebDAV；学校密码不进入普通导出。
 
-[入口与使用范围](docs/GNOMON_1.2.14.md) · [隐私说明](docs/SCVTC_PRIVACY.md) · [本版改动](release-notes/v1.2.16.md)
+[入口与使用范围](docs/GNOMON_1.2.14.md) · [隐私说明](docs/SCVTC_PRIVACY.md) · [本版改动](release-notes/v1.2.17.md)
 
 ## 我会一直维护吗
 
