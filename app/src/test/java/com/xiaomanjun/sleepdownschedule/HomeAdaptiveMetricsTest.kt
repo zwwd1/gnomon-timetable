@@ -213,6 +213,7 @@ class HomeAdaptiveMetricsTest {
         assertEquals(8.dp, phone)
         assertTrue(shortTabletCard >= 10.dp)
         assertTrue(tallTabletCard > shortTabletCard)
-        assertTrue(tallTabletCard <= 16.dp)
+        // Tablet cards include the existing 3dp boost above the adaptive 16dp base.
+        assertTrue(tallTabletCard <= 19.dp)
     }
 }
