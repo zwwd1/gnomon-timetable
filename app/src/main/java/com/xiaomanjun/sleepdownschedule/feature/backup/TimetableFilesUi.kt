@@ -34,10 +34,11 @@ internal fun TimetableFilesPanel(state: AppState, backdrop: Backdrop?, showImpor
     val context = LocalContext.current
     val app = context.applicationContext as CourseScheduleApp
     val scope = rememberCoroutineScope()
-    var selectedId by remember { mutableIntStateOf(state.config.id) }
+    var selectedId by remember { mutableStateOf<Int?>(null) }
     val profiles by remember(app) { app.repository.profiles }
         .collectAsStateWithLifecycle(initialValue = state.schedules)
-    val selected = profiles.firstOrNull { it.id == selectedId } ?: profiles.firstOrNull()
+    val selected = profiles.firstOrNull { it.id == selectedId }
+        ?: profiles.firstOrNull { it.isActive } ?: profiles.firstOrNull()
     var pendingText by remember { mutableStateOf<String?>(null) }
     var pendingIcsReport by remember { mutableStateOf<String?>(null) }
     var jsonPreview by remember { mutableStateOf<DecodedBackupArchive?>(null) }
