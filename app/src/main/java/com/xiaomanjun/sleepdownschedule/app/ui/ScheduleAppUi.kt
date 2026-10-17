@@ -2608,7 +2608,7 @@ fun CourseScheduleAppUi(
                                     homeMode == HomeMode.Week &&
                                     weekViewStyle == WeekViewStyle.BOUNDLESS
                                 ) {
-                                    boundlessHomeTopGradientHeight(homeAdaptiveMetrics)
+                                    boundlessHomeTopGradientHeight(homeAdaptiveMetrics, density.fontScale)
                                 } else if (homeMode == HomeMode.Week) {
                                     // 普通周视图用独立的顶栏模糊：不包含无界模式表头那段高度
                                     (homeAdaptiveMetrics.topOverlayHeight -
@@ -2617,7 +2617,7 @@ fun CourseScheduleAppUi(
                                     homeAdaptiveMetrics.topOverlayHeight
                                 },
                                 fullBlurHeight = if (homeMode == HomeMode.Week && weekViewStyle == WeekViewStyle.BOUNDLESS) {
-                                    homeAdaptiveMetrics.safeTop + 66.dp + BoundlessWeekHeaderRowHeight + 4.dp
+                                    homeAdaptiveMetrics.safeTop + homeTopBarHeight(density.fontScale) + BoundlessWeekHeaderRowHeight + 4.dp
                                 } else 0.dp,
                                 modifier = Modifier
                             )
@@ -2677,7 +2677,7 @@ fun CourseScheduleAppUi(
                                 .align(Alignment.TopCenter)
                                 .zIndex(12f)
                                 .fillMaxWidth()
-                                .padding(top = homeAdaptiveMetrics.safeTop + 66.dp)
+                                .padding(top = homeAdaptiveMetrics.safeTop + homeTopBarHeight(density.fontScale))
                                 .padding(
                                     start = if (homeAdaptiveMetrics.isLargeScreen) homeAdaptiveMetrics.tabletContentMargin else 0.dp,
                                     end = if (homeAdaptiveMetrics.isLargeScreen) homeAdaptiveMetrics.tabletContentMargin else 0.dp
@@ -4715,8 +4715,8 @@ fun settingsVisualConfig(config: ScheduleConfigEntity): ScheduleConfigEntity {
 
 // Size the tail from the actual header, rather than keeping the old 230dp minimum that
 // spreads full-strength header blur too far into the first courses on compact windows.
-private fun boundlessHomeTopGradientHeight(metrics: HomeAdaptiveMetrics): Dp =
-    metrics.safeTop + 66.dp + BoundlessWeekHeaderRowHeight + 36.dp
+private fun boundlessHomeTopGradientHeight(metrics: HomeAdaptiveMetrics, fontScale: Float): Dp =
+    metrics.safeTop + homeTopBarHeight(fontScale) + BoundlessWeekHeaderRowHeight + 36.dp
 
 @Composable
 fun HomeTopGradientBlur(

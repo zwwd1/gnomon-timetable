@@ -453,10 +453,8 @@ internal fun SinglePillWeekScheduleScreen(
         (rowHeaderWidth - weekHeaderOuterHorizontalPadding).coerceAtLeast(0.dp)
     val weekHeaderLabelsEndPadding =
         (weekGridEndPadding - weekHeaderOuterHorizontalPadding).coerceAtLeast(0.dp)
-    // Boundless header geometry. Both values must stay in sync with their upstream sources:
-    // AppTopBar in ScheduleAppUi.kt is statusBarsPadding + 66dp, and the week header row keeps
-    // the same 46dp height as the normal-mode pill.
-    val boundlessAppTopBarHeight = 66.dp
+    // Share the actual app-bar height: a fixed 66dp overlapped sync status at large font sizes.
+    val boundlessAppTopBarHeight = homeTopBarHeight(LocalDensity.current.fontScale)
     val boundlessHeaderOffset =
         adaptiveMetrics.safeTop + boundlessAppTopBarHeight + BoundlessWeekHeaderRowHeight
     val pagerState = rememberPagerState(
