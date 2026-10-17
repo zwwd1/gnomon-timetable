@@ -1,14 +1,14 @@
 {
-  "version": "1.2.15",
-  "sourceCommit": "f514059d45bf6806795584fedfe4cebedaa45a4d",
+  "version": "1.2.16",
+  "sourceCommit": "85b0b5e107ed24d6b9f3d39abfde633822e656c4",
   "sourceRepository": "zwwd1/gnomon-timetable",
   "artifact": {
-    "file": "Gnomon-Timetable-1.2.15.apk",
+    "file": "Gnomon-Timetable-1.2.16.apk",
     "packageName": "cn.scvtc.campus.preview",
-    "versionCode": 28,
+    "versionCode": 29,
     "certificateSha256": "5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3",
-    "size": 15093645,
-    "sha256": "f673d8e1355611188c91a55fc1fb4887476b5896983178eb388948ea3fa6d17b",
+    "size": 15093777,
+    "sha256": "8d469bacf0d5d38ef61768d844548424d9e95fde73f8d76080f99bc85229a15d",
     "abi": "universal"
   },
   "releaseBuild": "passed",
@@ -32,19 +32,19 @@
     "releaseHistory": true,
     "nativeLibrariesPreserved": true
   },
-  "localBuildInputsSha256": "dda4005355d0c876e058780da2203af7e779e0ed4f4d2a4cb51f8a74ac8a1430",
+  "localBuildInputsSha256": "cf654fd0906e9392c9cf9b833c5faa4fb272bee3a771da495340de98290468ce",
   "sourceGitMatch": {
     "contentDifferent": 0,
     "lineEndingsOnly": 1475
   },
-  "mappingId": "b2c08b116fc4fa201a9858cfb94b8b7b673bef1d1a86f37cdf17fca80c8a6ed9",
+  "mappingId": "cd57b34125be4a1cff8aff13ed3c313d8a99036e17175c3119dd4f70b9e7d917",
   "deviceTests": {
     "device": "Redmi K40 / Android 13 / API 33",
     "date": "2026-10-17",
-    "artifactSha256": "f673d8e1355611188c91a55fc1fb4887476b5896983178eb388948ea3fa6d17b",
+    "artifactSha256": "8d469bacf0d5d38ef61768d844548424d9e95fde73f8d76080f99bc85229a15d",
     "coverInstall": "passed",
-    "summary": "最终源码 f514059 的原签名包覆盖安装成功，学校课表和账号保留，18:48 自动同步成功。文件页能选择课表，默认选当前表；实际 JSON 导出与导入预览保持 39 条课程、11 节与 1 套作息，完整备份可创建并打开恢复预览。新建临时课表实际完成单次编辑和删除，再删除临时整表，恢复原学校课表。长名称按钮完整且可用，无快照的默认表正常显示静态网格。同期 1.2.14 覆核点按详情、长按编辑、成绩缓存、原生偏好/关于/更新、三种材质和完整动效控制。",
-    "limits": "未清除用户数据，未执行新装、退出账号、覆盖恢复、真实 WebDAV 或 AI 请求。受控后台 job 触发被周期时间检查延后，不能当作自然后台成功。自然会话到期和 Doze 尚未完整验收；通知实际送达及桌面组件持续更新未验收。Android 17 和其他机型未复测。",
+    "summary": "最终源码 85b0b5e 的原签名 1.2.16 覆盖安装成功，19:33 自动同步成功，无需重新输入。成绩入口再次核对 39 条记录、63.5 确认学分，未闪退。此前同日 1.2.15 实机走通 JSON 导出/导入预览、完整备份预览、临时课表实际编辑和删除、长名称按钮与无快照预览，临时数据全部清理后恢复原学校课表。19:11 验证手动开始刷新后立即退到后台，任务继续完成。",
+    "limits": "认证修复覆盖当前回调路径，单次返回首页后仍核验身份；本次未再次遇到真实 nginx HTTP 错误，不能将正常登录通过写成错误现场分支已实机复现。周期 Job 尚未到执行时间，未宣称自然周期或 Doze 通过。通知未授权，实际提醒与桌面组件持续刷新未验收。未清用户数据，不执行新装、退出、覆盖恢复；AI/WebDAV 未配置。其他机型与 Android 17 未复测。",
     "newCrash": false,
     "temporaryProfile": "deleted_and_original_school_restored",
     "freshInstall": "not_run_preserve_user_data"
