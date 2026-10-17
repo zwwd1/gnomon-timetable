@@ -1,14 +1,14 @@
 {
-  "version": "1.2.14",
-  "sourceCommit": "48cb226884d101ba5c119ef170e8f02b6b1d6496",
+  "version": "1.2.15",
+  "sourceCommit": "f514059d45bf6806795584fedfe4cebedaa45a4d",
   "sourceRepository": "zwwd1/gnomon-timetable",
   "artifact": {
-    "file": "Gnomon-Timetable-1.2.14.apk",
+    "file": "Gnomon-Timetable-1.2.15.apk",
     "packageName": "cn.scvtc.campus.preview",
-    "versionCode": 27,
+    "versionCode": 28,
     "certificateSha256": "5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3",
-    "size": 15093429,
-    "sha256": "bd276ec95b6be187bd21461fce1d7f4c2c7446a3f765976fd5fde041f5bbddf7",
+    "size": 15093645,
+    "sha256": "f673d8e1355611188c91a55fc1fb4887476b5896983178eb388948ea3fa6d17b",
     "abi": "universal"
   },
   "releaseBuild": "passed",
@@ -29,25 +29,25 @@
     "noPlaintextCredentials": true,
     "r8Mapping": true,
     "appName": true,
+    "releaseHistory": true,
     "nativeLibrariesPreserved": true
   },
-  "localBuildInputsSha256": "ff31ba32ef23490a135bd0c8e1f247f23b30b2aa3ae9e29b1cdf6b606ae69ecd",
+  "localBuildInputsSha256": "dda4005355d0c876e058780da2203af7e779e0ed4f4d2a4cb51f8a74ac8a1430",
   "sourceGitMatch": {
     "contentDifferent": 0,
     "lineEndingsOnly": 1475
   },
-  "mappingId": "373d995889794293a7e3f3800a3f3cd922d3ff85c95070807e1e569387a1393a",
+  "mappingId": "b2c08b116fc4fa201a9858cfb94b8b7b673bef1d1a86f37cdf17fca80c8a6ed9",
   "deviceTests": {
     "device": "Redmi K40 / Android 13 / API 33",
     "date": "2026-10-17",
-    "artifactSha256": "bd276ec95b6be187bd21461fce1d7f4c2c7446a3f765976fd5fde041f5bbddf7",
+    "artifactSha256": "f673d8e1355611188c91a55fc1fb4887476b5896983178eb388948ea3fa6d17b",
     "coverInstall": "passed",
-    "summary": "最终包覆盖安装后正常启动并自动同步，原课表保留。候选阶段已在同设备验证记住的密码原生登录成功、am force-stop 后重新进入自动同步成功、点按课程放大及长按进入编辑并取消。修正版检查默认三栏、深色课程文字、三种材质预览、完整材质及启动暂降效果开关；原生更新检查成功读取 GitHub，无需外部浏览器。8 项定向规则检查通过。",
-    "limits": "没有清除用户数据，因此不把首次安装邀请标成设备通过；自然会话到期、Android 17、新手机与外部 WebDAV 未验收。材质预览使用当前无壁纸课表，不能据此证明所有壁纸的光学和对比度表现。系统动画临时设为 1 倍以便测试，结束恢复原值 0。",
+    "summary": "最终源码 f514059 的原签名包覆盖安装成功，学校课表和账号保留，18:48 自动同步成功。文件页能选择课表，默认选当前表；实际 JSON 导出与导入预览保持 39 条课程、11 节与 1 套作息，完整备份可创建并打开恢复预览。新建临时课表实际完成单次编辑和删除，再删除临时整表，恢复原学校课表。长名称按钮完整且可用，无快照的默认表正常显示静态网格。同期 1.2.14 覆核点按详情、长按编辑、成绩缓存、原生偏好/关于/更新、三种材质和完整动效控制。",
+    "limits": "未清除用户数据，未执行新装、退出账号、覆盖恢复、真实 WebDAV 或 AI 请求。受控后台 job 触发被周期时间检查延后，不能当作自然后台成功。自然会话到期和 Doze 尚未完整验收；通知实际送达及桌面组件持续更新未验收。Android 17 和其他机型未复测。",
     "newCrash": false,
-    "naturalSessionExpiry": "not_run",
-    "freshInstall": "not_run_preserve_user_data",
-    "externalWebDAV": "not_run"
+    "temporaryProfile": "deleted_and_original_school_restored",
+    "freshInstall": "not_run_preserve_user_data"
   },
   "additionalArtifacts": []
 }
