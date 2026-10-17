@@ -1,5 +1,34 @@
 [
   {
+    "name": "Gnomon 课程表 1.2.17",
+    "tag_name": "v1.2.17",
+    "body": "# Gnomon 课程表 1.2.17\n\n• 首页标题和课表起始位置跟随系统字体大小一起调整，避免大字体下同步状态被星期栏遮挡。\n• 日视图、周视图与大屏布局共用同一份标题间距，默认字号的布局保持原样。\n• 成绩、学分和教务同步主页接回原版页面容器：大标题随滚动收放，顶部恢复透明渐变模糊，滚动回弹、弹层背景与底栏间距共用原版结构。\n\n包含 1.2.15 的文件与多课表修复、1.2.16 的认证错误页接续。沿用原包名和签名，可直接覆盖安装。\n\n安装包：**Gnomon-Timetable-1.2.17.apk**，14.39 MiB。\n\n[图文使用说明](https://github.com/zwwd1/gnomon-timetable/blob/main/docs/SCVTC_USAGE.md) · [对应源码](https://github.com/zwwd1/gnomon-timetable/tree/828f4a988931f08b54438957eab969062fe347b6)\n",
+    "html_url": "https://github.com/zwwd1/gnomon-timetable/releases/tag/v1.2.17",
+    "published_at": "2026-10-17T17:29:24Z",
+    "draft": false,
+    "prerelease": false,
+    "assets": [
+      {
+        "name": "BUILD_PROVENANCE.json",
+        "size": 3084,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.17/BUILD_PROVENANCE.json",
+        "digest": "sha256:c3846cf5f1202b11ef1d0b95d1eba2e42f9cbb744f3b827dd1bd9a8e71ec9dfe"
+      },
+      {
+        "name": "Gnomon-Timetable-1.2.17.apk",
+        "size": 15093993,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.17/Gnomon-Timetable-1.2.17.apk",
+        "digest": "sha256:6ef3d41f2884e94275cff973930a22f59f38ec18273daaa1bc78dcc52996d862"
+      },
+      {
+        "name": "Gnomon-Timetable-1.2.17.apk.sha256",
+        "size": 94,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.17/Gnomon-Timetable-1.2.17.apk.sha256",
+        "digest": "sha256:e3903de8e8c3ea4a1ea72184eeb24973bfbde4415fc3c523b02ba2b54145dcad"
+      }
+    ]
+  },
+  {
     "name": "Gnomon 课程表 1.2.16",
     "tag_name": "v1.2.16",
     "body": "# Gnomon 课程表 1.2.16\n\n• 学校登录回调出现错误页时，自动返回教务首页尝试接续一次，覆盖当前回调地址并保留旧地址兼容。\n• 仍需通过学生身份接口核验；学校人工安全确认不会被跳过。认证或读取失败时继续保留本机课表。\n\n沿用原包名与签名，直接覆盖安装，原有课表与账号保留。\n\n安装包：**Gnomon-Timetable-1.2.16.apk**，14.39 MiB。\n\n[图文使用说明](https://github.com/zwwd1/gnomon-timetable/blob/main/docs/SCVTC_USAGE.md) · [对应源码](https://github.com/zwwd1/gnomon-timetable/tree/85b0b5e107ed24d6b9f3d39abfde633822e656c4)\n",
