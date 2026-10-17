@@ -4811,11 +4811,12 @@ internal fun AppTopBar(
         val refreshContext = LocalContext.current
         val refreshScope = rememberCoroutineScope()
         var refreshRequested by remember { mutableStateOf(false) }
+        val homeBarHeight = homeTopBarHeight(LocalDensity.current.fontScale)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .windowInsetsPadding(WindowInsets.statusBarsIgnoringVisibility)
-                .height(66.dp)
+                .height(homeBarHeight)
                 .graphicsLayer { clip = false }
         ) {
             // Keep Material's bar shell, but render both the title and animated liquid controls as

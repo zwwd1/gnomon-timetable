@@ -23,6 +23,9 @@ import kotlin.math.roundToInt
 internal const val MinimumWeekCardHeightScale = 0.72f
 internal const val MaximumWeekCardHeightScale = 1.45f
 
+internal fun homeTopBarHeight(fontScale: Float): Dp =
+    66.dp + ((fontScale - 1f).coerceAtLeast(0f) * 51f).dp
+
 /*
  * The expanded week rail renders one 15sp period number plus two 11sp time lines. Its
  * current-period badge adds 1dp above and below the number. With time labels enabled, compressed
@@ -255,15 +258,16 @@ internal fun calculateHomeAdaptiveMetrics(
     val baseWeekTop = HomeInitialTopInset - 22.dp
     val screenAdjustment = ((heightDp - 720) * 0.08f).dp
     val statusAdjustment = (safeTop - 24.dp) * 0.35f
-    val fontScaleAdjustment = (0f - (fontScale - 1f).coerceAtLeast(0f) * 12f).dp
-    val compactWeekTop = (baseWeekTop + screenAdjustment + statusAdjustment + fontScaleAdjustment)
-        .coerceIn(84.dp, 108.dp)
+    // Week, date and sync status occupy 51sp. Grow the bar and its content clearance together.
+    val fontScaleAdjustment = homeTopBarHeight(fontScale) - 66.dp
+    val compactWeekTop = (baseWeekTop + screenAdjustment + statusAdjustment)
+        .coerceIn(84.dp, 108.dp) + fontScaleAdjustment
     val dayHeightAdjustment = ((heightDp - 800) * 0.025f).dp
     val compactDayTop = if (isLandscape) {
-        (safeTop + 64.dp + dayHeightAdjustment + fontScaleAdjustment).coerceIn(76.dp, 96.dp)
+        (safeTop + 64.dp + dayHeightAdjustment).coerceIn(76.dp, 96.dp)
     } else {
-        (110.dp + dayHeightAdjustment + statusAdjustment + fontScaleAdjustment).coerceIn(104.dp, 118.dp)
-    }
+        (110.dp + dayHeightAdjustment + statusAdjustment).coerceIn(104.dp, 118.dp)
+    } + fontScaleAdjustment
 
     if (!isLargeScreen) {
         return HomeAdaptiveMetrics(
@@ -273,7 +277,7 @@ internal fun calculateHomeAdaptiveMetrics(
             safeTop = safeTop,
             safeBottom = safeBottom,
             isThreeTwoLike = false,
-            topOverlayHeight = HomeTopOverlayHeight,
+            topOverlayHeight = HomeTopOverlayHeight + fontScaleAdjustment,
             // The top gradient extends well past the week's fixed header band so the boundless
             // header reads as a continuation of the app top bar chrome.
             topGradientHeight = 230.dp,
@@ -295,22 +299,22 @@ internal fun calculateHomeAdaptiveMetrics(
             safeTop = safeTop,
             safeBottom = safeBottom,
             isThreeTwoLike = false,
-            topOverlayHeight = HomeTopOverlayHeight,
+            topOverlayHeight = HomeTopOverlayHeight + fontScaleAdjustment,
             // The top gradient extends well past the week's fixed header band so the boundless
             // header reads as a continuation of the app top bar chrome.
             topGradientHeight = 230.dp,
-            dayContentTopPadding = compactDayTop.coerceIn(100.dp, 116.dp),
+            dayContentTopPadding = (compactDayTop - fontScaleAdjustment).coerceIn(100.dp, 116.dp) + fontScaleAdjustment,
             weekTopSpacerHeight = compactWeekTop,
             daySidePaneWidth = 0.dp,
             dayPaneGap = 0.dp,
             tabletContentMargin = if (widthDp >= 840) 28.dp else 20.dp,
-            tabletContentTop = (safeTop + 64.dp).coerceIn(72.dp, 112.dp),
+            tabletContentTop = (safeTop + 64.dp).coerceIn(72.dp, 112.dp) + fontScaleAdjustment,
             animationArc = 44.dp
         )
     }
 
-    val topOverlay = (safeTop + if (isThreeTwoLike) 96.dp else 104.dp).coerceIn(104.dp, 132.dp)
-    val contentTop = (safeTop + if (isThreeTwoLike) 76.dp else 84.dp).coerceIn(84.dp, 112.dp)
+    val topOverlay = (safeTop + if (isThreeTwoLike) 96.dp else 104.dp).coerceIn(104.dp, 132.dp) + fontScaleAdjustment
+    val contentTop = (safeTop + if (isThreeTwoLike) 76.dp else 84.dp).coerceIn(84.dp, 112.dp) + fontScaleAdjustment
     // The day view's left rail is a working pane (date + Today Agent), not a narrow summary
     // sidebar. Give it enough room for a readable conversation while retaining a larger safe
     // margin at both window edges on tablets.
@@ -326,7 +330,7 @@ internal fun calculateHomeAdaptiveMetrics(
         topOverlayHeight = topOverlay,
         topGradientHeight = topOverlay + 90.dp,
         dayContentTopPadding = contentTop,
-        weekTopSpacerHeight = (contentTop - 30.dp).coerceIn(54.dp, 82.dp),
+        weekTopSpacerHeight = (contentTop - fontScaleAdjustment - 30.dp).coerceIn(54.dp, 82.dp) + fontScaleAdjustment,
         daySidePaneWidth = sidePaneWidth,
         dayPaneGap = 20.dp,
         tabletContentMargin = if (isThreeTwoLike) 38.dp else 40.dp,

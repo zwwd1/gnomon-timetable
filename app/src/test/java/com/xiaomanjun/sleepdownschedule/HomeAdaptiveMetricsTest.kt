@@ -19,6 +19,19 @@ import org.junit.Test
 
 class HomeAdaptiveMetricsTest {
     @Test
+    fun largeFontsKeepBothViewsClearOfTheExpandedTitle() {
+        for ((width, height) in listOf(393 to 873, 800 to 1280, 1280 to 800)) {
+            val normal = calculateHomeAdaptiveMetrics(width, height, 28.dp, 0.dp, 1f)
+            val large = calculateHomeAdaptiveMetrics(width, height, 28.dp, 0.dp, 1.3f)
+            val growth = homeTopBarHeight(1.3f) - homeTopBarHeight(1f)
+            assertTrue(growth > 0.dp)
+            assertTrue(large.weekTopSpacerHeight >= normal.weekTopSpacerHeight + growth)
+            assertTrue(large.dayContentTopPadding >= normal.dayContentTopPadding + growth)
+            assertTrue(large.topOverlayHeight >= normal.topOverlayHeight + growth)
+        }
+    }
+
+    @Test
     fun phoneUsesStableResolutionAwareDayGeometry() {
         val metrics = calculateHomeAdaptiveMetrics(
             widthDp = 412,
