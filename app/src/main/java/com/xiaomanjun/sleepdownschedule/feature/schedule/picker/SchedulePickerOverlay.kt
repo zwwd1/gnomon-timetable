@@ -722,13 +722,12 @@ fun SchedulePickerOverlay(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
-                Modifier.padding(horizontal = 18.dp).height(92.dp),
+                Modifier.fillMaxWidth().padding(horizontal = 18.dp).height(92.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 PickerHeaderButton("取消", phaseInputEnabled, managerBackdrop, visualConfig) {
                     if (renameEditing) cancelRename() else if (!cancelDeleteReveal()) onClose()
                 }
-                Spacer(Modifier.weight(1f))
                 if (renameEditing) {
                     BasicTextField(
                         value = pickerState.renameDraft,
@@ -742,7 +741,7 @@ fun SchedulePickerOverlay(
                         cursorBrush = SolidColor(Color.White),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { commitRename() }),
-                        modifier = Modifier.width(150.dp).focusRequester(renameFocusRequester)
+                        modifier = Modifier.weight(1f).padding(horizontal = 8.dp).focusRequester(renameFocusRequester)
                     )
                 } else {
                     Text(
@@ -750,7 +749,10 @@ fun SchedulePickerOverlay(
                         color = Color.White,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.clickable(enabled = pagerInputEnabled) {
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(1f).padding(horizontal = 8.dp).clickable(enabled = pagerInputEnabled) {
                             visualProfile?.let {
                                 pickerState.renamingScheduleId = it.id
                                 pickerState.renameDraft = it.name
@@ -758,7 +760,6 @@ fun SchedulePickerOverlay(
                         }
                     )
                 }
-                Spacer(Modifier.weight(1f))
                 PickerHeaderButton(
                     label = if (renameEditing) "完成" else "应用",
                     enabled = if (renameEditing) phaseInputEnabled else pagerInputEnabled,
@@ -841,7 +842,7 @@ fun SchedulePickerOverlay(
                                 selected = profile.id == allState.schedules.firstOrNull { it.isActive }?.id,
                                 isCentered = page == pagerState.currentPage && pagerInputEnabled,
                                 deleteReveal = if (profile.id == pickerState.deletingScheduleId) pickerState.deleteReveal else 0f,
-                                snapshotFallbackOnly = true,
+                                snapshotFallbackOnly = false,
                                 modifier = Modifier.fillMaxSize(),
                                 onTap = {
                                     if (pagerInputEnabled) {
