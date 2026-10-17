@@ -58,228 +58,147 @@
     ]
   },
   {
-    "name": "晷 1.2.6",
-    "tag_name": "v1.2.6",
-    "body": "# 晷 1.2.6\n\n让连接学校这一步少些等待，回到课表时多些从容。\n\n- 重整登录页：输入和密码保留，等待时可取消，也可随时转到官方认证页。切换账号时重新匹配该账号记住的密码。\n- 身份核验与课表同步分开。学校身份通过后返回应用，学期、课程和成绩继续在后台读取；同步失败保留已有记录。\n- 自动认证识别验证码、账号安全提示和连接失败，按实际状态提供下一步。请求可以取消，身份查询和整次认证均有时间上限。\n- 官方认证页补齐玻璃三点菜单：教务首页、一网通办、刷新、重新认证、全屏和系统浏览器。填写学校表单时不再持续轮询教务接口。\n- 沿用原包名、签名与本机数据，课表编辑、提醒、组件和玻璃效果保留。\n\n[问题定位](../docs/LOGIN_REPAIR_20261011.md) · [验证记录](../VERIFICATION.md)。本轮未连接手机、未运行应用功能或性能测试，真实学校认证仍需使用者确认。\n",
-    "html_url": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.6",
-    "published_at": "2026-10-11T12:07:51Z",
+    "name": "Gnomon 课程表 1.2.14",
+    "tag_name": "v1.2.14",
+    "body": "# Gnomon 课程表 1.2.14\n\n把常用入口摆出来，修正材质与底栏，并补上实机发现的首屏图标问题。\n\n• 默认底栏调整为“成绩查询、课表、个人中心”，仍可自行增减入口。升级时只迁移旧的默认组合，保留手动配置。\n• 个人中心直接提供应用偏好设置、更新设置、关于应用、课表导入、课表导出和备份恢复，不再藏在同一个数据管理入口里。\n• 默认液态与恢复默认值沿用原版组件的玻璃效果；高斯、柔光保留各自的采样效果。材质不再统一改写按钮、滑块、开关和底栏的形状。\n• 修复材质切换后底栏选中项图标与文字消失、滑块拇指过透的问题，保留课程配色和按钮状态。\n• 项目介绍、反馈和版本页面改为应用内浏览，取消优先打开 Edge。更新设置支持在应用内检查、下载，再由系统确认安装。\n• 修复实机发现的首屏图标加载闪退；课表入口使用独立矢量图标。\n• 材质质量可选完整、均衡或低负载，启动时的临时降质也可单独关闭；保留入场动画开关。\n• 清理恢复、分享、勿扰和权限说明中的旧名称，移除已停用的上游免费 AI 选项；原作者署名与许可保留在关于页面。\n• 修正深色彩色课程卡按旧底色判断文字明暗的问题；退出按钮随同步页滚动，不再用固定渐变遮住重新登录。\n\n沿用原包名与原签名，可保留数据覆盖安装。\n\n在 Redmi K40 / Android 13 上覆盖安装并复测：启动、原生记住密码登录、进程重启后的自动同步、课程放大与长按编辑正常，原课表保留。三种材质预览与动效选项已检查。自然会话到期、Android 17 和外部 WebDAV 尚未完成本版实测，范围详见验证记录。\n\n安装包：**Gnomon-Timetable-1.2.14.apk**，14.39 MiB。\n\n[图文使用说明](https://github.com/zwwd1/gnomon-timetable/blob/main/docs/SCVTC_USAGE.md) · [对应源码](https://github.com/zwwd1/gnomon-timetable/tree/48cb226884d101ba5c119ef170e8f02b6b1d6496)\n",
+    "html_url": "https://github.com/zwwd1/gnomon-timetable/releases/tag/v1.2.14",
+    "published_at": "2026-10-16T19:59:16Z",
     "draft": false,
     "prerelease": false,
     "assets": [
       {
         "name": "BUILD_PROVENANCE.json",
-        "size": 2044,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.6/BUILD_PROVENANCE.json",
-        "digest": "sha256:3c13694e9a170ff20eaaf7e3a66cfc108d50edb4a7da6b46decbdb0761c0ac96"
+        "size": 2510,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.14/BUILD_PROVENANCE.json",
+        "digest": "sha256:39022615a748b074f127f5a06f2e7ba6703146b27a8475166ba46107133038ad"
       },
       {
-        "name": "scvtc-kejian-1.2.6.apk",
-        "size": 14855380,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.6/scvtc-kejian-1.2.6.apk",
-        "digest": "sha256:5c133f8afdd9950b4e9a32a3a6dcc47098a57c2ee2d036cdef7c753e63c3bec6"
+        "name": "Gnomon-Timetable-1.2.14.apk",
+        "size": 15093429,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.14/Gnomon-Timetable-1.2.14.apk",
+        "digest": "sha256:bd276ec95b6be187bd21461fce1d7f4c2c7446a3f765976fd5fde041f5bbddf7"
       },
       {
-        "name": "scvtc-kejian-1.2.6.apk.sha256",
-        "size": 89,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.6/scvtc-kejian-1.2.6.apk.sha256",
-        "digest": "sha256:12379d59f9e6cc3ce3dd8075d3a919faac1ad51c5e21adc9616b10b1a02a4086"
+        "name": "Gnomon-Timetable-1.2.14.apk.sha256",
+        "size": 94,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.14/Gnomon-Timetable-1.2.14.apk.sha256",
+        "digest": "sha256:eaf45700d153b5eda31a9f6736dc3c6958f92b3015fd2d811c1078bd17106756"
       }
     ]
   },
   {
-    "name": "晷 1.2.5",
-    "tag_name": "v1.2.5",
-    "body": "# 晷 1.2.5\n\n这一版处理 1.2.4 中用户反馈的连接问题。\n\n- 首次连接邀请按本机账号和课表判断，清除数据后也能重新出现，不再依赖安装时间。\n- 登录从川职教务的 SSO 入口开始，转为手机认证页面时保留学校给出的完整回调。\n- 本机密钥永久失效时，新写入使用新的密钥版本；旧课表和密文保留，不清库，也不反复使用失效密钥。\n- 原包名、原签名、课表编辑、提醒、组件和玻璃动效继续保留。\n\nRelease 构建和安装包检查以本版本的验证记录为准。未连接手机调试，真实学校登录与过期恢复仍由使用者验收。\n",
-    "html_url": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.5",
-    "published_at": "2026-10-11T09:12:10Z",
+    "name": "Gnomon 课程表 1.2.13",
+    "tag_name": "v1.2.13",
+    "body": "# Gnomon 课程表 1.2.13\n\n这次先把作息设置的路理顺，再补课表上的时间和休息分隔。新增的数据操作也都接到了文件和备份流程里。\n\n• 理顺课表详细设置：节次数量、作息列表、逐节编辑、时间轴、添加与复制各有入口，查看和启用作息分开。\n• 缺时间的节次照常列出，可以逐节填写；调整节数时保留已知时间，不替用户编一套学校作息。\n• 周课表默认显示节次起止时间，增加按实际分段计算的午休、晚休分隔，保留午间教学；移动、复制和详情回落同步使用新的位置。\n• 课程卡突出课名、地点和教师，详情随内容收拢；可分别选择液态、高斯、柔光及材质质量。壁纸、效果与布局预览可取消或应用。\n• 数据管理增加 JSON / ICS 导入预览、所选课表导出、本机备份历史及手动 WebDAV 上传、浏览和恢复。日历按北京时间与实际调休日期处理，缺少时间的安排会说明跳过数量。\n• 应用偏好补上时间栏、休息分隔、教师地点显隐、预测性返回、触感和质量选项，并说明作用范围。更新设置集中显示版本、检查与提醒选项。\n\n沿用原包名与原签名，支持覆盖安装。本轮只更新 Gnomon，Lumen 保持原版本。\n\n手机未连接，尚未实测这份新包的触摸、旋转、键盘、返回手势与流畅度。WebDAV 已做本地协议检查，尚未对用户实际服务器联调；学校登录和自然到期恢复也没有在本轮重新实机验收。\n\n[本版入口与使用范围](../docs/GNOMON_1.2.13.md)\n\n安装包：**Gnomon-Timetable-1.2.13.apk**，14.38 MiB。\n\nSHA-256：`f7f4ba27222a3e6dfd460305caf46cd03a772f4a114388f3e434626571fb98d9`\n\n[使用说明](https://github.com/zwwd1/gnomon-timetable/blob/v1.2.13/docs/SCVTC_USAGE.md) · [对应源码](https://github.com/zwwd1/gnomon-timetable/tree/c7a3e3e612c1874e3f775015d3bbb1de439b242d)\n",
+    "html_url": "https://github.com/zwwd1/gnomon-timetable/releases/tag/v1.2.13",
+    "published_at": "2026-10-16T09:06:20Z",
     "draft": false,
     "prerelease": false,
     "assets": [
       {
         "name": "BUILD_PROVENANCE.json",
-        "size": 2044,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.5/BUILD_PROVENANCE.json",
-        "digest": "sha256:99e94f811a422405e8b5647be71121a8766b3540de66692bb0657b56a9d42f06"
+        "size": 1965,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.13/BUILD_PROVENANCE.json",
+        "digest": "sha256:02215371bb09ab3060c4f4efee74e53c63b4545144ceb8ae231c6c3bf6f7cc28"
       },
       {
-        "name": "scvtc-kejian-1.2.5.apk",
-        "size": 14838652,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.5/scvtc-kejian-1.2.5.apk",
-        "digest": "sha256:8b73fa2bbc1d5bbb8355a3adcc96a456bd72bbec2151c3cdee63a32b3a125e67"
+        "name": "Gnomon-Timetable-1.2.13.apk",
+        "size": 15075245,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.13/Gnomon-Timetable-1.2.13.apk",
+        "digest": "sha256:f7f4ba27222a3e6dfd460305caf46cd03a772f4a114388f3e434626571fb98d9"
       },
       {
-        "name": "scvtc-kejian-1.2.5.apk.sha256",
-        "size": 89,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.5/scvtc-kejian-1.2.5.apk.sha256",
-        "digest": "sha256:6194e38a7ecab502d9f640558519a81678ef6ea9d6b7f9e6d1d1cec1e945dd77"
+        "name": "Gnomon-Timetable-1.2.13.apk.sha256",
+        "size": 94,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.13/Gnomon-Timetable-1.2.13.apk.sha256",
+        "digest": "sha256:615f316edff8d33ab717264c4b6b7c5646114685c40d3adc3d78f9a17134e17b"
       }
     ]
   },
   {
-    "name": "晷 1.2.4",
-    "tag_name": "v1.2.4",
-    "body": "# 晷 1.2.4\n\n把日子排成课表，把空白留给生活。\n\n- 应用更名为晷，桌面换上原创头像。包名与签名延续，可直接覆盖升级。\n- 登录改为与璟一致的学校移动认证流程，等待实际字段就绪。输入过的密码在本机加密记住；官方补充认证后，等课表保存完成再关闭页面。\n- 第一次安装且没有记录时，先弹出连接邀请；已有课程、手动修改和自选照片保留。\n- 成绩完整返回后立即显示，毕业要求随后更新；学期筛选使用本机记录。\n- 默认壁纸换为简洁的日夜留白。入场动画可关闭，底栏可增加或减少课程、成绩和教务同步入口，原有玻璃效果保留。\n- 优化图片编码，沿用五种助手状态，云服务继续暂停。\n\n构建与安装包检查见 [验证记录](../VERIFICATION.md)。本轮没有连接手机，学校实际登录与交互体验由用户验收。\n",
-    "html_url": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.4",
-    "published_at": "2026-10-11T05:12:42Z",
+    "name": "Gnomon 课程表 1.2.12",
+    "tag_name": "v1.2.12",
+    "body": "# Gnomon 课程表 1.2.12\n\n• 成绩、教务接入同一主页面，切换时保留底栏、课表位置和成绩筛选，不再反复打开独立窗口。\n• 底栏增减入口时平滑调整宽度，修正拖动范围与回调；恢复默认按钮与设置内容对齐。\n• 新增液态、高斯、柔光三种玻璃。各自调节、实时预览，应用后独立保存，取消不覆盖原设置。\n• 缺失的节次时间可以逐节补填；调休页面不再等待活动课表的作息加载，回传时核对目标课表与草稿。\n• 整理 AI 服务地址、模型和 Key 的输入布局，Key 默认遮掩，保留原有本机加密保存。\n\n本轮仅修改 Gnomon，不改 Lumen。原课表、壁纸、作息、提醒与学校认证链路保留，沿用包名和原签名。\n\nRelease 构建、原签名与 21 项定向规则检查通过。手机操作、三种材质的实机效果和 Android 17 手势仍待复测。\n\n安装包：**Gnomon-Timetable-1.2.12.apk**，14.25 MiB。\n\nSHA-256：`9eb6be8a23041a6c90867ac4e27214671288070174b5711846d88e5d7ca57f67`\n\n[使用说明](https://github.com/zwwd1/gnomon-timetable/blob/v1.2.12/docs/SCVTC_USAGE.md) · [对应源码](https://github.com/zwwd1/gnomon-timetable/tree/582f533b8eba81ce936eb4a7b4bb378076840bc4)\n",
+    "html_url": "https://github.com/zwwd1/gnomon-timetable/releases/tag/v1.2.12",
+    "published_at": "2026-10-15T09:52:54Z",
     "draft": false,
     "prerelease": false,
     "assets": [
       {
         "name": "BUILD_PROVENANCE.json",
-        "size": 2014,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.4/BUILD_PROVENANCE.json",
-        "digest": "sha256:e19519d8d3ca0afb76ac5f3bf643ea082372d774aacc268377a62a65b1dbc731"
+        "size": 1590,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.12/BUILD_PROVENANCE.json",
+        "digest": "sha256:34608a41f09bbb11fd1fd87437019a7bb0f7e940bec173b7d8f6c27a153afd41"
       },
       {
-        "name": "scvtc-kejian-1.2.4.apk",
-        "size": 14838648,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.4/scvtc-kejian-1.2.4.apk",
-        "digest": "sha256:636445aa7119ee92d2ff84be6e8413dcdbb8bca8f2db21047e2c5de791c3020f"
+        "name": "Gnomon-Timetable-1.2.12.apk",
+        "size": 14943697,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.12/Gnomon-Timetable-1.2.12.apk",
+        "digest": "sha256:9eb6be8a23041a6c90867ac4e27214671288070174b5711846d88e5d7ca57f67"
       },
       {
-        "name": "scvtc-kejian-1.2.4.apk.sha256",
-        "size": 89,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.4/scvtc-kejian-1.2.4.apk.sha256",
-        "digest": "sha256:4ef4b0e7dacc7e16800edcbf596bd9b4969bf5e48bcaa4a8b466c4746fa446f9"
+        "name": "Gnomon-Timetable-1.2.12.apk.sha256",
+        "size": 94,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.12/Gnomon-Timetable-1.2.12.apk.sha256",
+        "digest": "sha256:1b0327d3597558cfa9d870ae17f29dfe1b32dca54b8e5034e8daeab755bcc770"
       }
     ]
   },
   {
-    "name": "川职·课间 1.2.3",
-    "tag_name": "v1.2.3",
-    "body": "# 川职·课间 1.2.3\n\n这次主要修复登录被误判为需要补充认证的问题，并整理首次连接教务的操作。\n\n- 新安装且没有本机数据时，先填写川职学号和密码；已有数据的覆盖安装直接进入应用。\n- 普通学校弹窗不再直接当作验证码，登录表单未准备好与认证回调超时分别提示。\n- 核验身份后先保存账号与课表连接，再在后台读取课程并安排自动刷新。\n- 「连接川职教务」按钮补齐留白，登录页处理键盘、大屏宽度和输入法提交。\n- 日夜切换增加颜色过渡，Miuix 底栏和原有玻璃效果保留。\n- 项目首页重新说明课间与知学的区别、使用方法和构建方式。\n\n直接覆盖安装即可，原签名、已有课表和编辑记录保留，云服务继续暂停。\n\n本轮不连接手机，不运行功能或性能测试。正式构建和签名检查见验证报告；学校实际登录、会话过期恢复及界面体验由用户验收。\n",
-    "html_url": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.3",
-    "published_at": "2026-10-10T16:17:04Z",
+    "name": "Gnomon 课程表 1.2.11",
+    "tag_name": "v1.2.11",
+    "body": "# Gnomon 课程表 1.2.11\n\n• 点按课程放大查看课名、老师和地点，长按再编辑；缩短课程卡片的展开、收起和表单过渡。\n• 刷新先校验账号、学期和覆盖范围，保留手动修改、已删除课程和其他教学周的数据。\n• 两版更新历史联网同步 GitHub 发布记录；离线仍能查看本地日志。\n• 保留原包名与签名，可直接覆盖安装。\n\nGnomon 侧重周课表、课程编辑、作息、提醒和桌面组件，安装包兼容多个架构。\n\n包含此前 1.2.10 的数据保护和同步修复。学校验证码仍需在官方认证页完成，原有离线数据保留。\n\n安装包：**Gnomon-Timetable-1.2.11.apk**，14.20 MiB。\n\nSHA-256：`89b88f763ffd311554c357fc4cdd98b91b334e257f39b7bf240b18ebac0e42ce`\n\n[使用说明](https://github.com/zwwd1/gnomon-timetable/blob/v1.2.11/docs/SCVTC_USAGE.md) · [源码](https://github.com/zwwd1/gnomon-timetable/tree/5487edb35834ba07c24c2a11aa750ee42b25e58b)\n",
+    "html_url": "https://github.com/zwwd1/gnomon-timetable/releases/tag/v1.2.11",
+    "published_at": "2026-10-14T11:25:41Z",
     "draft": false,
     "prerelease": false,
     "assets": [
       {
         "name": "BUILD_PROVENANCE.json",
-        "size": 1957,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.3/BUILD_PROVENANCE.json",
-        "digest": "sha256:04f25917b93a89c025e78db405c1fafadfa40e45f121411d4984786fa3e4e5a5"
+        "size": 1395,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.11/BUILD_PROVENANCE.json",
+        "digest": "sha256:7a46123371d20c42e26af828f8525e07bdcb13b68f8be1c47f0686671b22bf04"
       },
       {
-        "name": "scvtc-kejian-1.2.3.apk",
-        "size": 19969132,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.3/scvtc-kejian-1.2.3.apk",
-        "digest": "sha256:c6c4b10b968b633c536f3b5fd6853dd5d431c758254d9fc869fd6e80ff2077d0"
+        "name": "Gnomon-Timetable-1.2.11.apk",
+        "size": 14894237,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.11/Gnomon-Timetable-1.2.11.apk",
+        "digest": "sha256:89b88f763ffd311554c357fc4cdd98b91b334e257f39b7bf240b18ebac0e42ce"
       },
       {
-        "name": "scvtc-kejian-1.2.3.apk.sha256",
-        "size": 89,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.3/scvtc-kejian-1.2.3.apk.sha256",
-        "digest": "sha256:48d76bb3e6f170f999bf9cfcd02e325e77e4a43eab97dc5c1ba2ae676acd055c"
+        "name": "Gnomon-Timetable-1.2.11.apk.sha256",
+        "size": 94,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.11/Gnomon-Timetable-1.2.11.apk.sha256",
+        "digest": "sha256:db9f05b41d3ac206e8eb59e82447886acead60868d4df187ce95cfa4732cee59"
       }
     ]
   },
   {
-    "name": "川职·课间 1.2.2",
-    "tag_name": "v1.2.2",
-    "body": "# 川职·课间 1.2.2\n\n- 学号和密码可以直接在应用里填写，登录后自动同步课表和成绩。会话过期会在后台尝试重新认证。\n- 成绩增加“需要留意”筛选；学分页面增加进度、待核对记录和学期课程入口。\n- 刷新继续使用后台任务，已有课程编辑和缓存保留。\n- 仓库说明重新整理，安装、使用和隐私说明更直接。\n\n\n直接覆盖安装即可，原签名和已有记录保留，云服务继续暂停。\n\n本轮完成正式打包、必要发布检查及签名核对；没有连接手机或运行功能、性能测试。学校实际登录、会话自然过期恢复和页面体验由用户验收。\n",
-    "html_url": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.2",
-    "published_at": "2026-10-10T12:14:24Z",
+    "name": "Gnomon 课程表 1.2.9",
+    "tag_name": "v1.2.9",
+    "body": "# Gnomon 课程表 1.2.9\r\n\r\n这次把登录和后台同步再理了一遍，也补上第一次使用的说明。\r\n\r\n应用与项目更名为 Gnomon 课程表，沿用原包名、签名和本机数据。登录表单就绪后即可提交，不再等待无关图片全部加载。旧版后台刷新失败会正确重试，网络故障采用有限次数与递增间隔；需要学校补充认证时保留缓存。手动同步的读取和处理移到后台线程，保留原有玻璃动效、课表编辑、提醒与桌面组件。\r\n\r\n首次打开且没有账号和课程时，会显示连接学校、查看课程和设置提醒的使用指南。可选择稍后，继续手动添加课程。\r\n\r\n本次发布一份日常安装包，保留原包名和原签名，可以直接覆盖安装。Gnomon 侧重课程编辑、作息、提醒和桌面组件；查看教务服务较多时，也可选择 Lumen。\r\n\r\n已完成 Release 构建、原签名与安装包检查，以及后台核心 5 项定向回归。此前 1.2.8 在 Android 17 真机验证过受控慢加载原生认证；1.2.9 的首次弹窗、流畅度对比、自然会话到期和真正后台同步尚待手机复测，不承诺学校认证永久有效。\r\n\r\n安装包：**Gnomon-Timetable-1.2.9.apk**，约 14.20 MiB。\r\n\r\nSHA-256：`2a407a578a3ec707cd6300b02499a6398329ea28b9be33d3678e6e82c70c2eaa`\r\n\r\n[图文使用说明](https://github.com/zwwd1/gnomon-timetable/blob/v1.2.9/docs/SCVTC_USAGE.md) · [对应源码](https://github.com/zwwd1/gnomon-timetable/tree/9f09afbbff5c4fb3cf41cfadf1d705c7c9ace264)\r\n",
+    "html_url": "https://github.com/zwwd1/gnomon-timetable/releases/tag/v1.2.9",
+    "published_at": "2026-10-13T05:21:26Z",
     "draft": false,
     "prerelease": false,
     "assets": [
       {
         "name": "BUILD_PROVENANCE.json",
-        "size": 1957,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.2/BUILD_PROVENANCE.json",
-        "digest": "sha256:655fdb01e2d09794a0035f43ca9a0c92c24f0027e847083fb24f4ec736a6e2fc"
+        "size": 1520,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.9/BUILD_PROVENANCE.json",
+        "digest": "sha256:470db7fdfb37c7fc7dfd93b081302fadf3f4383168ea11bd92dcdb5375ff1689"
       },
       {
-        "name": "scvtc-kejian-1.2.2.apk",
-        "size": 19952504,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.2/scvtc-kejian-1.2.2.apk",
-        "digest": "sha256:2ddb4b955993bc21a7fb7a11cc8711e6608c39e0843f5a8d001411e549beb42c"
+        "name": "Gnomon-Timetable-1.2.9.apk",
+        "size": 14889416,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.9/Gnomon-Timetable-1.2.9.apk",
+        "digest": "sha256:2a407a578a3ec707cd6300b02499a6398329ea28b9be33d3678e6e82c70c2eaa"
       },
       {
-        "name": "scvtc-kejian-1.2.2.apk.sha256",
-        "size": 89,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.2/scvtc-kejian-1.2.2.apk.sha256",
-        "digest": "sha256:772fafa243db916fb645a6d256f09f2f488888f75e8d6dfed8fad82dcf8cad20"
-      }
-    ]
-  },
-  {
-    "name": "川职·课间 1.2.1",
-    "tag_name": "v1.2.1",
-    "body": "川职·课间 1.2.1\n\n完善成绩与学分分栏、学期选择、搜索排序、加权绩点、确认所得学分及可展开的完整成绩卡片。成绩与毕业要求独立保留成功记录，刷新离开页面后继续。\n\n沿用原包名、原签名、已有数据与完整壁纸玻璃动效。覆盖安装请勿先卸载，云服务仍暂停。\n\n验证仅包含必要 Release 构建及产物核对；没有手机安装、功能或性能测试，真实接口结果与操作体验由用户验收。\n",
-    "html_url": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.1",
-    "published_at": "2026-10-10T05:55:38Z",
-    "draft": false,
-    "prerelease": false,
-    "assets": [
-      {
-        "name": "BUILD_PROVENANCE.json",
-        "size": 1916,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.1/BUILD_PROVENANCE.json",
-        "digest": "sha256:3c609ec5fd018831edd1028f3121bb0eba39d44e8bbdb72b27c2e38ce6fb459a"
-      },
-      {
-        "name": "scvtc-kejian-1.2.1.apk",
-        "size": 19936124,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.1/scvtc-kejian-1.2.1.apk",
-        "digest": "sha256:bad92bf69587614ed7c14baaf109bd6c009a778396cbbb06d8270bcb9b477549"
-      },
-      {
-        "name": "scvtc-kejian-1.2.1.apk.sha256",
-        "size": 89,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.1/scvtc-kejian-1.2.1.apk.sha256",
-        "digest": "sha256:7bdc820990ba07df7e62028927048f37de2af7355799384c32f41c06af904b62"
-      }
-    ]
-  },
-  {
-    "name": "川职·课间 1.2.0",
-    "tag_name": "v1.2.0",
-    "body": "川职·课间 1.2.0\n\n修复更新检查，改为本项目 GitHub 更新清单。新增原创川职月光壁纸和小澄五种状态；清理 Gitee 文案和日常上游渠道，保留原版 Miuix、玻璃双入口底栏与完整动效。\n\n保留原包名、原签名及已有账号、课程、查询、自选壁纸和本地编辑；云服务继续暂停。覆盖安装请勿先卸载。\n\n验证：本机 Release 构建、原证书、版本、源码关联、ZIP 完整性、16 KiB 对齐及凭据明文扫描，具体结果见 BUILD_PROVENANCE.json。本轮没有手机安装、功能测试或性能测量；学校登录自然过期恢复及 UI 体验留给用户验收。\n",
-    "html_url": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.2.0",
-    "published_at": "2026-10-10T01:20:52Z",
-    "draft": false,
-    "prerelease": false,
-    "assets": [
-      {
-        "name": "BUILD_PROVENANCE.json",
-        "size": 1874,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.0/BUILD_PROVENANCE.json",
-        "digest": "sha256:5b6d1b65f9ca05bddacad42cb479e87ed8248b192a44ca7c4109524f4fe79e8f"
-      },
-      {
-        "name": "scvtc-kejian-1.2.0.apk",
-        "size": 19903356,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.0/scvtc-kejian-1.2.0.apk",
-        "digest": "sha256:a7440f1bbbc293b4caf6d5b0a9aed4da4f8404f848dcdcbaca23f7a8cc9423d6"
-      },
-      {
-        "name": "scvtc-kejian-1.2.0.apk.sha256",
-        "size": 89,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.2.0/scvtc-kejian-1.2.0.apk.sha256",
-        "digest": "sha256:72bf8ed9f57e162e8c7216e17210e89a38a5e100b41120b5c65a694202d79664"
-      }
-    ]
-  },
-  {
-    "name": "川职·课间 1.0.0",
-    "tag_name": "v1.0.0",
-    "body": "川职·课间 1.0.0 · 本项目第一版\r\n\r\n直接基于 SleepDown v1.2.6 完整源码重构，保留原生 Miuix、双入口玻璃底栏与动效；接入川职官方认证与原生课表同步。\r\n\r\n包名和原签名保留，支持符合升级条件的覆盖安装。账号密码仅在本机加密保存；云服务暂停。未适配的本校模块明确保留官方入口。\r\n\r\n验证范围：Android 13 手机已验证覆盖升级、真实 17 项课程安排、应用重启后免输入继续同步。学校 Session 过期恢复及 Android 17 尚未实测。\r\n\r\n- [使用方法](https://github.com/zwwd1/scvtc-kejian/blob/main/docs/SCVTC_USAGE.md)\r\n- [构建原理](https://github.com/zwwd1/scvtc-kejian/blob/main/docs/SCVTC_ARCHITECTURE.md)\r\n- [隐私说明](https://github.com/zwwd1/scvtc-kejian/blob/main/docs/SCVTC_PRIVACY.md)\r\n- [完整验证记录](https://github.com/zwwd1/scvtc-kejian/blob/main/VERIFICATION.md)\r\n\r\nAPK SHA-256：`f935cb0a62e8f859a806dfb8bb148a7c17a5704f6f607b6cede4f93ac38adc34`。最低 Android 13。此发布流程仅校验并分发已在本机完成原签名的 APK，不在云端保存学校密码或签名私钥。\r\n",
-    "html_url": "https://github.com/zwwd1/scvtc-kejian/releases/tag/v1.0.0",
-    "published_at": "2026-10-09T06:48:42Z",
-    "draft": false,
-    "prerelease": false,
-    "assets": [
-      {
-        "name": "scvtc-campus-old-1.0.0.apk",
-        "size": 10549772,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.0.0/scvtc-campus-old-1.0.0.apk",
-        "digest": "sha256:f935cb0a62e8f859a806dfb8bb148a7c17a5704f6f607b6cede4f93ac38adc34"
-      },
-      {
-        "name": "scvtc-campus-old-1.0.0.apk.sha256",
+        "name": "Gnomon-Timetable-1.2.9.apk.sha256",
         "size": 93,
-        "browser_download_url": "https://github.com/zwwd1/scvtc-kejian/releases/download/v1.0.0/scvtc-campus-old-1.0.0.apk.sha256",
-        "digest": "sha256:59e7298b4a9b242494b8041a4076e2360871aba61556c0167049bf612f650001"
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.9/Gnomon-Timetable-1.2.9.apk.sha256",
+        "digest": "sha256:311e46ae167c439ca2a4185b175b817eb30072ec8e0f3ee96e63e52fc86f3f47"
       }
     ]
   }
