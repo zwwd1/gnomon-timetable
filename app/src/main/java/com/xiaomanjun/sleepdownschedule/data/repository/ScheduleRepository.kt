@@ -25,6 +25,8 @@ class ScheduleRepository(private val database: AppDatabase) {
     private val profileDao = database.scheduleProfileDao()
     private val periodSchemeDao = database.periodSchemeDao()
 
+    val profiles: Flow<List<ScheduleProfileEntity>> = profileDao.observeProfiles()
+
     suspend fun switchPeriodScheme(scheduleId: Int, schemeId: Long) = database.withTransaction {
         val schemes = periodSchemeDao.getSchemes(scheduleId)
         val target = schemes.firstOrNull { it.id == schemeId } ?: error("作息方案不存在")

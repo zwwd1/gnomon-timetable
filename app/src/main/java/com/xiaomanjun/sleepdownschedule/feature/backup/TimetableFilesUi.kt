@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kyant.backdrop.Backdrop
 import com.xiaomanjun.sleepdownschedule.*
 import com.xiaomanjun.sleepdownschedule.feature.importing.IcsScheduleCodec
@@ -34,7 +35,8 @@ internal fun TimetableFilesPanel(state: AppState, backdrop: Backdrop?, showImpor
     val app = context.applicationContext as CourseScheduleApp
     val scope = rememberCoroutineScope()
     var selectedId by remember { mutableIntStateOf(state.config.id) }
-    val profiles = state.schedules
+    val profiles by remember(app) { app.repository.profiles }
+        .collectAsStateWithLifecycle(initialValue = state.schedules)
     val selected = profiles.firstOrNull { it.id == selectedId } ?: profiles.firstOrNull()
     var pendingText by remember { mutableStateOf<String?>(null) }
     var pendingIcsReport by remember { mutableStateOf<String?>(null) }
