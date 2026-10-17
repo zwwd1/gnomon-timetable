@@ -20,6 +20,22 @@ internal fun fileTestArchive(): BackupArchive {
 }
 
 class TimetableJsonTest {
+    @Test fun unsetSchemeClocksRoundTripInFullBackupAndTimetableJson() {
+        val original = fileTestArchive()
+        val schedule = original.data.schedules.single().let { value ->
+            value.copy(periodSchemes = value.periodSchemes.map {
+                it.copy(morningStartTime = "", noonStartTime = "", afternoonStartTime = "", eveningStartTime = "")
+            })
+        }
+        val archive = original.copy(data = original.data.copy(schedules = listOf(schedule)))
+        assertEquals(schedule, BackupCodec.decode(BackupCodec.encode(archive)).data.schedules.single())
+        val document = TimetableJsonDocument(metadata = archive.metadata, schedule = schedule)
+        assertEquals(schedule, TimetableJsonCodec.decode(TimetableJsonCodec.encode(document)).data.schedules.single())
+        val invalid = schedule.copy(periodSchemes = schedule.periodSchemes.map { scheme ->
+            scheme.copy(times = scheme.times.map { it.copy(endTime = "") })
+        })
+        assertTrue(runCatching { TimetableJsonCodec.encode(document.copy(schedule = invalid)) }.isFailure)
+    }
     @Test fun jsonRoundTripRetainsTwoSchemesUnknownClockAndAdjustments() {
         val original = fileTestArchive()
         val document = TimetableJsonDocument(metadata = original.metadata, schedule = original.data.schedules.single())

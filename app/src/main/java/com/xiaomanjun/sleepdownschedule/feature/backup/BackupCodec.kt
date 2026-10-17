@@ -514,10 +514,11 @@ object BackupCodec {
                 if (scheme.classDurationMinutes < 0 || scheme.breakDurationMinutes < 0) {
                     fail("scheme 时长参数非法")
                 }
-                validateShortText("scheme morningStartTime", scheme.morningStartTime, allowBlank = false)
-                validateShortText("scheme noonStartTime", scheme.noonStartTime, allowBlank = false)
-                validateShortText("scheme afternoonStartTime", scheme.afternoonStartTime, allowBlank = false)
-                validateShortText("scheme eveningStartTime", scheme.eveningStartTime, allowBlank = false)
+                // Official timetables can have an unset clock. Preserve that state in backups.
+                validateShortText("scheme morningStartTime", scheme.morningStartTime)
+                validateShortText("scheme noonStartTime", scheme.noonStartTime)
+                validateShortText("scheme afternoonStartTime", scheme.afternoonStartTime)
+                validateShortText("scheme eveningStartTime", scheme.eveningStartTime)
                 validateText("scheme specialBreaksJson", scheme.specialBreaksJson)
                 validateText("scheme overridesJson", scheme.overridesJson)
                 val schemePeriodIndexes = HashSet<Int>()
