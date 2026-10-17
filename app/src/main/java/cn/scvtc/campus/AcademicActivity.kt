@@ -23,6 +23,7 @@ import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.catalog.components.LiquidBottomTabs
 import com.kyant.backdrop.catalog.components.LiquidBottomTab
 import com.xiaomanjun.sleepdownschedule.core.ui.settings.GlassMiuixSettingsTheme
+import com.xiaomanjun.sleepdownschedule.core.ui.settings.GlassMiuixRootSettingsScaffold
 import com.xiaomanjun.sleepdownschedule.core.ui.designsystem.DialogLiquidButton
 import com.xiaomanjun.sleepdownschedule.app.ui.DockScrollPadding
 import com.xiaomanjun.sleepdownschedule.MainActivity
@@ -48,6 +49,7 @@ import kotlinx.coroutines.withContext
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TabRow
 import top.yukonga.miuix.kmp.preference.WindowDropdownPreference
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.xiaomanjun.sleepdownschedule.core.ui.settings.SleepDownLiquidDropdownPreference
 import java.math.BigDecimal
 
@@ -63,11 +65,14 @@ class AcademicActivity : ComponentActivity() {
 
 @Composable
 fun AcademicContent(config: ScheduleConfigEntity, backdrop: Backdrop?, autoRefresh: Boolean = true) {
-    GlassMiuixSettingsTheme(config) { AcademicBody(config, backdrop, autoRefresh) }
+    GlassMiuixRootSettingsScaffold(title = "成绩与学分", config = config) { innerPadding ->
+        AcademicBody(config, backdrop, autoRefresh, innerPadding)
+    }
 }
 
 @Composable
-private fun AcademicBody(config: ScheduleConfigEntity, backdrop: Backdrop?, autoRefresh: Boolean) {
+private fun AcademicBody(config: ScheduleConfigEntity, backdrop: Backdrop?, autoRefresh: Boolean,
+                         innerPadding: PaddingValues) {
             val context = LocalContext.current
             val app = context.applicationContext as CourseScheduleApp
             val profile by AutoRefreshScheduleStore.observe(app).collectAsState()
@@ -107,15 +112,14 @@ private fun AcademicBody(config: ScheduleConfigEntity, backdrop: Backdrop?, auto
                     else -> matching
                 }
             }
-                    LazyColumn(Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 24.dp,
+                    LazyColumn(Modifier.fillMaxSize().overScrollVertical(),
+                        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = innerPadding.calculateTopPadding() + 8.dp,
                             bottom = DockScrollPadding + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()),
                         verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         item(key = "heading") {
                             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    Text("成绩与学分", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
                                     Text(if (snapshot == null) "学校记录 · 本机离线保存" else "${snapshot!!.grades.size} 条成绩 · 本机已保存",
                                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }

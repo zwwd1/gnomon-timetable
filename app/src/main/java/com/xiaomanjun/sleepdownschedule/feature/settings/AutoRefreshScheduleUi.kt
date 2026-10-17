@@ -29,6 +29,7 @@ import com.xiaomanjun.sleepdownschedule.app.ui.DockScrollPadding
 import com.xiaomanjun.sleepdownschedule.app.ui.detailContentTopPadding
 import com.xiaomanjun.sleepdownschedule.core.ui.designsystem.*
 import com.xiaomanjun.sleepdownschedule.core.ui.settings.SleepDownLiquidDropdownPreference
+import com.xiaomanjun.sleepdownschedule.core.ui.settings.GlassMiuixRootSettingsScaffold
 import com.xiaomanjun.sleepdownschedule.core.wallpaper.loadWallpaperSource
 import com.xiaomanjun.sleepdownschedule.feature.importing.EduAdapter
 import com.xiaomanjun.sleepdownschedule.feature.importing.EduSchoolPickerScreen
@@ -57,12 +58,8 @@ fun AutoRefreshScheduleSettingsScreen(
     rootPage: Boolean = false
 ) {
     if (rootPage) {
-        Column(Modifier.fillMaxSize().padding(bottom = 78.dp)) {
-            Text("教务同步", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold,
-                modifier = Modifier.statusBarsPadding().padding(horizontal = 16.dp, vertical = 24.dp))
-            CompositionLocalProvider(com.xiaomanjun.sleepdownschedule.core.ui.settings.LocalGlassSettingsContentTopPadding provides 0.dp) {
-                Box(Modifier.weight(1f)) { AutoRefreshScheduleSettingsScreen(state, backdrop, warehouseRefreshRequest) }
-            }
+        GlassMiuixRootSettingsScaffold(title = "教务同步", config = state.config) {
+            AutoRefreshScheduleSettingsScreen(state, backdrop, warehouseRefreshRequest)
         }
         return
     }
