@@ -4526,7 +4526,7 @@ private fun rootTopBarLayoutHeight(
             if (boundlessWeekHeader) {
                 // Measure the whole visual gradient envelope, not just the header: otherwise
                 // the parent's maximum height truncates the blur before its fade-out tail.
-                boundlessHomeTopGradientHeight(metrics)
+                boundlessHomeTopGradientHeight(metrics, LocalDensity.current.fontScale)
             } else {
                 metrics.topOverlayHeight
             }
