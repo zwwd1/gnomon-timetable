@@ -3,7 +3,7 @@
 <h1>Gnomon 课程表</h1>
 <p>川职课表同步、课程编辑与课前提醒。</p>
 
-[![下载](https://img.shields.io/github/v/release/zwwd1/gnomon-timetable?label=下载最新版&color=2788ed)](https://github.com/zwwd1/gnomon-timetable/releases/latest)
+[![下载](https://img.shields.io/badge/version-1.2.17-2788ed)](https://github.com/zwwd1/gnomon-timetable/releases/tag/v1.2.17)
 ![Android](https://img.shields.io/badge/Android-13%2B-34a853?logo=android&logoColor=white)
 [![许可](https://img.shields.io/badge/许可-署名非商业-8b78c4)](LICENSE.md)
 
