@@ -134,12 +134,7 @@
 
 Kotlin / Compose 承载界面、编辑与提醒，Room 保存课程和配置。川职认证和查询位于 `cn/scvtc/campus`，课程校验规则在 `school-core`。会话优先复用，需要时尝试重新认证；读取失败保留上次课表，写入前分别校验账号与学期。
 
-```mermaid
-flowchart LR
-  SCHOOL["学校服务<br/>CAS / JWXT"] --> CHECK["认证与校验<br/>账号 · 学期 · 范围"]
-  CHECK --> LOCAL["本机保存<br/>Room / 查询缓存"]
-  LOCAL --> UI["原生页面<br/>课表 · 成绩 · 提醒"]
-```
+![从学校认证、校验到本机保存与页面展示的数据流程](docs/images/project-data-flow.svg)
 
 ### 自行构建
 
