@@ -1,6 +1,6 @@
-# 晷构建原理
+# Gnomon 构建与数据流程
 
-晷直接使用 **SleepDown-Schedule v1.2.6 完整源码**作为原生基底。Miuix 0.9.3 使用基底附带的三份补丁，Kyant Backdrop 沿用项目内的修改版。课程首页、玻璃底栏、切周、设置、课程编辑和 Morph 弹层由原设计系统实现。底栏只调整入口数量，保持原玻璃参数和拖动交互。
+Gnomon 使用 **SleepDown-Schedule v1.2.6 完整源码**作为应用基础。Miuix 0.9.3 使用上游附带的三份补丁，Kyant Backdrop 沿用项目内的修改版。课程首页、玻璃底栏、切周、设置、课程编辑和 Morph 弹层由原设计系统实现。底栏只调整入口数量，保持原玻璃参数和拖动交互。
 
 ```mermaid
 flowchart LR
@@ -46,7 +46,7 @@ Hash 路由 `#/jwxt/js/student/index` 只用于 SPA 页面导航。课表只接�
 
 `ScvtcLegacyMigration` 以只读方式访问旧 `openwakeup.db`，将课表、课程安排、周次、作息和日期调课迁移到 SleepDown Room，完成标记和课程同时提交。源数据库保留，迁移不会先清库。旧 Keystore 别名和官方登录加密配置沿用，覆盖升级后可继续使用已保存的认证。
 
-后台任务使用基底的 WorkManager。实际运行时间由 Android、电量与网络条件决定；不承诺每次在固定秒数执行。课表已缓存时，查看课程不依赖后台任务是否刚刚运行。
+后台任务使用上游的 WorkManager。实际运行时间由 Android、电量与网络条件决定；不承诺每次在固定秒数执行。课表已缓存时，查看课程不依赖后台任务是否刚刚运行。
 
 ## 构建
 
@@ -64,3 +64,6 @@ Windows 使用 `gradlew.bat`。Miuix 来源由 `sleepdown.miuixSourcePath=third-
 赞赏原图通过仓库外环境变量 `SCVTC_DONATION_PNG` 输入，未配置时公开源码不包含私人支付图；签名和原图均不提交。角色、图标与素材来源见 [BRANDING_20261011.md](BRANDING_20261011.md)。
 
 构建结果、证书、源码对应关系与真实手机结果分别报告。编译通过不代表自动登录、所有升级来源或所有 Android 版本已经通过验收。
+
+
+[项目首页](../README.md) · [文档目录](README.md) · [使用说明](SCVTC_USAGE.md) · [隐私说明](SCVTC_PRIVACY.md)

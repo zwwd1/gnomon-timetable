@@ -1,18 +1,18 @@
 <div align="center">
 <img src="app/src/main/res/drawable-nodpi/campus_icon_portrait.webp" width="88" alt="Gnomon 图标">
 <h1>Gnomon 课程表</h1>
-<p>今天去哪间教室，一眼就能找到。</p>
+<p>川职课表同步、课程编辑与课前提醒。</p>
 
 [![下载](https://img.shields.io/github/v/release/zwwd1/gnomon-timetable?label=下载最新版&color=2788ed)](https://github.com/zwwd1/gnomon-timetable/releases/latest)
 ![Android](https://img.shields.io/badge/Android-13%2B-34a853?logo=android&logoColor=white)
 [![许可](https://img.shields.io/badge/许可-署名非商业-8b78c4)](LICENSE.md)
 
-**[下载 APK](#download) · [界面预览](#screenshots) · [功能总览](#features) · [快速上手](#start) · [常见问题](#faq) · [文档索引](#docs)**
+**[下载 APK](#download) · [界面预览](#screenshots) · [功能总览](#features) · [第一次使用](#start) · [常见问题](#faq) · [文档](#docs)**
 </div>
 
-只是想查一节课，智慧川职却常让我来回找入口，用久了挺烦的。于是按自己的习惯做了 Gnomon：课表、教室、老师、作息和提醒，放在顺手的位置。这是自己随心而动的作品，希望能帮到川职院的同辈。
+Gnomon 是一款适配川职教务的 Android 课表应用。同步课程后，可以查看每周安排、教室和老师，也能自己编辑课表、调整作息和设置提醒。没网时，已经保存的课表照常能看。
 
-> 本项目基于 [SleepDown课程表](https://github.com/xiaomanjun233/SleepDown-Schedule) 修改；原作者：**xiaomanjun233**。这是 zwwd1 维护的非官方修改版，加入川职认证与同步、成绩查询、数据保护及本机文件管理，与学校和原作者均无官方关系。
+项目基于 [SleepDown 课程表](https://github.com/xiaomanjun233/SleepDown-Schedule) 修改，由 zwwd1 维护川职适配，非学校官方应用。原作者和许可说明见[来源与许可](#credits)。
 
 <details>
 <summary><strong>目录</strong></summary>
@@ -20,14 +20,14 @@
 - [下载与安装](#download)
 - [界面预览](#screenshots)
 - [功能总览](#features)
-- [快速上手](#start)
-- [外观与日常设置](#appearance)
+- [第一次使用](#start)
+- [外观与设置](#appearance)
 - [Gnomon 与 Lumen 怎么选](#compare)
 - [数据与隐私](#privacy)
 - [实现与构建](#build)
-- [维护与验证](#maintenance)
+- [维护情况](#maintenance)
 - [常见问题](#faq)
-- [文档索引](#docs) · [来源与许可](#credits)
+- [文档](#docs) · [来源与许可](#credits)
 
 </details>
 
@@ -43,7 +43,7 @@
 
 [SHA-256 校验](https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.17/Gnomon-Timetable-1.2.17.apk.sha256) · [构建来源](https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.17/BUILD_PROVENANCE.json) · [对应源码](https://github.com/zwwd1/gnomon-timetable/tree/828f4a988931f08b54438957eab969062fe347b6) · [历史版本](https://github.com/zwwd1/gnomon-timetable/releases)
 
-正式包沿用原包名与签名，可保留数据覆盖安装。自行构建并换用其他签名的包不能直接覆盖正式包；请先保留自己的课程和备份。
+已安装本项目旧版时，下载正式包覆盖更新即可，通常不需要卸载。正式包沿用原包名与签名；自行换签名的构建不能直接覆盖，更新前建议备份课程。
 
 ---
 
@@ -52,9 +52,9 @@
 ## 界面预览
 
 <table><tr>
-<td align="center"><img src="docs/images/20261017/timetable.png" width="240" alt="Gnomon 实机周课表"><br><b>一周安排</b><br>点课程放大，长按再编辑。</td>
-<td align="center"><img src="docs/images/20261017/profile.png" width="240" alt="Gnomon 实机个人中心"><br><b>常用入口</b><br>偏好、更新、关于、导入和导出。</td>
-<td align="center"><img src="docs/images/20261017/motion.png" width="240" alt="Gnomon 实机材质与动效设置"><br><b>效果自己选</b><br>完整材质、低负载和入场动画。</td>
+<td align="center"><img src="docs/images/20261017/timetable.png" width="240" alt="Gnomon 实机周课表"><br><b>周课表</b><br>点按查看详情，长按编辑课程。</td>
+<td align="center"><img src="docs/images/20261017/profile.png" width="240" alt="Gnomon 实机个人中心"><br><b>个人中心</b><br>设置、更新、导入和导出。</td>
+<td align="center"><img src="docs/images/20261017/motion.png" width="240" alt="Gnomon 实机材质与动效设置"><br><b>材质设置</b><br>调整材质质量和入场动画。</td>
 </tr></table>
 
 配图拍摄于 **2026-10-17，Redmi K40 / Android 13，Gnomon 1.2.14**。画面来自实际应用，操作说明见[图文上手](docs/SCVTC_USAGE.md)。
@@ -78,29 +78,28 @@
 
 <a id="start"></a>
 
-## 快速上手
+## 第一次使用
 
-| 步骤 | 在哪里点 | 完成后能看到什么 |
-| --- | --- | --- |
-| ① 连接学校 | 首次邀请 → 连接川职教务 → 输入学号、学校密码 | 核验后保存课表；密码按账号加密留在本机 |
-| ② 看课程 | 底栏 **课表** → 日 / 周 → 点课程 | 放大查看课名、教师和地点；长按才编辑 |
-| ③ 校对时间 | 个人中心 → 课表详细设置 | 核对开学日期和节次时间，再启用提醒 |
-| ④ 查成绩 | 底栏 **成绩查询** | 先显示本机记录，可换学期、搜索和筛选 |
-| ⑤ 留备份 | 个人中心 → 课表导出 / 课表备份与恢复 | 导出 JSON / ICS，或完整备份；导入先预览 |
+1. 安装后打开“连接川职教务”，输入学号和学校统一认证密码。需要验证码或安全确认时，在应用里的学校认证页完成。
+2. 到 **个人中心 → 当前课表详细设置**，核对开学日期和节次时间，再开启课前提醒。
+3. 在底栏 **课表** 查看课程：点按看详情，长按编辑；**成绩查询** 中可切换学期、搜索和筛选记录。
+4. 需要备份时，到个人中心选择 **课表导出** 或 **课表备份与恢复**。JSON / ICS 适合导出课程，完整备份用于保留更多本机设置。
 
-学校要求验证码或安全确认时，进入应用里的**学校认证页**完成。普通会话到期会尝试恢复，学校强制的人工验证仍需本人操作。不要反复提交密码，也不用卸载清数据。[连接与故障处理](docs/SCVTC_USAGE.md)
+后续会尝试恢复已过期的登录会话；改密码、换手机或学校要求人工验证时，需要重新认证。详细步骤和截图见[使用说明](docs/SCVTC_USAGE.md)。
 
 ---
 
 <a id="appearance"></a>
 
-## 外观与日常设置
+## 外观与设置
 
-- **默认三栏**：成绩查询 / 课表 / 个人中心。个人中心 → 应用偏好设置可增减入口。
-- **三种材质**：液态、高斯、柔光分别保存参数；预览后点应用，取消不会写入。恢复默认液态会回到原组件配方。
-- **完整效果由你选择**：材质质量可选完整、均衡、低负载；启动期间是否暂降材质质量另有开关。入场动画也能单独关闭。
-- **看不到动画时**：系统“动画时长缩放”设为 0 时，应用会遵循。偏好里提供系统状态与设置入口。
-- **文件留在手上**：JSON / ICS 导入导出、本机备份历史、手动 WebDAV；学校密码不进入普通导出。
+在 **个人中心 → 应用偏好设置** 中调整：
+
+- **底部导航**：默认是成绩查询、课表和个人中心，可按需增减入口。
+- **玻璃材质**：液态、高斯、柔光分别保存参数，预览后点“应用”才会保存。
+- **材质质量**：完整、均衡、低负载三档；启动时临时降低质量和入场动画另有开关。
+
+系统动画时长设为 0 时，部分过渡会直接完成。偏好页可以查看系统动画状态并打开相关设置。文件导入、导出和手动 WebDAV 的操作见[使用说明](docs/SCVTC_USAGE.md)。
 
 ---
 
@@ -114,7 +113,7 @@
 | 集中查看教务 | 课表与常用成绩查询 | 课表、成绩、考试、学分和校园服务 |
 | 使用已有记录 | 课表离线可看 | 查询结果本机缓存 |
 
-选一款顺手的即可，也可以同时安装。两款使用各自的数据空间，不会自动共享账号和课表。
+两款可以同时安装，账号、课表和设置分别保存，不会自动互相同步。
 
 ---
 
@@ -122,9 +121,9 @@
 
 ## 数据与隐私
 
-学校认证与查询直接访问学校服务。密码和可恢复会话使用 Android Keystore 管理的密钥加密保存在本机，普通课程导出不携带学校凭据。
+学校登录和教务查询直接连接学校服务。密码和可恢复会话加密保存在手机里，普通课表导出不包含学校凭据。课程和作息存放在应用私有数据库中；普通课程记录没有做逐字段加密。
 
-课程与作息保存在应用私有 Room 数据库，由应用沙箱和 Android 设备存储加密保护。上游云同步与匿名统计暂停；AI、手动 WebDAV 需自行配置，主动调用的服务仍可能联网。完整保护范围见[隐私说明](docs/SCVTC_PRIVACY.md)。
+上游云同步和匿名统计目前暂停。AI 和手动 WebDAV 需要自行配置，使用时会连接相应服务。导出的课表可能包含教师、教室和课程安排，分享前请自行检查。具体保存方式见[隐私说明](docs/SCVTC_PRIVACY.md)。
 
 ---
 
@@ -154,13 +153,18 @@ cd gnomon-timetable
 
 <a id="maintenance"></a>
 
-## 维护与验证
+## 维护情况
 
-不会实时维护，更新要看自己的时间和精力。学校哪天换接口或认证方式，它可能就失效了，也不保证马上有人修。源码和构建方法都留着；需要的话 fork 一份，**自行 vibe coding**，按自己的习惯继续改。
+这是个人维护的项目，更新没有固定时间。学校调整登录或教务接口后，部分功能可能暂时用不了。遇到问题可以提 Issue，附上版本、机型和复现步骤；想自己修改，也欢迎 fork。
 
-### 已记录的验证范围
+<details>
+<summary><strong>目前测过哪些情况？</strong></summary>
 
-Gnomon 1.2.17 的原签名构建、发布来源和 **Redmi K40 / Android 13** 覆盖升级已有记录，保留既有数据完成了部分核心页面检查。新装、所有 ROM、Doze / 重启后的长时后台、通知与组件持续更新等仍有未覆盖项，具体以 [VERIFICATION.md](VERIFICATION.md) 和 [BUILD_PROVENANCE.json](BUILD_PROVENANCE.json) 为准。
+1.2.17 的正式包在 Redmi K40 / Android 13 上做过覆盖升级和部分页面检查。全新安装、其他 ROM、长时间熄屏、重启后的后台任务、通知和组件更新还没有全部测过。
+
+测试过程和未完成项见 [VERIFICATION.md](VERIFICATION.md)，安装包与源码的对应关系见 [BUILD_PROVENANCE.json](BUILD_PROVENANCE.json)。
+
+</details>
 
 ---
 
@@ -171,7 +175,7 @@ Gnomon 1.2.17 的原签名构建、发布来源和 **Redmi K40 / Android 13** �
 <details>
 <summary><strong>已有账号和课表，升级需要卸载吗？</strong></summary>
 
-无需先卸载。使用本项目原签名、满足版本要求的正式包覆盖安装；签名不一致时先核对来源。卸载或清数据会丢失本机密钥，不能靠复制加密文件恢复登录。
+不需要。使用本项目原签名的正式包覆盖安装，并确认没有降级。如果提示签名不一致，先核对下载来源。卸载或清数据会删除本机密钥，之后需要重新登录。
 
 </details>
 
@@ -193,7 +197,9 @@ Android、电量、网络和厂商后台限制会影响调度。已有课程可�
 
 <a id="docs"></a>
 
-## 文档索引
+## 文档
+
+[打开文档目录](docs/README.md)：使用说明、隐私、开发和历史记录分开查阅。
 
 | 想了解什么 | 阅读入口 |
 | :--- | :--- |

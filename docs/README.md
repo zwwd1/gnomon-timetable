@@ -1,6 +1,19 @@
-# 开发文档入口
+# Gnomon 文档
 
-先阅读根目录 [AGENTS.md](../AGENTS.md)，再按问题查阅下列文档。无需在每轮工作前遍历所有文档。
+[项目首页](../README.md) · [下载安装](../README.md#download) · [反馈问题](https://github.com/zwwd1/gnomon-timetable/issues)
+
+## 使用应用
+
+| 内容 | 文档 |
+| --- | --- |
+| 登录、课表、成绩、外观和常见问题 | [使用说明](SCVTC_USAGE.md) |
+| 密码、课程和缓存保存在哪里 | [隐私说明](SCVTC_PRIVACY.md) |
+| 当前版本改了什么 | [1.2.17 更新说明](../release-notes/v1.2.17.md) · [历史发行](https://github.com/zwwd1/gnomon-timetable/releases) |
+| 已测试的设备和场景 | [验证记录](../VERIFICATION.md) · [构建来源](../BUILD_PROVENANCE.json) |
+
+## 开发与构建
+
+[构建与数据流程](SCVTC_ARCHITECTURE.md)介绍认证、同步、缓存和构建要求。开始修改前阅读 [AGENTS.md](../AGENTS.md)。
 
 | 任务 | 参考文档 |
 | --- | --- |
@@ -14,6 +27,10 @@
 | 节次设置 | [PERIOD_SCHEMES_GUIDE.md](PERIOD_SCHEMES_GUIDE.md) |
 | 普通版中的实验功能、版本和发布 | [EXP_BRANCH_AND_RELEASES.md](EXP_BRANCH_AND_RELEASES.md) |
 
-带日期的验收与性能报告、worklog、archive 和版本说明是历史证据。旧实验参数、测试数量、临时禁令和“本轮不做”的范围只适用于当时任务。引用时核对日期与代码；新的明确需求可以更新相关基线。
+## 项目来源
 
-专项规范中的“不改动成熟链路”用于控制任务外回归和纯结构迁移，不阻止针对该链路的功能修复、设计调整或有证据的优化。发现过时事实时就地修正文档，避免继续追加相互冲突的补丁式约束。
+[原项目介绍](UPSTREAM_README.md) · [许可证](../LICENSE.md) · [第三方说明](../THIRD_PARTY_NOTICES.md)
+
+## 历史记录
+
+带日期的排查、性能报告和版本说明记录当时的实现与测试结果。了解某次改动可以查看这些文件；判断当前功能时，请结合当前代码和最新版本说明。文档截图来自较早版本，拍摄时间、机型和版本在使用说明中标注。
