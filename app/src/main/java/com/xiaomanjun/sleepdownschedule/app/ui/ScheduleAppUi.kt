@@ -2321,13 +2321,11 @@ fun CourseScheduleAppUi(
             }),
         popupHost = {
             Box(Modifier.fillMaxSize()) {
-                if(showSchoolConnection) LiquidAlertDialog(
-                        title="Gnomon 课程表 · 使用指南", message="1. 连接学校\n填写学号和学校密码，登录后自动读取课表。密码加密记在本机。\n\n2. 查看与调整\n点按课程放大查看课名、老师和地点；长按课程再编辑。\n\n3. 开启提醒\n在设置里填写节次时间，再开启课前提醒；外观和底栏也在这里调整。\n\n暂不连接也能手动添加课程。学校要求验证码时，在官方页面完成。",
-                    actions=listOf(
-                        LiquidAlertAction("稍后",LiquidAlertActionStyle.Secondary){onSchoolConnectionChoice(false)},
-                        LiquidAlertAction("连接川职教务",LiquidAlertActionStyle.Primary){onSchoolConnectionChoice(true)}),
-                    backdrop=centeredDialogSceneBackdrop,config=visualState.config,
-                    onDismissRequest={onSchoolConnectionChoice(false)}
+                if(showSchoolConnection) cn.scvtc.campus.SchoolUsageGuide(
+                    config = visualState.config,
+                    backdrop = centeredDialogSceneBackdrop,
+                    onDismiss = { onSchoolConnectionChoice(false) },
+                    onConnect = { onSchoolConnectionChoice(true) }
                 )
                 HomeAssistantHost(
                     controller = homeAssistant,
@@ -8295,6 +8293,16 @@ fun SettingsRootScreen(
     val context = LocalContext.current
     cn.scvtc.campus.CampusCompanion.initialize(context)
     var companionSettings by remember{mutableStateOf(false)}
+    var showUsageGuide by rememberSaveable { mutableStateOf(false) }
+    if (showUsageGuide) cn.scvtc.campus.SchoolUsageGuide(
+        config = state.config,
+        backdrop = backdrop,
+        onDismiss = { showUsageGuide = false },
+        onConnect = {
+            showUsageGuide = false
+            context.startActivity(Intent(context, cn.scvtc.campus.ScvtcLoginActivity::class.java))
+        }
+    )
     val scope = rememberCoroutineScope()
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
@@ -8437,6 +8445,12 @@ fun SettingsRootScreen(
         item {
             GlassPreferenceSection("应用", modifier = Modifier.homeSwitchGroup()) {
                 SettingsGroup(backdrop = backdrop, config = state.config, modifier = Modifier.fillMaxWidth()) {
+                    SettingsNavigationRow(
+                        "使用指南",
+                        "登录、课表、提醒、同步与备份，按步骤查看",
+                        onClick = { showUsageGuide = true }
+                    )
+                    SettingsDivider()
                     SettingsNavigationRow(
                         "应用偏好设置",
                         "深色模式与系统外观",
