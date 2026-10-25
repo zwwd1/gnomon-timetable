@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.withTransaction
 import cn.scvtc.campus.core.Meeting
 import cn.scvtc.campus.core.ScheduleWriteGuard
+import cn.scvtc.campus.core.TeachingCalendar
 import com.xiaomanjun.sleepdownschedule.CourseScheduleApp
 import com.xiaomanjun.sleepdownschedule.TodayCoursesWidgetProvider
 import com.xiaomanjun.sleepdownschedule.model.*
@@ -13,8 +14,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.security.MessageDigest
-import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 
 internal fun scvtcKey(value: String): String = MessageDigest.getInstance("SHA-256")
     .digest(value.toByteArray()).joinToString("") { "%02x".format(it.toInt() and 255) }
@@ -113,9 +112,9 @@ internal object ScvtcNativeBridge {
         val previous=AutoRefreshScheduleStore.load(app)?.takeIf { it.schoolId==SCHOOL && it.username==account }
         val term=calendar.first
         val currentConfig=app.repository.activeSnapshot().config
-        val today=LocalDate.now(java.time.ZoneId.of("Asia/Shanghai"))
+        val today=TeachingCalendar.today()
         val weeks=calendar.second.max()
-        val teachingWeek=(ChronoUnit.WEEKS.between(term.firstMonday,today)+1).toInt().coerceIn(1,weeks)
+        val teachingWeek=TeachingCalendar.weekAt(term.firstMonday,today).coerceIn(1,weeks)
         val id=app.database.withTransaction {
             val ledger=app.database.scvtcStateDao()
             val key=profileKey(account,term.semester)
@@ -204,10 +203,11 @@ internal object ScvtcNativeBridge {
                 )).toInt().also { ledger.put(ScvtcState(key, it.toString())) }
                 val oldConfig = db.configDao().getConfig(id)
                 val count = calendar.second.max()
-                val current = (ChronoUnit.WEEKS.between(term.firstMonday, LocalDate.now()) + 1).toInt().coerceIn(1, count)
+                val today = TeachingCalendar.today()
+                val current = TeachingCalendar.weekAt(term.firstMonday, today).coerceIn(1, count)
                 val config = oldConfig ?: ScheduleConfigEntity(id, count, current, 10,
                     termStartDate = term.firstMonday.toString(), autoCurrentWeek = true,
-                    termState = if (LocalDate.now() < term.firstMonday) ScheduleTermState.UPCOMING else ScheduleTermState.ACTIVE)
+                    termState = if (today < term.firstMonday) ScheduleTermState.UPCOMING else ScheduleTermState.ACTIVE)
                 db.configDao().upsertConfig(config.copy(totalWeeks = maxOf(config.totalWeeks, count)))
                 val incoming = fetched.extraction.meetings.map { it.nativeCourse(id) }
                 val maxNode = incoming.flatMap { it.periods }.maxOrNull() ?: 12
