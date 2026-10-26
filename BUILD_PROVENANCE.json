@@ -1,14 +1,14 @@
 {
-  "version": "1.2.19",
-  "sourceCommit": "3986c0bd9fa6f37e3577813d628df0b891d85411",
+  "version": "1.2.20",
+  "sourceCommit": "496508eeb5cdea2a4455b788b14ba8003a75a001",
   "sourceRepository": "zwwd1/gnomon-timetable",
   "artifact": {
-    "file": "Gnomon-Timetable-1.2.19.apk",
+    "file": "Gnomon-Timetable-1.2.20.apk",
     "packageName": "cn.scvtc.campus.preview",
-    "versionCode": 32,
+    "versionCode": 33,
     "certificateSha256": "5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3",
-    "size": 15094385,
-    "sha256": "35c0f014cfcc42c82319d33ba3597723238b97a4560e8d169921e5cedcca45ae",
+    "size": 15094489,
+    "sha256": "0441232ab2f07f464d0700b809a731101528f7e7523a568949cd7718272c8ce1",
     "abi": "universal"
   },
   "releaseBuild": "passed",
@@ -53,9 +53,16 @@
         "failures": 0,
         "errors": 0,
         "skipped": 0
+      },
+      {
+        "name": "com.xiaomanjun.sleepdownschedule.feature.update.GiteeAppUpdaterTest",
+        "tests": 14,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
       }
     ],
-    "tests": 8,
+    "tests": 22,
     "failures": 0,
     "errors": 0,
     "skipped": 0
@@ -65,25 +72,30 @@
     "date": "2026-10-26",
     "device": "Redmi K40",
     "android": "13",
-    "version": "1.2.19",
-    "versionCode": 32,
-    "installedApkSha256": "35c0f014cfcc42c82319d33ba3597723238b97a4560e8d169921e5cedcca45ae",
-    "installation": "Original-signature cover upgrade from 1.2.17 through the phone file manager and normal package installer; firstInstallTime unchanged.",
+    "version": "1.2.20",
+    "versionCode": 33,
+    "installedApkSha256": "0441232ab2f07f464d0700b809a731101528f7e7523a568949cd7718272c8ce1",
+    "installation": "Original-signature cover upgrade from 1.2.19 using the normal phone file manager/package installer and its single-install authorization. First install remains 2026-10-08; read-back installed APK hash matches the verified candidate.",
     "scenarios": [
-      "Existing 11-period configuration and term start 2026-09-07 retained; default clock rows 1-10 match the supplied school timetable, unknown period 11 retained.",
-      "Personal center -> current timetable details -> period times -> default scheme opens successfully.",
-      "Red unknown-period entry opens the full-page repair editor and time picker.",
-      "Red start and end buttons each open a time picker; cancel returns to the editor.",
-      "Confirming an existing 20:15 value succeeds; no new time is committed to unknown period 11.",
-      "Period-count editor opens with existing counts and cancels successfully.",
-      "Return through the settings pages to personal center; process PID 28745 unchanged and no new native/Java crash recorded during these actions."
+      "Existing 11-period layout, term date and known school clock rows retained; unknown period 11 remains blank.",
+      "Manual online check succeeds and reports current version not below the currently public v1.2.19; GnomonUpdate logs source=raw entries=10.",
+      "Current timetable details -> period times -> default scheme opens normally.",
+      "Red unknown-time entry and both red start/end buttons open time pickers; cancellation returns successfully.",
+      "Confirming the existing 08:30 start value succeeds; unknown period 11 remains blank.",
+      "Period-count editor opens with the original values and cancels; return through all settings pages to personal center succeeds.",
+      "App process PID 10593 remains unchanged throughout the update and editor scenarios; no new Java/native crash observed."
     ],
+    "postPublicationVerification": {
+      "status": "pending",
+      "reason": "Publish v1.2.20 and its static feed, then read the exact published version on the phone."
+    },
     "limits": [
-      "Original K80 Ultra / Android 17 crash device is not connected and has not been retested with this APK.",
-      "Fresh installation, natural background reminder delivery, account reauthentication and frame-rate performance are not tested.",
-      "Xiaomi USB-install switch remains blocked by temporary restriction 3-1; normal package installation succeeds."
+      "The original K80 Ultra / Android 17 crash device is not connected; this APK has not been tested on it.",
+      "Timeout/invalid/empty feed fallback and dual-transport failure are tested through targeted unit regressions; the successful phone request in this run used raw.",
+      "Fresh install, natural background reminder delivery and frame-rate measurements are not tested.",
+      "Xiaomi USB-install switch still has temporary restriction 3-1. Normal installation succeeds with enhanced protection retained."
     ]
   },
-  "mappingId": "23b1086d5f74734a0ce92a3f243fb952ee6fbd2c062c42a7209a2f5c818fbb2e",
-  "mappingSha256": "2a96f2b224a373799b39a35ff3890b0f8a3f4c055eef21220313766833ed8bb3"
+  "mappingId": "c9ae5a3d81523fcc388719b13fb53d2ba4b57a8d8a69e6c1ef0a6bd390c6bca3",
+  "mappingSha256": "8dc549f736aab25e492ab8c6f069f17246afea76e8cc5a624e50aed52820c723"
 }
