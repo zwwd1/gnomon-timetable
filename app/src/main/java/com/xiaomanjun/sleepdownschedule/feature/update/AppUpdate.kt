@@ -32,6 +32,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -52,7 +54,8 @@ private const val ReleaseFeedUrl = "https://raw.githubusercontent.com/$GiteeOwne
 private const val OfficialReleaseFeedUrl = "$GiteeApiBase/repos/$GiteeOwner/$GiteeRepository/contents/releases/update.json?ref=main"
 private const val ApkMimeType = "application/vnd.android.package-archive"
 private const val UpdatePreferences = "app_update_state"
-private const val LastCheckDateKey = "last_check_date"
+private const val LastSuccessfulCheckKey = "last_successful_check_ms"
+private const val LastCheckAttemptKey = "last_check_attempt_ms"
 private const val LatestTagKey = "latest_tag"
 private const val IncludeBetaKey = "include_beta"
 
@@ -94,6 +97,7 @@ sealed interface UpdateDownloadState {
 }
 
 object GiteeAppUpdater {
+    private val checkMutex = Mutex()
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
     private val _updateAvailable = MutableStateFlow(false)
     val updateAvailable: StateFlow<Boolean> = _updateAvailable.asStateFlow()
@@ -107,7 +111,8 @@ object GiteeAppUpdater {
     fun setIncludesBeta(context: Context, enabled: Boolean) {
         preferences(context).edit {
             putBoolean(IncludeBetaKey, enabled)
-            remove(LastCheckDateKey)
+            remove(LastSuccessfulCheckKey)
+            remove(LastCheckAttemptKey)
             remove(LatestTagKey)
         }
         _updateAvailable.value = false
@@ -125,25 +130,33 @@ object GiteeAppUpdater {
         } == true
     }
 
-    fun shouldRunDailyCheck(context: Context, date: LocalDate = LocalDate.now()): Boolean =
-        AppDistribution.supportsSelfUpdate &&
-            preferences(context).getString(LastCheckDateKey, null) != date.toString()
+    fun shouldRunAutomaticCheck(context: Context, now: Long = System.currentTimeMillis()): Boolean =
+        AppDistribution.supportsSelfUpdate && automaticCheckDue(now,
+            preferences(context).getLong(LastSuccessfulCheckKey, 0L),
+            preferences(context).getLong(LastCheckAttemptKey, 0L))
 
-    fun markDailyCheckStarted(context: Context, date: LocalDate = LocalDate.now()) {
-        preferences(context).edit {putString(LastCheckDateKey, date.toString())}
-    }
+    internal fun automaticCheckDue(now: Long, lastSuccess: Long, lastAttempt: Long): Boolean =
+        !(lastSuccess > 0 && now - lastSuccess in 0 until 15 * 60_000L) &&
+            !(lastAttempt > 0 && now - lastAttempt in 0 until 60_000L)
+
+    fun lastSuccessfulCheck(context: Context): Long = preferences(context).getLong(LastSuccessfulCheckKey, 0L)
 
     fun recordCheckResult(context: Context, result: GiteeUpdateCheckResult) {
         val release = when (result) {
             is GiteeUpdateCheckResult.UpdateAvailable -> result.release
             is GiteeUpdateCheckResult.UpToDate -> result.release
         }
-        preferences(context).edit {putString(LatestTagKey, release.tagName)}
+        preferences(context).edit {
+            putString(LatestTagKey, release.tagName)
+            putLong(LastSuccessfulCheckKey, System.currentTimeMillis())
+        }
         _updateAvailable.value = result is GiteeUpdateCheckResult.UpdateAvailable
     }
 
     suspend fun checkForUpdate(context: Context, currentVersionName: String): Result<GiteeUpdateCheckResult> =
         withContext(Dispatchers.IO) {
+            checkMutex.withLock {
+            preferences(context).edit { putLong(LastCheckAttemptKey, System.currentTimeMillis()) }
             runCatching {
                 check(AppDistribution.supportsSelfUpdate) {
                     "当前应用商店发行版不支持应用内 APK 更新"
@@ -156,6 +169,7 @@ object GiteeAppUpdater {
                 } else {
                     GiteeUpdateCheckResult.UpToDate(release)
                 }
+            }
             }
         }
 

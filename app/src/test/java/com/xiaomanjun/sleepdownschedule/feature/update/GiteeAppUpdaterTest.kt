@@ -12,6 +12,26 @@ class GiteeAppUpdaterTest {
     private val feed = listOf(buildJsonObject { put("tag_name", "v1.2.20") })
 
     @Test
+    fun successfulCheckUsesFifteenMinuteForegroundWindow() {
+        val time = 5_000_000L
+        assertFalse(GiteeAppUpdater.automaticCheckDue(time + 899_999, time, time))
+        assertTrue(GiteeAppUpdater.automaticCheckDue(time + 900_000, time, time))
+    }
+
+    @Test
+    fun failedAttemptCanRetryAfterOneMinuteWithoutSuccessTimestamp() {
+        val time = 5_000_000L
+        assertFalse(GiteeAppUpdater.automaticCheckDue(time + 59_999, 0, time))
+        assertTrue(GiteeAppUpdater.automaticCheckDue(time + 60_000, 0, time))
+    }
+
+    @Test
+    fun firstRunAndClockCorrectionDoNotSuppressAutomaticChecks() {
+        assertTrue(GiteeAppUpdater.automaticCheckDue(5_000_000, 0, 0))
+        assertTrue(GiteeAppUpdater.automaticCheckDue(4_000_000, 5_000_000, 5_000_000))
+    }
+
+    @Test
     fun rawTimeoutRetriesThroughOfficialGithubApi() {
         val urls = mutableListOf<String>()
         assertEquals(feed, GiteeAppUpdater.readReleaseFeedWithFallback { url ->

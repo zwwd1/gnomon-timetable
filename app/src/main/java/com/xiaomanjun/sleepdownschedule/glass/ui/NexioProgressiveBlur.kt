@@ -6,11 +6,13 @@ import androidx.compose.ui.graphics.Color
 import com.kyant.backdrop.BackdropEffectScope
 import com.kyant.backdrop.effects.runtimeShaderEffect
 
-internal fun BackdropEffectScope.nexioProgressiveBlur(radius: Float, tint: Color, intensity: Float, fadeStart: Float) {
+internal fun BackdropEffectScope.nexioProgressiveBlur(radius: Float, tint: Color, intensity: Float, fadeStart: Float,
+    balancedSampling: Boolean = false) {
     padding = radius
     val bufferW = size.width + 2f * padding
     val bufferH = size.height + 2f * padding
-    runtimeShaderEffect("NexioProgressiveRadial", PROGRESSIVE_BLUR_SHADER, "content") {
+    runtimeShaderEffect(if (balancedSampling) "NexioProgressiveRadial16" else "NexioProgressiveRadial32",
+        if (balancedSampling) BALANCED_PROGRESSIVE_BLUR_SHADER else FULL_PROGRESSIVE_BLUR_SHADER, "content") {
         setFloatUniform("contentOrigin", padding, padding)
         setFloatUniform("contentSize", size.width, size.height)
         setFloatUniform("bufferSize", bufferW, bufferH)
@@ -36,7 +38,10 @@ float softerstep(float a, float b, float x) {
 }
 """
 
-private const val PROGRESSIVE_BLUR_SHADER = """
+private val BALANCED_PROGRESSIVE_BLUR_SHADER = progressiveBlurShader(16)
+private val FULL_PROGRESSIVE_BLUR_SHADER = progressiveBlurShader(32)
+
+private fun progressiveBlurShader(samples: Int) = """
 uniform shader content;
 uniform float2 contentOrigin;
 uniform float2 contentSize;
@@ -63,9 +68,9 @@ half4 progressiveBlur(float2 coord, float radius) {
     // 高半径时采样点距大于笔画宽，固定螺旋会把文字打成星点；
     // 逐像素旋转核 + 径向扰动，把规则点阵打散成细噪。
     float spin = hash12(coord) * 6.2831853;
-    for (int i = 0; i < 32; i++) {
+    for (int i = 0; i < $samples; i++) {
         float fi = float(i);
-        float r = radius * pow((fi + 0.5) / 32.0, 0.5);
+        float r = radius * pow((fi + 0.5) / ${samples.toFloat()}, 0.5);
         r *= 0.90 + 0.20 * hash12(coord + float2(fi, 1.7));
         float a = fi * 2.39996323 + spin;
         float2 o = float2(cos(a), sin(a)) * r;

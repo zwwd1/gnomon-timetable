@@ -503,6 +503,41 @@ fun LiquidAlertDialog(
     }
 }
 
+/** Tall task content with its own illustrations and actions, using the common modal host. */
+@Composable
+fun LiquidContentDialog(
+    visible: Boolean,
+    backdrop: Backdrop?,
+    config: ScheduleConfigEntity,
+    onDismissRequest: () -> Unit,
+    onDismissFinished: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    val density = LocalDensity.current
+    val safeInsets = WindowInsets.safeDrawing.asPaddingValues()
+    val height = with(density) { LocalWindowInfo.current.containerSize.height.toDp() }
+    val panelHeight = (height - safeInsets.calculateTopPadding() - safeInsets.calculateBottomPadding() - 40.dp)
+        .coerceAtMost(650.dp).coerceAtLeast(220.dp)
+    val visuals = rememberCenteredDialogVisuals(
+        backdrop = LocalCenteredDialogSceneBackdrop.current ?: backdrop,
+        config = config, blurRadius = 0.dp, maxWidth = 520.dp
+    )
+    top.yukonga.miuix.kmp.overlay.OverlayDialog(
+        show = visible, title = null, enableWindowDim = false,
+        backgroundColor = Color.Transparent, forceCenter = true,
+        surfaceModifier = visuals.surfaceModifier,
+        backgroundModifier = visuals.backgroundModifier,
+        animationProgressState = visuals.animationProgress,
+        enablePredictiveBackAnimation = false,
+        excludeFromBackdropCapture = true,
+        renderInRootScaffold = LocalCenteredDialogRenderInRootScaffold.current,
+        outsideMargin = DpSize(12.dp, 16.dp), insideMargin = DpSize(0.dp, 0.dp),
+        onDismissRequest = onDismissRequest, onDismissFinished = onDismissFinished
+    ) {
+        Box(Modifier.fillMaxWidth().height(panelHeight)) { content() }
+    }
+}
+
 @Composable
 private fun LiquidAlertActionButton(
     action: LiquidAlertAction,

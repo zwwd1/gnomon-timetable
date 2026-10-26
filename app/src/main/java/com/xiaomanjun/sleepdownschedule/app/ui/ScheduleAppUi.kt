@@ -1304,12 +1304,14 @@ fun CourseScheduleAppUi(
             )
         }
     }
-    LaunchedEffect(state.loaded, state.config.autoCheckUpdates, currentVersionName) {
+    val updateLifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
+    LaunchedEffect(state.loaded, state.config.autoCheckUpdates, currentVersionName, updateLifecycleState, showSchoolConnection) {
         if (!state.loaded) return@LaunchedEffect
+        if (!updateLifecycleState.isAtLeast(Lifecycle.State.RESUMED) || showSchoolConnection) return@LaunchedEffect
         if (!AppDistribution.supportsSelfUpdate) return@LaunchedEffect
         GiteeAppUpdater.restoreCachedStatus(context, currentVersionName)
-        if (!state.config.autoCheckUpdates || !GiteeAppUpdater.shouldRunDailyCheck(context)) return@LaunchedEffect
-        GiteeAppUpdater.markDailyCheckStarted(context)
+        if (!state.config.autoCheckUpdates || !GiteeAppUpdater.shouldRunAutomaticCheck(context)) return@LaunchedEffect
+        kotlinx.coroutines.delay(700)
         GiteeAppUpdater.checkForUpdate(context, currentVersionName).onSuccess { result ->
             GiteeAppUpdater.recordCheckResult(context, result)
             if (result is GiteeUpdateCheckResult.UpdateAvailable && GiteeAppUpdater.remindersEnabled(context)) {
@@ -4324,14 +4326,14 @@ fun CourseScheduleAppUi(
         }
 
         SettingsUpdateDialogHost(
-            dialog = automaticUpdateDialog,
+            dialog = if (showSchoolConnection) null else automaticUpdateDialog,
             backdrop = chromeBackdrop,
             config = state.config,
             onDismiss = { automaticUpdateDialog = null },
             onRetry = {
                 automaticUpdateDialog = SettingsUpdateDialog.Checking
                 appScope.launch {
-                    automaticUpdateDialog = GiteeAppUpdater.checkForUpdate(context, currentVersionName).fold(
+                    val resultDialog = GiteeAppUpdater.checkForUpdate(context, currentVersionName).fold(
                         onSuccess = { result ->
                             GiteeAppUpdater.recordCheckResult(context, result)
                             when (result) {
@@ -4341,6 +4343,7 @@ fun CourseScheduleAppUi(
                         },
                         onFailure = { SettingsUpdateDialog.Error(it.readableUpdateMessage()) }
                     )
+                    if (automaticUpdateDialog is SettingsUpdateDialog.Checking) automaticUpdateDialog = resultDialog
                 }
             },
             onDownload = ::downloadAutomaticUpdate,
@@ -8326,6 +8329,7 @@ fun SettingsRootScreen(
         GiteeAppUpdater.restoreCachedStatus(context, versionName)
     }
     var updateDialog by remember { mutableStateOf<SettingsUpdateDialog?>(null) }
+    var updateCheckSerial by remember { mutableIntStateOf(0) }
     var downloadedUpdate by remember { mutableStateOf<java.io.File?>(null) }
     val installPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -8340,9 +8344,9 @@ fun SettingsRootScreen(
     fun checkForUpdate() {
         if (updateDialog is SettingsUpdateDialog.Checking || updateDialog is SettingsUpdateDialog.Downloading) return
         updateDialog = SettingsUpdateDialog.Checking
-        GiteeAppUpdater.markDailyCheckStarted(context)
+        val requestSerial = ++updateCheckSerial
         scope.launch {
-            updateDialog = GiteeAppUpdater.checkForUpdate(context, versionName).fold(
+            val resultDialog = GiteeAppUpdater.checkForUpdate(context, versionName).fold(
                 onSuccess = { result ->
                     GiteeAppUpdater.recordCheckResult(context, result)
                     when (result) {
@@ -8352,6 +8356,7 @@ fun SettingsRootScreen(
                 },
                 onFailure = { SettingsUpdateDialog.Error(it.readableUpdateMessage()) }
             )
+            if (requestSerial == updateCheckSerial && updateDialog is SettingsUpdateDialog.Checking) updateDialog = resultDialog
         }
     }
 
@@ -8559,7 +8564,7 @@ fun SettingsRootScreen(
         dialog = updateDialog,
         backdrop = backdrop,
         config = state.config,
-        onDismiss = { updateDialog = null },
+        onDismiss = { updateCheckSerial++; updateDialog = null },
         onRetry = ::checkForUpdate,
         onDownload = ::downloadAndInstall,
         onOpenRelease = { release ->
@@ -8597,12 +8602,18 @@ internal fun SettingsUpdateDialogHost(
     onOpenBackup: () -> Unit,
     onRequestInstallPermission: () -> Unit
 ) {
+    val updateContext = LocalContext.current
+    val successfulCheck = GiteeAppUpdater.lastSuccessfulCheck(updateContext)
+    val checkedLabel = remember(successfulCheck) {
+        if (successfulCheck == 0L) "" else java.text.DateFormat.getDateTimeInstance(
+            java.text.DateFormat.SHORT, java.text.DateFormat.SHORT).format(java.util.Date(successfulCheck))
+    }
     when (dialog) {
         null -> Unit
         SettingsUpdateDialog.Checking -> LiquidAlertDialog(
             title = "正在检查更新",
-            message = "正在读取Gnomon 课程表 GitHub 发布的更新清单。",
-            actions = listOf(LiquidAlertAction("取消", LiquidAlertActionStyle.Secondary, onClick = onDismiss)),
+            message = "正在连接官方更新服务，主线路不可用时会自动尝试备用线路。",
+            actions = listOf(LiquidAlertAction("收起", LiquidAlertActionStyle.Secondary, onClick = onDismiss)),
             backdrop = backdrop,
             config = config,
             onDismissRequest = onDismiss
@@ -8624,8 +8635,10 @@ internal fun SettingsUpdateDialogHost(
         }
         is SettingsUpdateDialog.UpToDate -> LiquidAlertDialog(
             title = "已是最新版本",
-            message = "当前安装版本已不低于Gnomon 课程表 GitHub 最新 Release（${dialog.latestTag}）。",
-            actions = listOf(LiquidAlertAction("知道了", LiquidAlertActionStyle.Primary, onClick = onDismiss)),
+            message = "当前版本：${BuildConfig.VERSION_NAME}\n公开版本：${dialog.latestTag}\n最近成功检查：$checkedLabel\n\n返回前台时按需自动检查，也可以随时手动检查。",
+            actions = listOf(
+                LiquidAlertAction("查看发布页", LiquidAlertActionStyle.Secondary, onClick = onOpenBackup),
+                LiquidAlertAction("完成", LiquidAlertActionStyle.Primary, onClick = onDismiss)),
             backdrop = backdrop,
             config = config,
             onDismissRequest = onDismiss

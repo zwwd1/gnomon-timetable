@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Brush
@@ -92,6 +93,11 @@ fun Modifier.progressiveBackdropBlur(
     fallbackTintStops: List<Pair<Float, Color>>
 ): Modifier {
     val useLegacyBlur = LocalLegacyProgressiveBlur.current
+    val context = LocalContext.current
+    val balancedSampling = remember(context) {
+        Build.VERSION.SDK_INT <= Build.VERSION_CODES.TIRAMISU ||
+            context.getSystemService(android.app.ActivityManager::class.java)?.isLowRamDevice == true
+    }
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && backdrop != null) {
         val material = remember(blurRadius, tintIntensity) {
             // Pure progressive blur: strip the default highlight/shadow/inner-shadow decorations
@@ -113,13 +119,13 @@ fun Modifier.progressiveBackdropBlur(
         val blurShapeBlock: () -> Shape = remember { { RectangleShape } }
         val blurEffects: BackdropEffectScope.() -> Unit = remember(
             blurRadius, direction, tintColor, tintIntensity,
-            topMaskFadeStart, topMaskFadeEnd, topTintFadeStart, topTintFadeEnd, radiusFadeStart, useLegacyBlur
+            topMaskFadeStart, topMaskFadeEnd, topTintFadeStart, topTintFadeEnd, radiusFadeStart, useLegacyBlur, balancedSampling
         ) {
             {
                 if (direction == ProgressiveBlurDirection.TopToBottom && !useLegacyBlur) {
                     // True variable-radius blur, sampled at full resolution. Backdrop 2 owns
                     // the shader cache per node, so there is no process-global shader registry.
-                    nexioProgressiveBlur(blurRadius.toPx(), tintColor, tintIntensity, radiusFadeStart)
+                    nexioProgressiveBlur(blurRadius.toPx(), tintColor, tintIntensity, radiusFadeStart, balancedSampling)
                 } else {
                 blur(blurRadius.toPx())
                 runtimeShaderEffect(
