@@ -1,5 +1,34 @@
 [
   {
+    "name": "Gnomon 课程表 1.2.20",
+    "tag_name": "v1.2.20",
+    "body": "# Gnomon 课程表 1.2.20\n\n• 更新检查增加 GitHub 官方备用线路，主线路超时、限流或响应异常后自动尝试备用线路，缩短网络等待。\n• 保留 1.2.19 的川职十节默认作息、已有自定义时间保护和红色待设置按钮崩溃修复。\n\n要求 Android 13 或以上。沿用原包名与原签名，直接覆盖升级，保留已有账号、课程和自定义时间。\n\n普通教学默认作息：\n\n| 节次 | 时间 |\n|---|---|\n| 1 | 08:30–09:15 |\n| 2 | 09:25–10:10 |\n| 3 | 10:30–11:15 |\n| 4 | 11:25–12:10 |\n| 5 | 14:00–14:45 |\n| 6 | 14:55–15:40 |\n| 7 | 15:50–16:35 |\n| 8 | 16:45–17:30 |\n| 9 | 19:20–20:05 |\n| 10 | 20:15–21:00 |\n\n实训说明：08:30–11:40、14:00–17:10，课间十分钟，具体分节以学校安排为准。新课表使用十节默认；旧表已有的自定义和额外节次保留。\n\n原签名 Release、R8、资源压缩、lintVital 和 14 项 APK / 源码校验通过。本次定向测试 22 项通过。\n\nRedmi K40 / Android 13 覆盖安装和本次更新 / 作息场景已验证；已有课表设置保留。 未做全新安装、后台自然周期或帧率测试。\n\n安装包：**Gnomon-Timetable-1.2.20.apk**。\n\nSHA-256：`0441232ab2f07f464d0700b809a731101528f7e7523a568949cd7718272c8ce1`\n",
+    "html_url": "https://github.com/zwwd1/gnomon-timetable/releases/tag/v1.2.20",
+    "published_at": "2026-10-26T13:28:51Z",
+    "draft": false,
+    "prerelease": false,
+    "assets": [
+      {
+        "name": "BUILD_PROVENANCE.json",
+        "size": 4096,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.20/BUILD_PROVENANCE.json",
+        "digest": "sha256:c4def6308cd10a0aff257030aee0e2126b24031e927c0483cf80115b179440c0"
+      },
+      {
+        "name": "Gnomon-Timetable-1.2.20.apk",
+        "size": 15094489,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.20/Gnomon-Timetable-1.2.20.apk",
+        "digest": "sha256:0441232ab2f07f464d0700b809a731101528f7e7523a568949cd7718272c8ce1"
+      },
+      {
+        "name": "Gnomon-Timetable-1.2.20.apk.sha256",
+        "size": 94,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.20/Gnomon-Timetable-1.2.20.apk.sha256",
+        "digest": "sha256:ec1b04c7eabb096d5ea4653f4f66bd326c75a9aa5f9a6fa057bce0764a0e44b7"
+      }
+    ]
+  },
+  {
     "name": "Gnomon 课程表 1.2.19",
     "tag_name": "v1.2.19",
     "body": "# Gnomon 课程表 1.2.19\n\n• 默认使用已确认的川职普通教学作息：上午四节、下午四节、晚上两节，首节分别为 08:30、14:00、19:20。\n• 新课表采用十节作息；旧课表完全空白的时间可补齐，保留课程编号与已有自定义时间。\n• 修复作息页点击红色“待设置”按钮时的原生崩溃，逐节补填与节数编辑使用独立背景采样，保留玻璃效果与时间弹窗。\n• 使用指南补充实训作息与提醒前的时间核对说明。\n\n要求 Android 13 或以上。沿用原包名与原签名，直接覆盖升级，保留已有账号、课程和自定义时间。\n\n普通教学默认作息：\n\n| 节次 | 时间 |\n|---|---|\n| 1 | 08:30–09:15 |\n| 2 | 09:25–10:10 |\n| 3 | 10:30–11:15 |\n| 4 | 11:25–12:10 |\n| 5 | 14:00–14:45 |\n| 6 | 14:55–15:40 |\n| 7 | 15:50–16:35 |\n| 8 | 16:45–17:30 |\n| 9 | 19:20–20:05 |\n| 10 | 20:15–21:00 |\n\n实训说明：08:30–11:40、14:00–17:10，课间十分钟，具体分节以学校安排为准。新课表使用十节默认；旧表已有的自定义和额外节次保留。\n\n原签名 Release、R8、资源压缩、lintVital 和 14 项 APK / 源码校验通过。本次定向测试 8 项通过。\n\nRedmi K40 / Android 13 覆盖安装和本次更新 / 作息场景已验证；已有课表设置保留。 未做全新安装、后台自然周期或帧率测试。\n\n安装包：**Gnomon-Timetable-1.2.19.apk**。\n\nSHA-256：`35c0f014cfcc42c82319d33ba3597723238b97a4560e8d169921e5cedcca45ae`\n",
