@@ -210,10 +210,11 @@ internal object ScvtcNativeBridge {
                     termState = if (today < term.firstMonday) ScheduleTermState.UPCOMING else ScheduleTermState.ACTIVE)
                 db.configDao().upsertConfig(config.copy(totalWeeks = maxOf(config.totalWeeks, count)))
                 val incoming = fetched.extraction.meetings.map { it.nativeCourse(id) }
-                val maxNode = incoming.flatMap { it.periods }.maxOrNull() ?: 12
+                val maxNode = maxOf(incoming.flatMap { it.periods }.maxOrNull() ?: 0, 10)
                 val periods = db.configDao().getPeriods(id).associateBy { it.periodIndex }
+                val defaults = defaultPeriods(id).associateBy { it.periodIndex }
                 db.configDao().upsertPeriods((1..maxOf(maxNode, periods.keys.maxOrNull() ?: 0)).map { node ->
-                    periods[node] ?: PeriodEntity(node, "", "", id) // No invented school bell times.
+                    periods[node] ?: defaults[node] ?: PeriodEntity(node, "", "", id)
                 })
                 ScvtcCourseWriter.write(object : SchoolCourseStore {
                     override suspend fun courses(scheduleId: Int) = db.courseDao().getCourses(scheduleId)

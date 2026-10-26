@@ -2,6 +2,8 @@ package com.xiaomanjun.sleepdownschedule.data.repository
 
 import com.xiaomanjun.sleepdownschedule.*
 import com.xiaomanjun.sleepdownschedule.feature.agent.*
+import com.xiaomanjun.sleepdownschedule.model.legacyDefaultPeriods
+import com.xiaomanjun.sleepdownschedule.model.withSchoolDefaultsIfUnknown
 
 import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
@@ -857,8 +859,8 @@ class ScheduleRepository(private val database: AppDatabase) {
             }
             if (!samePeriodTimeline(periods, schemePeriods)) {
                 val defaults = defaultPeriods(scheduleId)
-                val materializedIsDefault = samePeriodTimeline(periods, defaults)
-                val schemeIsDefault = samePeriodTimeline(schemePeriods, defaults)
+                val materializedIsDefault = samePeriodTimeline(periods, defaults) || samePeriodTimeline(periods, legacyDefaultPeriods(scheduleId))
+                val schemeIsDefault = samePeriodTimeline(schemePeriods, defaults) || samePeriodTimeline(schemePeriods, legacyDefaultPeriods(scheduleId))
                 if (materializedIsDefault && !schemeIsDefault) {
                     // A legacy/fallback write replaced only the materialized layer.
                     // Recover the remaining customized scheme instead of destroying it.
@@ -877,7 +879,15 @@ class ScheduleRepository(private val database: AppDatabase) {
         }
 
         if (periods.isEmpty()) {
-            periods = com.xiaomanjun.sleepdownschedule.domain.schedule.periodSkeleton(configDao.getConfig(scheduleId) ?: defaultConfig(scheduleId), emptyList())
+            periods = defaultPeriods(scheduleId)
+            configDao.upsertPeriods(periods)
+        }
+
+        // Previously unknown school times can now use the supplied timetable.
+        // Keep every existing index and leave any customized timeline untouched.
+        if (periods.all { it.startTime.isBlank() && it.endTime.isBlank() } &&
+            activeTimes.all { it.startTime.isBlank() && it.endTime.isBlank() }) {
+            periods = withSchoolDefaultsIfUnknown(periods)
             configDao.upsertPeriods(periods)
         }
 

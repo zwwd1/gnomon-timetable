@@ -119,7 +119,7 @@ data class ScheduleConfigEntity(
     @ColumnInfo(defaultValue = "0") val morningPeriodCount: Int = 4,
     @ColumnInfo(defaultValue = "0") val noonPeriodCount: Int = 0,
     @ColumnInfo(defaultValue = "0") val afternoonPeriodCount: Int = 4,
-    @ColumnInfo(defaultValue = "0") val eveningPeriodCount: Int = 4,
+    @ColumnInfo(defaultValue = "0") val eveningPeriodCount: Int = 2,
     val hideFromRecents: Boolean = false,
     val autoCheckUpdates: Boolean = true
 )
@@ -143,10 +143,10 @@ data class PeriodSchemeEntity(
     val isActive: Boolean = false,
     val classDurationMinutes: Int = 45,
     val breakDurationMinutes: Int = 10,
-    val morningStartTime: String = "08:00",
+    val morningStartTime: String = "08:30",
     val noonStartTime: String = "12:00",
     val afternoonStartTime: String = "14:00",
-    val eveningStartTime: String = "19:00",
+    val eveningStartTime: String = "19:20",
     val specialBreaksJson: String = "{}",
     val overridesJson: String = "{}"
 )
@@ -215,7 +215,7 @@ data class ImportDraft(
 
 fun defaultConfig(id: Int = 1) = ScheduleConfigEntity(id = id, totalWeeks = 20, currentWeek = 1, notificationLeadMinutes = 10, termStartDate = null, autoCurrentWeek = false, notificationsEnabled = true, notificationMode = NotificationMode.STANDARD, wallpaperUri = null, wallpaperBlur = 0f, wallpaperBrightness = 1f, wallpaperPortraitCenterX = 0.5f, wallpaperPortraitCenterY = 0.5f, wallpaperPortraitScale = 1f, wallpaperLandscapeCenterX = 0.5f, wallpaperLandscapeCenterY = 0.5f, wallpaperLandscapeScale = 1f, wallpaperSourceWidth = null, wallpaperSourceHeight = null, cardColorArgb = 0xFFD6E9FF, cardAlpha = 1f, courseCardBlur = 18f, courseCardGlassEnabled = true, courseCardFontScale = 1f, courseCardColorMode = CourseCardColorMode.SOLID, courseCardPalette = "", weekCardHeightDp = null, weekCardHeightScale = 1f, weekCardCornerProgress = 0.5f, homeTextLight = false, homeChromeBlurScale = DefaultHomeChromeBlurScale, homeChromeSamplingScale = DefaultHomeChromeSamplingScale, followSystemDarkMode = true, darkMode = false, defaultWallpaperStyle = DefaultWallpaperStyle.NONE, hideEmptyWeekends = false, dockAlignment = DockAlignment.CENTER, defaultHomeMode = HomeStartMode.WEEK, liveUpdateActionsEnabled = true, liveUpdateChipTextMode = LiveUpdateChipTextMode.LOCATION, classDurationMinutes = 45, breakDurationMinutes = 10, hideFromRecents = false, autoCheckUpdates = true)
 
-fun defaultPeriods(scheduleId: Int = 1) = listOf(
+internal fun legacyDefaultPeriods(scheduleId: Int = 1) = listOf(
     PeriodEntity(1, "08:00", "08:45", scheduleId), PeriodEntity(2, "08:55", "09:40", scheduleId),
     PeriodEntity(3, "10:00", "10:45", scheduleId), PeriodEntity(4, "10:55", "11:40", scheduleId),
     PeriodEntity(5, "14:00", "14:45", scheduleId), PeriodEntity(6, "14:55", "15:40", scheduleId),
@@ -223,3 +223,15 @@ fun defaultPeriods(scheduleId: Int = 1) = listOf(
     PeriodEntity(9, "19:00", "19:45", scheduleId), PeriodEntity(10, "19:55", "20:40", scheduleId),
     PeriodEntity(11, "20:50", "21:35", scheduleId), PeriodEntity(12, "21:45", "22:30", scheduleId)
 )
+
+fun defaultPeriods(scheduleId: Int = 1) = cn.scvtc.campus.core.SchoolBellTimes.periods.map {
+    PeriodEntity(it.number, it.start, it.end, scheduleId)
+}
+
+internal fun withSchoolDefaultsIfUnknown(periods: List<PeriodEntity>): List<PeriodEntity> {
+    if (periods.any { it.startTime.isNotBlank() || it.endTime.isNotBlank() }) return periods
+    return periods.map { period ->
+        cn.scvtc.campus.core.SchoolBellTimes.periods.firstOrNull { it.number == period.periodIndex }
+            ?.let { period.copy(startTime = it.start, endTime = it.end) } ?: period
+    }
+}
