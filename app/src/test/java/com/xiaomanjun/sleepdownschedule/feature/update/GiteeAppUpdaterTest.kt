@@ -4,8 +4,67 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.net.SocketTimeoutException
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 class GiteeAppUpdaterTest {
+    private val feed = listOf(buildJsonObject { put("tag_name", "v1.2.20") })
+
+    @Test
+    fun rawTimeoutRetriesThroughOfficialGithubApi() {
+        val urls = mutableListOf<String>()
+        assertEquals(feed, GiteeAppUpdater.readReleaseFeedWithFallback { url ->
+            urls += url
+            if (urls.size == 1) throw SocketTimeoutException("timeout")
+            feed
+        })
+        assertTrue(urls[0].startsWith("https://raw.githubusercontent.com/zwwd1/gnomon-timetable/"))
+        assertEquals("https://api.github.com/repos/zwwd1/gnomon-timetable/contents/releases/update.json?ref=main", urls[1])
+    }
+
+    @Test
+    fun successfulRawFeedDoesNotSpendAnApiRequest() {
+        var requests = 0
+        assertEquals(feed, GiteeAppUpdater.readReleaseFeedWithFallback { requests++; feed })
+        assertEquals(1, requests)
+    }
+
+    @Test
+    fun malformedPrimaryFeedDoesNotPreventFallback() {
+        var requests = 0
+        assertEquals(feed, GiteeAppUpdater.readReleaseFeedWithFallback {
+            if (++requests == 1) throw IllegalArgumentException("invalid response")
+            feed
+        })
+        assertEquals(2, requests)
+    }
+
+    @Test
+    fun emptyPrimaryFeedDoesNotHideValidFallback() {
+        var requests = 0
+        assertEquals(feed, GiteeAppUpdater.readReleaseFeedWithFallback {
+            if (++requests == 1) emptyList() else feed
+        })
+        assertEquals(2, requests)
+    }
+
+    @Test
+    fun missingStaticFeedKeepsReleaseApiCompatibility() {
+        assertEquals(null, GiteeAppUpdater.readReleaseFeedWithFallback { null })
+    }
+
+    @Test
+    fun twoFailedTransportsReportFailureInsteadOfPretendingToBeCurrent() {
+        var requests = 0
+        val failure = runCatching { GiteeAppUpdater.readReleaseFeedWithFallback {
+            requests++
+            throw SocketTimeoutException("timeout")
+        } }.exceptionOrNull()
+        assertEquals(2, requests)
+        assertTrue(failure is IllegalStateException)
+        assertTrue(failure?.cause is SocketTimeoutException)
+    }
     @Test
     fun componentSelectsNewestReleaseEvenWhenGiteeReturnsOldestFirst() {
         val latest = release("v1.2.6-exp10", true)

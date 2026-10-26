@@ -49,6 +49,7 @@ private const val GiteeRepository = "gnomon-timetable"
 private const val GiteeApiBase = "https://api.github.com"
 private const val GiteeRepositoryUrl = "https://github.com/$GiteeOwner/$GiteeRepository"
 private const val ReleaseFeedUrl = "https://raw.githubusercontent.com/$GiteeOwner/$GiteeRepository/main/releases/update.json"
+private const val OfficialReleaseFeedUrl = "$GiteeApiBase/repos/$GiteeOwner/$GiteeRepository/contents/releases/update.json?ref=main"
 private const val ApkMimeType = "application/vnd.android.package-archive"
 private const val UpdatePreferences = "app_update_state"
 private const val LastCheckDateKey = "last_check_date"
@@ -343,23 +344,38 @@ object GiteeAppUpdater {
     }
 
     private fun readReleaseObjects(context: Context? = null): List<JsonObject> {
-        // Public release metadata is served as a static file, without the unauthenticated API limit.
         val prefs = context?.let(::preferences)
-        val cached = prefs?.getString("release_feed", null)
-        val connection = openConnection(ReleaseFeedUrl)
-        if (cached != null) prefs?.getString("release_feed_etag", null)?.let { connection.setRequestProperty("If-None-Match", it) }
-        try {
-            val code = connection.responseCode
-            if (code == HttpURLConnection.HTTP_NOT_MODIFIED && cached != null)
-                return parseReleaseFeed(cached)
-            if (code in 200..299) {
-                val body = connection.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
-                val entries = parseReleaseFeed(body)
-                prefs?.edit { putString("release_feed", body); putString("release_feed_etag", connection.getHeaderField("ETag")) }
-                return entries
+        readReleaseFeedWithFallback { url ->
+            val officialApi = url == OfficialReleaseFeedUrl
+            val cacheKey = if (officialApi) "release_feed_official_api" else "release_feed"
+            val cached = prefs?.getString(cacheKey, null)
+            val connection = openConnection(url, connectTimeoutMillis = 4_000, readTimeoutMillis = 6_000)
+            if (officialApi) connection.setRequestProperty("Accept", "application/vnd.github.raw+json")
+            if (cached != null) prefs?.getString(cacheKey + "_etag", null)?.let {
+                connection.setRequestProperty("If-None-Match", it)
             }
-            if (code != HttpURLConnection.HTTP_NOT_FOUND) error("GitHub 更新清单暂不可用（HTTP $code），可稍后重试或打开项目发布页")
-        } finally { connection.disconnect() }
+            try {
+                val code = connection.responseCode
+                when {
+                    code == HttpURLConnection.HTTP_NOT_MODIFIED && cached != null -> parseReleaseFeed(cached)
+                    code in 200..299 -> {
+                        val body = connection.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
+                        val entries = parseReleaseFeed(body)
+                        require(entries.isNotEmpty()) { "GitHub 更新清单为空" }
+                        prefs?.edit {
+                            putString(cacheKey, body)
+                            putString(cacheKey + "_etag", connection.getHeaderField("ETag"))
+                        }
+                        entries
+                    }
+                    code == HttpURLConnection.HTTP_NOT_FOUND -> null
+                    else -> error("GitHub 更新清单暂不可用（HTTP $code）")
+                }.also { entries ->
+                    if (!entries.isNullOrEmpty()) android.util.Log.i("GnomonUpdate",
+                        "source=${if (officialApi) "official-api" else "raw"} entries=${entries.size}")
+                }
+            } finally { connection.disconnect() }
+        }?.let { return it }
         // Compatibility for repositories whose first static feed has not been published yet.
         val releases = mutableListOf<JsonObject>()
         var page = 1
@@ -371,6 +387,23 @@ object GiteeAppUpdater {
             page++
         } while (entries.size == 100 && page <= 3)
         return releases
+    }
+
+    internal fun readReleaseFeedWithFallback(read: (String) -> List<JsonObject>?): List<JsonObject>? {
+        var missingFeed = false
+        var lastFailure: Exception? = null
+        for (url in listOf(ReleaseFeedUrl, OfficialReleaseFeedUrl)) {
+            try {
+                val entries = read(url)
+                if (entries == null) { missingFeed = true; continue }
+                require(entries.isNotEmpty()) { "GitHub 更新清单为空" }
+                return entries
+            } catch (failure: Exception) {
+                lastFailure = failure
+            }
+        }
+        if (missingFeed) return null
+        throw IllegalStateException("GitHub 更新线路暂不可用，请检查网络后重试或打开项目发布页。", lastFailure)
     }
 
     private fun parseReleaseFeed(text: String): List<JsonObject> =
