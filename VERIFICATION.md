@@ -31,3 +31,5 @@ Redmi K40 / Android 13 覆盖安装和本次更新 / 作息场景已验证；已
 SHA-256：`0441232ab2f07f464d0700b809a731101528f7e7523a568949cd7718272c8ce1`
 
 源码：`496508eeb5cdea2a4455b788b14ba8003a75a001`
+
+发布后真机复测：[K40 完整验收记录](releases/1.2.20-device-verification.json) · [公开下载校验](releases/1.2.20-download-verification.json)。21:29:25 真机成功使用官方备用线路：`source=official-api entries=11`，界面读到正式版 `v1.2.20`。

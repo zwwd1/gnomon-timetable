@@ -1,0 +1,33 @@
+{
+  "status": "passed",
+  "date": "2026-10-26",
+  "device": "Redmi K40",
+  "android": "13",
+  "version": "1.2.20",
+  "versionCode": 33,
+  "installedApkSha256": "0441232ab2f07f464d0700b809a731101528f7e7523a568949cd7718272c8ce1",
+  "installation": "Original-signature cover upgrade from 1.2.19 using the normal phone file manager/package installer and its single-install authorization. First install remains 2026-10-08; read-back installed APK hash matches the verified candidate.",
+  "scenarios": [
+    "Existing 11-period layout, term date and known school clock rows retained; unknown period 11 remains blank.",
+    "Manual online check succeeds and reports current version not below the currently public v1.2.19; GnomonUpdate logs source=raw entries=10.",
+    "Current timetable details -> period times -> default scheme opens normally.",
+    "Red unknown-time entry and both red start/end buttons open time pickers; cancellation returns successfully.",
+    "Confirming the existing 08:30 start value succeeds; unknown period 11 remains blank.",
+    "Period-count editor opens with the original values and cancels; return through all settings pages to personal center succeeds.",
+    "App process PID 10593 remains unchanged throughout the update and editor scenarios; no new Java/native crash observed."
+  ],
+  "postPublicationVerification": {
+    "status": "passed",
+    "phoneResult": "Current installed version is not below the latest official GitHub release v1.2.20.",
+    "deviceLog": "2026-10-26 21:29:25.880 GnomonUpdate: source=official-api entries=11",
+    "officialFallbackVerifiedOnDevice": true,
+    "publicApkDownload": "Full public APK, checksum sidecar, size and source provenance verified against the exact installed original-signature APK.",
+    "tagSourceCommit": "496508eeb5cdea2a4455b788b14ba8003a75a001"
+  },
+  "limits": [
+    "The original K80 Ultra / Android 17 crash device is not connected; this APK has not been tested on it.",
+    "Timeout/invalid/empty feed fallback and dual-transport failure have targeted unit regressions. The phone successfully uses raw before publication and the official API after publication.",
+    "Fresh install, natural background reminder delivery and frame-rate measurements are not tested.",
+    "Xiaomi USB-install switch still has temporary restriction 3-1. Normal installation succeeds with enhanced protection retained."
+  ]
+}
