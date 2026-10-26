@@ -1,14 +1,14 @@
 {
-  "version": "1.2.18",
-  "sourceCommit": "78d653fa536b0346b3e7f49d87e25f9444bffb02",
+  "version": "1.2.19",
+  "sourceCommit": "3986c0bd9fa6f37e3577813d628df0b891d85411",
   "sourceRepository": "zwwd1/gnomon-timetable",
   "artifact": {
-    "file": "Gnomon-Timetable-1.2.18.apk",
+    "file": "Gnomon-Timetable-1.2.19.apk",
     "packageName": "cn.scvtc.campus.preview",
-    "versionCode": 31,
+    "versionCode": 32,
     "certificateSha256": "5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3",
-    "size": 15094165,
-    "sha256": "b375263fd390d2bff58d069644b42ef4768788cfb0a368a319529f25f3623c3a",
+    "size": 15094385,
+    "sha256": "35c0f014cfcc42c82319d33ba3597723238b97a4560e8d169921e5cedcca45ae",
     "abi": "universal"
   },
   "releaseBuild": "passed",
@@ -30,23 +30,60 @@
     "v2Signature": true,
     "zipAlignment": true
   },
-  "mappingId": "bb1e48c6ef66c4a0264e286ab8713e63b6ebbec6f2959b8701a9488efc905d06",
-  "mappingSha256": "9d7990fe853e004182fb578c7453a79c665380d16a42da9c787d6584a29b4a80",
   "desktopTests": {
-    "schoolCore": {
-      "tests": 64,
-      "failures": 0,
-      "errors": 0,
-      "skipped": 0
-    }
+    "project": "gnomon",
+    "suites": [
+      {
+        "name": "cn.scvtc.campus.core.SchoolBellTimesTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.scvtc.campus.SchoolDefaultPeriodsTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.xiaomanjun.sleepdownschedule.glass.GlassFrameworkTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ],
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
   },
   "deviceTests": {
-    "status": "not_run_for_this_release",
-    "coverInstall": "not_run",
-    "freshInstall": "not_run",
-    "schoolAuthentication": "not_run",
-    "performance": "not_measured",
-    "limits": "首次指南、小屏大字体、真实学校登录、通知、后台自然周期、组件与日志分享均待手机验收；历史版本结果不算本版验收。"
+    "status": "passed",
+    "date": "2026-10-26",
+    "device": "Redmi K40",
+    "android": "13",
+    "version": "1.2.19",
+    "versionCode": 32,
+    "installedApkSha256": "35c0f014cfcc42c82319d33ba3597723238b97a4560e8d169921e5cedcca45ae",
+    "installation": "Original-signature cover upgrade from 1.2.17 through the phone file manager and normal package installer; firstInstallTime unchanged.",
+    "scenarios": [
+      "Existing 11-period configuration and term start 2026-09-07 retained; default clock rows 1-10 match the supplied school timetable, unknown period 11 retained.",
+      "Personal center -> current timetable details -> period times -> default scheme opens successfully.",
+      "Red unknown-period entry opens the full-page repair editor and time picker.",
+      "Red start and end buttons each open a time picker; cancel returns to the editor.",
+      "Confirming an existing 20:15 value succeeds; no new time is committed to unknown period 11.",
+      "Period-count editor opens with existing counts and cancels successfully.",
+      "Return through the settings pages to personal center; process PID 28745 unchanged and no new native/Java crash recorded during these actions."
+    ],
+    "limits": [
+      "Original K80 Ultra / Android 17 crash device is not connected and has not been retested with this APK.",
+      "Fresh installation, natural background reminder delivery, account reauthentication and frame-rate performance are not tested.",
+      "Xiaomi USB-install switch remains blocked by temporary restriction 3-1; normal package installation succeeds."
+    ]
   },
-  "additionalArtifacts": []
+  "mappingId": "23b1086d5f74734a0ce92a3f243fb952ee6fbd2c062c42a7209a2f5c818fbb2e",
+  "mappingSha256": "2a96f2b224a373799b39a35ff3890b0f8a3f4c055eef21220313766833ed8bb3"
 }
