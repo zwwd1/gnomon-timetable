@@ -833,7 +833,7 @@ fun SettingsPickerValueRow(
             title = title,
             endActions = {
                 if (value.isBlank() || value.startsWith("待设置")) {
-                    DialogLiquidButton(LocalSettingsPopupBackdrop.current, "待设置", { if (enabled) onClick() },
+                    DialogLiquidButton(LocalSettingsControlBackdrop.current, "待设置", { if (enabled) onClick() },
                         role = DialogButtonRole.Cancel, destructiveFilled = true)
                 } else Text(
                     value.ifBlank { "未设置" },
@@ -867,7 +867,7 @@ fun SettingsPickerValueRow(
                 .weight(1f)
                 .offset(y = 1.dp)
         )
-        if (value.isBlank() || value.startsWith("待设置")) DialogLiquidButton(LocalSettingsPopupBackdrop.current, "待设置", { if (enabled) onClick() },
+        if (value.isBlank() || value.startsWith("待设置")) DialogLiquidButton(LocalSettingsControlBackdrop.current, "待设置", { if (enabled) onClick() },
             role = DialogButtonRole.Cancel, destructiveFilled = true)
         else Text(value, modifier = Modifier.offset(y = 1.dp).widthIn(min = 88.dp), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End, maxLines = 1)
     }

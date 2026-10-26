@@ -410,13 +410,14 @@ internal fun PeriodSchemeEditor(
                 }
             }
         }
-        if (showCounts) PeriodCountsEditor(config, popupBackdrop, onCancel = { showCounts = false }, onDone = { target ->
+        // These editors remain inside the recorded page. Only root-hosted popups use popupBackdrop.
+        if (showCounts) PeriodCountsEditor(config, backdrop, onCancel = { showCounts = false }, onDone = { target ->
             val resized = resizePeriodStructure(config, draft, target)
             onCountsChange(target.morningPeriodCount, target.noonPeriodCount, target.afternoonPeriodCount, target.eveningPeriodCount)
             onDraftChange(resized)
             showCounts = false
         })
-        if (repairingTimes) IncompletePeriodTimesEditor(config, active, popupBackdrop,
+        if (repairingTimes) IncompletePeriodTimesEditor(config, active, backdrop,
             onCancel = { repairingTimes = false }, onDone = { updated ->
                 onDraftChange(draft.copy(schemes = draft.schemes.map { if (it.scheme.id == active.scheme.id) updated else it }))
                 repairingTimes = false

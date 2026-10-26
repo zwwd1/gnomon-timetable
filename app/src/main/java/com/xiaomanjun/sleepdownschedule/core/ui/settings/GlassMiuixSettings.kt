@@ -66,6 +66,8 @@ import top.yukonga.miuix.kmp.theme.lightColorScheme
 internal val LocalGlassMiuixEnabled = compositionLocalOf { false }
 internal val LocalGlassSettingsContentTopPadding = compositionLocalOf<Dp?> { null }
 internal val LocalSettingsPopupBackdrop = compositionLocalOf<Backdrop?> { null }
+// Inline controls are recorded in the page underlay, so they may only sample its sibling background.
+internal val LocalSettingsControlBackdrop = compositionLocalOf<Backdrop?> { null }
 // A page can temporarily move its chrome away while an in-place editor owns navigation.
 internal val LocalSettingsEditorProgress = compositionLocalOf<androidx.compose.runtime.MutableFloatState?> { null }
 
@@ -139,7 +141,8 @@ fun GlassMiuixRootSettingsScaffold(
         CompositionLocalProvider(
             LocalCenteredDialogSceneBackdrop provides dialogSceneBackdrop,
             LocalCenteredDialogRenderInRootScaffold provides false,
-            LocalSettingsPopupBackdrop provides dialogSceneBackdrop
+            LocalSettingsPopupBackdrop provides dialogSceneBackdrop,
+            LocalSettingsControlBackdrop provides backgroundBackdrop
         ) {
         Box(
             Modifier
@@ -223,7 +226,8 @@ internal fun GlassMiuixTabletDetailPaneScaffold(
         CompositionLocalProvider(
             LocalCenteredDialogSceneBackdrop provides dialogSceneBackdrop,
             LocalCenteredDialogRenderInRootScaffold provides false,
-            LocalSettingsPopupBackdrop provides dialogSceneBackdrop
+            LocalSettingsPopupBackdrop provides dialogSceneBackdrop,
+            LocalSettingsControlBackdrop provides backgroundBackdrop
         ) {
         Box(
             modifier
@@ -355,6 +359,7 @@ internal fun GlassMiuixDetailActivityScaffold(
             LocalCenteredDialogSceneBackdrop provides dialogSceneBackdrop,
             LocalCenteredDialogRenderInRootScaffold provides false,
             LocalSettingsPopupBackdrop provides dialogSceneBackdrop,
+            LocalSettingsControlBackdrop provides backgroundBackdrop,
             LocalSettingsEditorProgress provides editorProgress,
             LocalDetailActivityFloatingOverlayHost provides floatingOverlayHost
         ) {

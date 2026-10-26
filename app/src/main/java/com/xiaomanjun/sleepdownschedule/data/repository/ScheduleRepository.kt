@@ -879,7 +879,7 @@ class ScheduleRepository(private val database: AppDatabase) {
         }
 
         if (periods.isEmpty()) {
-            periods = defaultPeriods(scheduleId)
+            periods = com.xiaomanjun.sleepdownschedule.domain.schedule.periodSkeleton(configDao.getConfig(scheduleId) ?: defaultConfig(scheduleId), emptyList())
             configDao.upsertPeriods(periods)
         }
 

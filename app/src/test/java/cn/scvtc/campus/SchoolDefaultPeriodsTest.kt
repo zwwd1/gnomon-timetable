@@ -25,4 +25,12 @@ class SchoolDefaultPeriodsTest {
         val saved = listOf(PeriodEntity(1, "09:00", "10:00"), PeriodEntity(2, "", ""))
         assertEquals(saved, withSchoolDefaultsIfUnknown(saved))
     }
+    @Test fun missingTimelineRetainsExplicitPeriodCounts() {
+        val config = defaultConfig(7).copy(morningPeriodCount = 4, afternoonPeriodCount = 4, eveningPeriodCount = 0)
+        val skeleton = com.xiaomanjun.sleepdownschedule.domain.schedule.periodSkeleton(config, emptyList())
+        val filled = withSchoolDefaultsIfUnknown(skeleton)
+        assertEquals(8, filled.size)
+        assertEquals("08:30", filled.first().startTime)
+        assertEquals("17:30", filled.last().endTime)
+    }
 }
