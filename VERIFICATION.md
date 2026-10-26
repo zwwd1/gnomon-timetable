@@ -1,3 +1,21 @@
+# Gnomon 1.2.18 检查记录
+
+2026-10-26。原签名 Release、R8、资源压缩、lintVital 与 14 项 APK 检查通过。64 项 school-core 测试通过。
+
+- 源码：`78d653fa536b0346b3e7f49d87e25f9444bffb02`
+- APK：`Gnomon-Timetable-1.2.18.apk`
+- SHA-256：`b375263fd390d2bff58d069644b42ef4768788cfb0a368a319529f25f3623c3a`
+- 包名：`cn.scvtc.campus.preview`；versionCode：31；架构：universal。
+- 原证书 SHA-256：`5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3`。
+- 检查涵盖：CRC、运行资产与原赞赏图、更新日志、APK 内源码提交、ELF / ZIP 对齐、ABI、R8 mapping、包名版本、Android 版本、应用名、非调试及 v2 原签名。
+
+本次没有手机安装、全新安装、覆盖升级、学校真实认证、通知送达、后台自然周期、组件或流畅度测量。Lumen 日志分享和两款首次指南的小屏 / 大字体 / 主题呈现仍待设备验收。历史实机记录仅作为历史信息，不算本版验收。
+
+BUILD_PROVENANCE.json 记录本次产物和验证范围。
+
+<details>
+<summary>上一公开版本的历史检查记录</summary>
+
 # Gnomon 1.2.17 检查记录
 
 2026-10-17 至 18 日。原签名 Release、R8、lintVital、资源与原生库、ZIP/ELF 对齐和源码对应检查通过。覆盖安装在 Redmi K40 / Android 13 完成，原有数据保留。
@@ -11,3 +29,5 @@
 - 编译输入指纹：ceeed0f6a879aa8e71a9c177eefdb2f98b56d93ea0c9838e40dc3b9863023a36
 
 BUILD_PROVENANCE.json 记录对应包和实际检查范围。受控后台触发不等同于自然周期验收，也不代表所有机型已通过。
+
+</details>

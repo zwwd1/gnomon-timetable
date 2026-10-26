@@ -1,62 +1,52 @@
 {
-  "version": "1.2.17",
-  "sourceCommit": "828f4a988931f08b54438957eab969062fe347b6",
+  "version": "1.2.18",
+  "sourceCommit": "78d653fa536b0346b3e7f49d87e25f9444bffb02",
   "sourceRepository": "zwwd1/gnomon-timetable",
   "artifact": {
-    "file": "Gnomon-Timetable-1.2.17.apk",
+    "file": "Gnomon-Timetable-1.2.18.apk",
     "packageName": "cn.scvtc.campus.preview",
-    "versionCode": 30,
+    "versionCode": 31,
     "certificateSha256": "5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3",
-    "size": 15093993,
-    "sha256": "6ef3d41f2884e94275cff973930a22f59f38ec18273daaa1bc78dcc52996d862",
+    "size": 15094165,
+    "sha256": "b375263fd390d2bff58d069644b42ef4768788cfb0a368a319529f25f3623c3a",
     "abi": "universal"
   },
   "releaseBuild": "passed",
-  "releaseLintVital": "passed",
+  "releaseLintVital": "No issues found.",
   "originalSignature": "passed",
   "artifactChecks": {
-    "manifest": true,
-    "originalSignature": true,
-    "zip16KiBAlignment": true,
-    "elf64Bit16KiBAlignment": true,
-    "elf32Bit4KiBAlignment": true,
-    "nativeAbiCoverage": true,
     "crc": true,
     "sourceAssets": true,
-    "sourceBaseCommit": true,
-    "localBuildInputs": true,
-    "originalDonationPng": true,
-    "noPlaintextCredentials": true,
-    "r8Mapping": true,
-    "appName": true,
     "releaseHistory": true,
-    "nativeLibrariesPreserved": true
+    "originalDonationAsset": true,
+    "sourceCommit": true,
+    "nativeElfAlignment": true,
+    "abiCoverage": true,
+    "r8MappingMatchesDex": true,
+    "manifest": true,
+    "androidVersions": true,
+    "applicationName": true,
+    "originalSignature": true,
+    "v2Signature": true,
+    "zipAlignment": true
   },
-  "localBuildInputsSha256": "ceeed0f6a879aa8e71a9c177eefdb2f98b56d93ea0c9838e40dc3b9863023a36",
-  "sourceGitMatch": {
-    "contentDifferent": 0,
-    "lineEndingsOnly": 1474
+  "mappingId": "bb1e48c6ef66c4a0264e286ab8713e63b6ebbec6f2959b8701a9488efc905d06",
+  "mappingSha256": "9d7990fe853e004182fb578c7453a79c665380d16a42da9c787d6584a29b4a80",
+  "desktopTests": {
+    "schoolCore": {
+      "tests": 64,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
   },
-  "mappingId": "0a2d822bbc93f29b4bad4849d5615f0d8061a5e34ae67f4c80a6e230a6bdeffe",
   "deviceTests": {
-    "device": "Redmi K40 / Android 13 / API 33",
-    "date": "2026-10-17至18日",
-    "artifactSha256": "6ef3d41f2884e94275cff973930a22f59f38ec18273daaa1bc78dcc52996d862",
-    "coverInstall": "passed",
-    "summary": "最终源码 828f4a98 的原签名包覆盖成功，原课表与账号保留，01:15 核验身份并同步 21 项安排。最终包在动画倍率 1 下实机复查成绩大标题上滑收起、透明渐变模糊、下拉展开、学期弹层与返回关闭通过；39 条成绩与 63.5/137 学分正常。原有自动刷新二级页正常显示。130% 字体下同步/缓存文字与星期栏不再重叠，原字号与动画倍率已恢复。此前同轮 1.2.15 实测 JSON 导入导出、临时课表的单次编辑和删除、本机备份预览；临时课表和文件已清理。",
-    "limits": "保留现有数据，未清库验证首次安装、注销或覆盖恢复；自定义底栏的教务根页未单独修改用户配置验收。受控后台刷新和重开同步成功；每日自然周期、Doze、重启长时运行与全部自然会话过期场景未验收。最终包未再遇真实 nginx 错误现场；学校强制安全确认仍需本人。通知送达、组件持续更新、未配置 AI/WebDAV 和 Android 17 未复测。",
-    "newCrash": false,
-    "headerIntegration": {
-      "expanded": "passed",
-      "collapsedBlur": "passed",
-      "pullDownExpand": "passed",
-      "termPopup": "passed",
-      "font130": "passed",
-      "systemAnimationTestScale": 1,
-      "restoredAnimationScale": 0
-    },
-    "naturalSessionExpiry": "recovery_observed_in_same_auth_code_v1.2.16_not_all_expiry_scenarios",
-    "freshInstall": "not_run_preserve_user_data"
+    "status": "not_run_for_this_release",
+    "coverInstall": "not_run",
+    "freshInstall": "not_run",
+    "schoolAuthentication": "not_run",
+    "performance": "not_measured",
+    "limits": "首次指南、小屏大字体、真实学校登录、通知、后台自然周期、组件与日志分享均待手机验收；历史版本结果不算本版验收。"
   },
   "additionalArtifacts": []
 }
