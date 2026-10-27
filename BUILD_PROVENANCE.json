@@ -1,14 +1,14 @@
 {
-  "version": "1.2.20",
-  "sourceCommit": "496508eeb5cdea2a4455b788b14ba8003a75a001",
+  "version": "1.2.21",
+  "sourceCommit": "eba68338abc2ace93f3cf560f2c880cda14c975c",
   "sourceRepository": "zwwd1/gnomon-timetable",
   "artifact": {
-    "file": "Gnomon-Timetable-1.2.20.apk",
+    "file": "Gnomon-Timetable-1.2.21.apk",
     "packageName": "cn.scvtc.campus.preview",
-    "versionCode": 33,
+    "versionCode": 34,
     "certificateSha256": "5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3",
-    "size": 15094489,
-    "sha256": "0441232ab2f07f464d0700b809a731101528f7e7523a568949cd7718272c8ce1",
+    "size": 15160253,
+    "sha256": "d0c36b2a2d8ea95f620a6b95f6a319524bc27e983b00e39531356c97654fc86d",
     "abi": "universal"
   },
   "releaseBuild": "passed",
@@ -56,46 +56,255 @@
       },
       {
         "name": "com.xiaomanjun.sleepdownschedule.feature.update.GiteeAppUpdaterTest",
-        "tests": 14,
+        "tests": 17,
         "failures": 0,
         "errors": 0,
         "skipped": 0
       }
     ],
-    "tests": 22,
+    "tests": 25,
     "failures": 0,
     "errors": 0,
-    "skipped": 0
+    "skipped": 0,
+    "testedSourceCommit": "eba68338abc2ace93f3cf560f2c880cda14c975c"
   },
   "deviceTests": {
     "status": "passed",
-    "date": "2026-10-26",
     "device": "Redmi K40",
-    "android": "13",
-    "version": "1.2.20",
-    "versionCode": 33,
-    "installedApkSha256": "0441232ab2f07f464d0700b809a731101528f7e7523a568949cd7718272c8ce1",
-    "installation": "Original-signature cover upgrade from 1.2.19 using the normal phone file manager/package installer and its single-install authorization. First install remains 2026-10-08; read-back installed APK hash matches the verified candidate.",
-    "scenarios": [
-      "Existing 11-period layout, term date and known school clock rows retained; unknown period 11 remains blank.",
-      "Manual online check succeeds and reports current version not below the currently public v1.2.19; GnomonUpdate logs source=raw entries=10.",
-      "Current timetable details -> period times -> default scheme opens normally.",
-      "Red unknown-time entry and both red start/end buttons open time pickers; cancellation returns successfully.",
-      "Confirming the existing 08:30 start value succeeds; unknown period 11 remains blank.",
-      "Period-count editor opens with the original values and cancels; return through all settings pages to personal center succeeds.",
-      "App process PID 10593 remains unchanged throughout the update and editor scenarios; no new Java/native crash observed."
-    ],
-    "postPublicationVerification": {
-      "status": "pending",
-      "reason": "Publish v1.2.20 and its static feed, then read the exact published version on the phone."
+    "android": 13,
+    "serial": "92cf2bfc",
+    "version": "1.2.21",
+    "versionCode": 34,
+    "sourceCommit": "eba68338abc2ace93f3cf560f2c880cda14c975c",
+    "installedApkSha256": "d0c36b2a2d8ea95f620a6b95f6a319524bc27e983b00e39531356c97654fc86d",
+    "lastUpdateTime": "2026-10-27 19:54:47",
+    "firstInstallTimePreserved": "2026-10-08 21:02:06",
+    "installation": "Original-signature system File Explorer cover installation with one-time authorization; installed base.apk pulled and independently hashed.",
+    "checks": {
+      "sixIllustratedPages": true,
+      "connectionExampleSavedCourse": true,
+      "courseDetailExpansion": true,
+      "nightTimesAndReminderPreview": true,
+      "offlineCachedCourseExample": true,
+      "backupChecklistPreview": true,
+      "appearancePreview": true,
+      "androidBackReturnsOneStep": true,
+      "closeAndReopenResumesPage": true,
+      "realConnectionOpensExistingLogin": true,
+      "finishClosesGuide": true,
+      "settingsDetailTimePickerOpenCancel": true,
+      "manualUpdateShowsCurrentPublicAndSuccessTime": true,
+      "threeSettingsAndThreeHomeSamples": true
     },
-    "limits": [
-      "The original K80 Ultra / Android 17 crash device is not connected; this APK has not been tested on it.",
-      "Timeout/invalid/empty feed fallback and dual-transport failure are tested through targeted unit regressions; the successful phone request in this run used raw.",
-      "Fresh install, natural background reminder delivery and frame-rate measurements are not tested.",
-      "Xiaomi USB-install switch still has temporary restriction 3-1. Normal installation succeeds with enhanced protection retained."
-    ]
+    "fatalMarkersForObservedProcess": 0,
+    "limitations": [
+      "Guide was opened through the permanent settings entry on an existing installation; user data was not cleared to test a fresh install.",
+      "School login navigation was tested without submitting credentials or changing saved accounts.",
+      "Existing timetable and ten configured default periods remained visible; no course or time edit was saved.",
+      "K80 was not connected or retested.",
+      "Dismissal and retry race behavior is additionally covered by the targeted updater tests; no phone-network failure was injected."
+    ],
+    "evidencePrefix": "g21-final-"
   },
-  "mappingId": "c9ae5a3d81523fcc388719b13fb53d2ba4b57a8d8a69e6c1ef0a6bd390c6bca3",
-  "mappingSha256": "8dc549f736aab25e492ab8c6f069f17246afea76e8cc5a624e50aed52820c723"
+  "mappingId": "e67f9e9fdb05acb8fcbd90a7ea197fe466f0a6a906e37f789449ed5c7deeac60",
+  "mappingSha256": "d7fe41048c248dec2b5337e4755ef1fdd63287c3c1deb8e1c8b886379f687cd3",
+  "performance": {
+    "device": "Redmi K40",
+    "scenario": "Warm settings screen, six upward/downward pairs of 400 ms swipes at fixed physical coordinates; three rounds per version.",
+    "limitations": "Short synthetic samples; no sustained FPS, all-screen or K80 claim. First baseline round and subsequent warm runs are all retained.",
+    "beforeVersion": "1.2.20",
+    "afterVersion": "1.2.21",
+    "before": {
+      "rounds": [
+        {
+          "frames": 673.0,
+          "janky": 15.0,
+          "jankPercent": 2.23,
+          "p50ms": 14.0,
+          "p95ms": 16.0,
+          "p99ms": 18.0,
+          "gpuP50ms": 7.0,
+          "gpuP95ms": 8.0,
+          "evidence": "gnomon-settings-before-current-1.txt"
+        },
+        {
+          "frames": 684.0,
+          "janky": 17.0,
+          "jankPercent": 2.49,
+          "p50ms": 14.0,
+          "p95ms": 17.0,
+          "p99ms": 20.0,
+          "gpuP50ms": 7.0,
+          "gpuP95ms": 8.0,
+          "evidence": "gnomon-settings-before-current-2.txt"
+        },
+        {
+          "frames": 633.0,
+          "janky": 16.0,
+          "jankPercent": 2.53,
+          "p50ms": 14.0,
+          "p95ms": 17.0,
+          "p99ms": 19.0,
+          "gpuP50ms": 7.0,
+          "gpuP95ms": 8.0,
+          "evidence": "gnomon-settings-before-current-3.txt"
+        }
+      ],
+      "median": {
+        "frames": 673.0,
+        "janky": 16.0,
+        "jankPercent": 2.49,
+        "p50ms": 14.0,
+        "p95ms": 17.0,
+        "p99ms": 19.0,
+        "gpuP50ms": 7.0,
+        "gpuP95ms": 8.0
+      }
+    },
+    "after": {
+      "rounds": [
+        {
+          "frames": 643.0,
+          "janky": 37.0,
+          "jankPercent": 5.75,
+          "p50ms": 14.0,
+          "p95ms": 17.0,
+          "p99ms": 22.0,
+          "gpuP50ms": 7.0,
+          "gpuP95ms": 9.0,
+          "evidence": "gnomon-settings-after-1.txt"
+        },
+        {
+          "frames": 702.0,
+          "janky": 13.0,
+          "jankPercent": 1.85,
+          "p50ms": 14.0,
+          "p95ms": 17.0,
+          "p99ms": 18.0,
+          "gpuP50ms": 7.0,
+          "gpuP95ms": 9.0,
+          "evidence": "gnomon-settings-after-2.txt"
+        },
+        {
+          "frames": 686.0,
+          "janky": 57.0,
+          "jankPercent": 8.31,
+          "p50ms": 15.0,
+          "p95ms": 17.0,
+          "p99ms": 19.0,
+          "gpuP50ms": 7.0,
+          "gpuP95ms": 9.0,
+          "evidence": "gnomon-settings-after-3.txt"
+        }
+      ],
+      "median": {
+        "frames": 686.0,
+        "janky": 37.0,
+        "jankPercent": 5.75,
+        "p50ms": 14.0,
+        "p95ms": 17.0,
+        "p99ms": 19.0,
+        "gpuP50ms": 7.0,
+        "gpuP95ms": 9.0
+      }
+    },
+    "home": {
+      "scenario": "Week 9 course grid, same saved courses and six up/down swipe pairs; three rounds per version.",
+      "limitations": "Old home samples were collected on Oct 26 and new samples on Oct 27. Different thermal and run conditions can affect the result; these are observations, not sustained FPS or a controlled causal estimate.",
+      "before": {
+        "rounds": [
+          {
+            "frames": 1273.0,
+            "janky": 552.0,
+            "jankPercent": 43.36,
+            "p50ms": 14.0,
+            "p95ms": 23.0,
+            "p99ms": 28.0,
+            "gpuP50ms": 6.0,
+            "gpuP95ms": 12.0,
+            "evidence": "gnomon-home-before-1.txt"
+          },
+          {
+            "frames": 922.0,
+            "janky": 506.0,
+            "jankPercent": 54.88,
+            "p50ms": 19.0,
+            "p95ms": 24.0,
+            "p99ms": 32.0,
+            "gpuP50ms": 9.0,
+            "gpuP95ms": 12.0,
+            "evidence": "gnomon-home-before-2.txt"
+          },
+          {
+            "frames": 712.0,
+            "janky": 530.0,
+            "jankPercent": 74.44,
+            "p50ms": 19.0,
+            "p95ms": 25.0,
+            "p99ms": 32.0,
+            "gpuP50ms": 10.0,
+            "gpuP95ms": 13.0,
+            "evidence": "gnomon-home-before-3.txt"
+          }
+        ],
+        "median": {
+          "frames": 922.0,
+          "janky": 530.0,
+          "jankPercent": 54.88,
+          "p50ms": 19.0,
+          "p95ms": 24.0,
+          "p99ms": 32.0,
+          "gpuP50ms": 9.0,
+          "gpuP95ms": 12.0
+        }
+      },
+      "after": {
+        "rounds": [
+          {
+            "frames": 904.0,
+            "janky": 41.0,
+            "jankPercent": 4.54,
+            "p50ms": 13.0,
+            "p95ms": 18.0,
+            "p99ms": 29.0,
+            "gpuP50ms": 5.0,
+            "gpuP95ms": 7.0,
+            "evidence": "gnomon-home-after-1.txt"
+          },
+          {
+            "frames": 914.0,
+            "janky": 54.0,
+            "jankPercent": 5.91,
+            "p50ms": 14.0,
+            "p95ms": 19.0,
+            "p99ms": 27.0,
+            "gpuP50ms": 5.0,
+            "gpuP95ms": 6.0,
+            "evidence": "gnomon-home-after-2.txt"
+          },
+          {
+            "frames": 697.0,
+            "janky": 30.0,
+            "jankPercent": 4.3,
+            "p50ms": 13.0,
+            "p95ms": 18.0,
+            "p99ms": 31.0,
+            "gpuP50ms": 5.0,
+            "gpuP95ms": 7.0,
+            "evidence": "gnomon-home-after-3.txt"
+          }
+        ],
+        "median": {
+          "frames": 904.0,
+          "janky": 41.0,
+          "jankPercent": 4.54,
+          "p50ms": 13.0,
+          "p95ms": 18.0,
+          "p99ms": 29.0,
+          "gpuP50ms": 5.0,
+          "gpuP95ms": 7.0
+        }
+      }
+    }
+  }
 }
