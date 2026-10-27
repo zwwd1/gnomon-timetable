@@ -1,5 +1,34 @@
 [
   {
+    "name": "Gnomon 课程表 1.2.21",
+    "tag_name": "v1.2.21",
+    "body": "# Gnomon 课程表 1.2.21\n\n• 全新六步图文使用指南：可滑动、直接选步骤，并操作课程卡、作息、离线与备份示例；支持继续阅读和随时重看。\n• Android 13 及以下与低内存设备采用均衡玻璃采样，保留模糊、去噪和清晰文字，降低滑动开销。\n• 自动检查更新改为进入前台时按十五分钟检查，失败一分钟后可重试；手动检查显示成功时间与官方发布页，收起后不再被迟到结果打断。\n\n要求 Android 13 或以上。沿用原包名与原签名，直接覆盖升级，保留已有账号、课程和自定义时间。\n\n普通教学默认作息：\n\n| 节次 | 时间 |\n|---|---|\n| 1 | 08:30–09:15 |\n| 2 | 09:25–10:10 |\n| 3 | 10:30–11:15 |\n| 4 | 11:25–12:10 |\n| 5 | 14:00–14:45 |\n| 6 | 14:55–15:40 |\n| 7 | 15:50–16:35 |\n| 8 | 16:45–17:30 |\n| 9 | 19:20–20:05 |\n| 10 | 20:15–21:00 |\n\n实训说明：08:30–11:40、14:00–17:10，课间十分钟，具体分节以学校安排为准。新课表使用十节默认；旧表已有的自定义和额外节次保留。\n\n原签名 Release、R8、资源压缩、lintVital 和 14 项 APK / 源码校验通过。本次定向测试 25 项通过。\n\nRedmi K40 / Android 13 覆盖安装和图文指南交互、更新检查与设置页滑动场景已验证；已有课表设置保留。 未清除现有数据做全新安装；滑动指标为 K40 同场景短程采样，不代表所有页面或 K80 表现。\n\nK40 设置页三轮相同手势采样，中位数：\n\n| 指标 | 旧版 | 本版 |\n|---|---:|---:|\n| 卡顿帧比例 (%) | 2.49 | 5.75 |\n| P95 帧耗时 (ms) | 17.0 | 17.0 |\n| GPU P50 (ms) | 7.0 | 7.0 |\n\n采样来自 dumpsys gfxinfo，不等同于持续 FPS；未更改系统刷新率，原始三轮结果保留在构建来源记录中。\n\n课程主页（第九周相同已保存课程）三轮中位数：GPU P50 9.0 → 5.0 ms；P95 帧耗时 24.0 → 18.0 ms。旧主页样本采于 10 月 26 日，新样本采于 10 月 27 日，存在时段与温度等变量；设置页改善较小，不能据此承诺所有页面或持续 120 FPS。\n\n安装包：**Gnomon-Timetable-1.2.21.apk**。\n\nSHA-256：`d0c36b2a2d8ea95f620a6b95f6a319524bc27e983b00e39531356c97654fc86d`\n",
+    "html_url": "https://github.com/zwwd1/gnomon-timetable/releases/tag/v1.2.21",
+    "published_at": "2026-10-27T12:14:14Z",
+    "draft": false,
+    "prerelease": false,
+    "assets": [
+      {
+        "name": "BUILD_PROVENANCE.json",
+        "size": 9402,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.21/BUILD_PROVENANCE.json",
+        "digest": "sha256:2900d583c851a5537b3f0499125bfc59d272a431f7691fcb81a9853ae30a1390"
+      },
+      {
+        "name": "Gnomon-Timetable-1.2.21.apk",
+        "size": 15160253,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.21/Gnomon-Timetable-1.2.21.apk",
+        "digest": "sha256:d0c36b2a2d8ea95f620a6b95f6a319524bc27e983b00e39531356c97654fc86d"
+      },
+      {
+        "name": "Gnomon-Timetable-1.2.21.apk.sha256",
+        "size": 94,
+        "browser_download_url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.21/Gnomon-Timetable-1.2.21.apk.sha256",
+        "digest": "sha256:0718852290dc2b2e43c79db7dd660ec5dd92965917e6e354308dee546cf7e3c9"
+      }
+    ]
+  },
+  {
     "name": "Gnomon 课程表 1.2.20",
     "tag_name": "v1.2.20",
     "body": "# Gnomon 课程表 1.2.20\n\n• 更新检查增加 GitHub 官方备用线路，主线路超时、限流或响应异常后自动尝试备用线路，缩短网络等待。\n• 保留 1.2.19 的川职十节默认作息、已有自定义时间保护和红色待设置按钮崩溃修复。\n\n要求 Android 13 或以上。沿用原包名与原签名，直接覆盖升级，保留已有账号、课程和自定义时间。\n\n普通教学默认作息：\n\n| 节次 | 时间 |\n|---|---|\n| 1 | 08:30–09:15 |\n| 2 | 09:25–10:10 |\n| 3 | 10:30–11:15 |\n| 4 | 11:25–12:10 |\n| 5 | 14:00–14:45 |\n| 6 | 14:55–15:40 |\n| 7 | 15:50–16:35 |\n| 8 | 16:45–17:30 |\n| 9 | 19:20–20:05 |\n| 10 | 20:15–21:00 |\n\n实训说明：08:30–11:40、14:00–17:10，课间十分钟，具体分节以学校安排为准。新课表使用十节默认；旧表已有的自定义和额外节次保留。\n\n原签名 Release、R8、资源压缩、lintVital 和 14 项 APK / 源码校验通过。本次定向测试 22 项通过。\n\nRedmi K40 / Android 13 覆盖安装和本次更新 / 作息场景已验证；已有课表设置保留。 未做全新安装、后台自然周期或帧率测试。\n\n安装包：**Gnomon-Timetable-1.2.20.apk**。\n\nSHA-256：`0441232ab2f07f464d0700b809a731101528f7e7523a568949cd7718272c8ce1`\n",

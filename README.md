@@ -3,7 +3,7 @@
 <h1>Gnomon 课程表</h1>
 <p>川职课表同步、课程编辑与课前提醒。</p>
 
-[![下载](https://img.shields.io/badge/version-1.2.20-2788ed)](https://github.com/zwwd1/gnomon-timetable/releases/tag/v1.2.20)
+[![下载](https://img.shields.io/badge/version-1.2.21-2788ed)](https://github.com/zwwd1/gnomon-timetable/releases/tag/v1.2.21)
 ![Android](https://img.shields.io/badge/Android-13%2B-34a853?logo=android&logoColor=white)
 [![许可](https://img.shields.io/badge/许可-署名非商业-8b78c4)](LICENSE.md)
 
@@ -39,9 +39,9 @@ Gnomon 是一款适配川职教务的 Android 课表应用。同步课程后，�
 
 | 当前版本 | 安装包 | 适用设备 |
 | :--- | :--- | :--- |
-| **[1.2.20](https://github.com/zwwd1/gnomon-timetable/releases/tag/v1.2.20)** | [下载通用 APK](https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.20/Gnomon-Timetable-1.2.20.apk) · 14.40 MiB | Android 13 及以上，通用包 |
+| **[1.2.21](https://github.com/zwwd1/gnomon-timetable/releases/tag/v1.2.21)** | [下载通用 APK](https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.21/Gnomon-Timetable-1.2.21.apk) · 14.46 MiB | Android 13 及以上，通用包 |
 
-[SHA-256 校验](https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.20/Gnomon-Timetable-1.2.20.apk.sha256) · [构建来源](https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.20/BUILD_PROVENANCE.json) · [对应源码](https://github.com/zwwd1/gnomon-timetable/tree/496508eeb5cdea2a4455b788b14ba8003a75a001) · [历史版本](https://github.com/zwwd1/gnomon-timetable/releases)
+[SHA-256 校验](https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.21/Gnomon-Timetable-1.2.21.apk.sha256) · [构建来源](https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.21/BUILD_PROVENANCE.json) · [对应源码](https://github.com/zwwd1/gnomon-timetable/tree/eba68338abc2ace93f3cf560f2c880cda14c975c) · [历史版本](https://github.com/zwwd1/gnomon-timetable/releases)
 
 已安装本项目旧版时，下载正式包覆盖更新即可，通常不需要卸载。正式包沿用原包名与签名；自行换签名的构建不能直接覆盖，更新前建议备份课程。
 
@@ -82,7 +82,7 @@ Gnomon 是一款适配川职教务的 Android 课表应用。同步课程后，�
 
 默认普通教学作息共十节：上午 08:30–12:10、下午 14:00–17:30、晚上 19:20–21:00；已有自定义时间与额外节次保留。实训为 08:30–11:40、14:00–17:10，课间十分钟，具体分节以学校安排为准。
 
-首次显示六步中文指南，正文可以滚动，支持上一页、下一页与稍后再看。之后从 **个人中心 → 使用指南** 随时重看；已有账号可点“完成”关闭。
+首次显示六步图文交互指南：左右滑动、直接选择步骤，可点课程卡、切换作息和离线状态、预览备份与外观。示例不会改动真实数据；支持继续阅读，之后从 **个人中心 → 使用指南** 随时重看，最后点“开始使用”完成。
 
 1. 安装后打开“连接川职教务”，输入学号和学校统一认证密码。需要验证码或安全确认时，在应用里的学校认证页完成。
 2. 到 **个人中心 → 当前课表详细设置**，核对开学日期和节次时间，再开启课前提醒。
@@ -151,7 +151,7 @@ cd gnomon-timetable
 
 构建沿用仓库的 Gradle Wrapper，以及项目附带的 Miuix / Backdrop 补丁来源。发布签名配置放在仓库外；完整工具链和签名变量见[构建与实现](docs/SCVTC_ARCHITECTURE.md)。
 
-复现当前正式包时使用版本标签 `v1.2.20`，也可直接查看[发行对应源码](https://github.com/zwwd1/gnomon-timetable/tree/496508eeb5cdea2a4455b788b14ba8003a75a001)。自行签名不等于原签名覆盖升级。
+复现当前正式包时使用版本标签 `v1.2.21`，也可直接查看[发行对应源码](https://github.com/zwwd1/gnomon-timetable/tree/eba68338abc2ace93f3cf560f2c880cda14c975c)。自行签名不等于原签名覆盖升级。
 
 ---
 
@@ -164,7 +164,7 @@ cd gnomon-timetable
 <details>
 <summary><strong>目前测过哪些情况？</strong></summary>
 
-1.2.20 已完成原签名 Release、14 项 APK 检查和 22 项定向测试。Redmi K40 / Android 13 覆盖安装与本次作息 / 更新场景已验证；已有课表设置保留。全新安装、后台自然周期和帧率未测，详细范围见验证记录。
+1.2.21 已完成原签名 Release、14 项 APK 检查和 25 项定向测试。Redmi K40 / Android 13 覆盖安装、六步指南交互、更新检查和设置页滑动已验证；三轮滑动采样详见 [验证记录](VERIFICATION.md)。未清除现有数据做全新安装，未复测 K80。
 
 测试过程和未完成项见 [VERIFICATION.md](VERIFICATION.md)，安装包与源码的对应关系见 [BUILD_PROVENANCE.json](BUILD_PROVENANCE.json)。
 
@@ -209,7 +209,7 @@ Android、电量、网络和厂商后台限制会影响调度。已有课程可�
 | :--- | :--- |
 | 登录、课程操作和故障处理 | [图文上手](docs/SCVTC_USAGE.md) |
 | 作息、材质、文件和入口范围 | [1.2.14 功能说明](docs/GNOMON_1.2.14.md) · [作息设置](docs/PERIOD_SCHEMES_GUIDE.md) |
-| 本版改动与历史版本 | [1.2.20 更新说明](release-notes/v1.2.20.md) · [全部发行记录](https://github.com/zwwd1/gnomon-timetable/releases) |
+| 本版改动与历史版本 | [1.2.21 更新说明](release-notes/v1.2.21.md) · [全部发行记录](https://github.com/zwwd1/gnomon-timetable/releases) |
 | 认证、数据流程与构建 | [构建原理](docs/SCVTC_ARCHITECTURE.md) · [开发文档目录](docs/README.md) |
 | 数据保存与实际验证 | [隐私说明](docs/SCVTC_PRIVACY.md) · [验证记录](VERIFICATION.md) |
 | 项目来源与许可 | [原项目介绍](docs/UPSTREAM_README.md) · [许可证](LICENSE.md) · [第三方说明](THIRD_PARTY_NOTICES.md) |

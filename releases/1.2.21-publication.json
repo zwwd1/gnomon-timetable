@@ -1,0 +1,36 @@
+{
+  "repository": "zwwd1/gnomon-timetable",
+  "tag": "v1.2.21",
+  "url": "https://github.com/zwwd1/gnomon-timetable/releases/tag/v1.2.21",
+  "publishedAt": "2026-10-27T12:14:14Z",
+  "sourceCommit": "eba68338abc2ace93f3cf560f2c880cda14c975c",
+  "apk": {
+    "file": "Gnomon-Timetable-1.2.21.apk",
+    "packageName": "cn.scvtc.campus.preview",
+    "versionCode": 34,
+    "certificateSha256": "5cab58b4d47d14e66143be594d3a4eebb5624be7e8f6a15354126bdab47343b3",
+    "size": 15160253,
+    "sha256": "d0c36b2a2d8ea95f620a6b95f6a319524bc27e983b00e39531356c97654fc86d",
+    "abi": "universal"
+  },
+  "assets": [
+    {
+      "name": "BUILD_PROVENANCE.json",
+      "size": 9402,
+      "digest": "sha256:2900d583c851a5537b3f0499125bfc59d272a431f7691fcb81a9853ae30a1390",
+      "url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.21/BUILD_PROVENANCE.json"
+    },
+    {
+      "name": "Gnomon-Timetable-1.2.21.apk",
+      "size": 15160253,
+      "digest": "sha256:d0c36b2a2d8ea95f620a6b95f6a319524bc27e983b00e39531356c97654fc86d",
+      "url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.21/Gnomon-Timetable-1.2.21.apk"
+    },
+    {
+      "name": "Gnomon-Timetable-1.2.21.apk.sha256",
+      "size": 94,
+      "digest": "sha256:0718852290dc2b2e43c79db7dd660ec5dd92965917e6e354308dee546cf7e3c9",
+      "url": "https://github.com/zwwd1/gnomon-timetable/releases/download/v1.2.21/Gnomon-Timetable-1.2.21.apk.sha256"
+    }
+  ]
+}
