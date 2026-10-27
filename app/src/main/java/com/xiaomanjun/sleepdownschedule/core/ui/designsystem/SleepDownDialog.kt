@@ -517,13 +517,14 @@ fun LiquidContentDialog(
     val safeInsets = WindowInsets.safeDrawing.asPaddingValues()
     val height = with(density) { LocalWindowInfo.current.containerSize.height.toDp() }
     val panelHeight = (height - safeInsets.calculateTopPadding() - safeInsets.calculateBottomPadding() - 40.dp)
-        .coerceAtMost(650.dp).coerceAtLeast(220.dp)
+        .coerceAtMost(720.dp).coerceAtLeast(220.dp)
     val visuals = rememberCenteredDialogVisuals(
         backdrop = LocalCenteredDialogSceneBackdrop.current ?: backdrop,
         config = config, blurRadius = 0.dp, maxWidth = 520.dp
     )
     top.yukonga.miuix.kmp.overlay.OverlayDialog(
         show = visible, title = null, enableWindowDim = false,
+        modifier = Modifier.height(panelHeight),
         backgroundColor = Color.Transparent, forceCenter = true,
         surfaceModifier = visuals.surfaceModifier,
         backgroundModifier = visuals.backgroundModifier,

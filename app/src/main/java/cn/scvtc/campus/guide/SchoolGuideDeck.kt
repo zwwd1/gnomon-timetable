@@ -119,7 +119,7 @@ fun SchoolGuideDeck(
                 Icon(Icons.AutoMirrored.Outlined.ArrowForward, null, Modifier.padding(start = 8.dp).size(18.dp))
             }
         }
-        Text("左右滑动切换 · 可在${settingsLabel}的使用指南中重看", Modifier.padding(top = 12.dp),
+        Text("左右翻页 · 上下滚动查看完整演示与说明", Modifier.padding(top = 12.dp),
             color = colors.onSurfaceVariant, fontSize = 11.sp, lineHeight = 16.sp)
     }
 }
